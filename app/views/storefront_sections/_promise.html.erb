@@ -1,0 +1,11 @@
+<%# Three short promises under the hero. locals: promises %>
+<section class="tl-promise">
+  <ul class="tl-wrap">
+    <% promises.each do |promise| %>
+      <li>
+        <%= tl_icon(promise['icon']) %>
+        <div><strong><%= promise['title'] %></strong><% if promise['text'].present? %><span><%= promise['text'] %></span><% end %></div>
+      </li>
+    <% end %>
+  </ul>
+</section>

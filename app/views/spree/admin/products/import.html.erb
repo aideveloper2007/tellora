@@ -1,0 +1,29 @@
+<!-- app/views/spree/admin/products/import.html.erb -->
+
+<% content_for :page_title, "Import Products" %>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Upload Products File</h4>
+        </div>
+        <div class="card-body">
+          <%= form_with model: [:admin, @products], url: import_admin_products_path, method: :post, local: true do |f| %>
+            <%= f.file_field :file, accept: '.xlsx', class: 'form-control mb-3', required: true %>
+            <%= link_to 'Download Sample', import_sample_admin_import_logs_path(format: "xlsx"), class: 'btn btn-primary me-2' %>
+            <%= f.submit 'Import', class: 'btn btn-success' %>
+            <%= link_to "Back to Products", admin_products_path, class: "btn btn-secondary ml-2" %>
+          <% end %>
+          
+          <div class="mt-4">
+            <h5>Excel Format Requirements</h5>
+            <p>Your Excel file should include these columns:</p>
+            <p><strong>SKU, Name, Description, Price, CostPrice, AvailableOn, TaxCategory, ShippingCategory, ProductProperties, Taxons, Variants, CountOnHand, Image</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

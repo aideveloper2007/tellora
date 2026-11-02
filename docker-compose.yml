@@ -1,0 +1,129 @@
+# Production: Tellora
+# Secrets and the domain come from the .env file next to this file on the server.
+
+x-rails-env: &rails-env
+  RAILS_ENV: production
+  DATABASE_URL: postgresql://spree:${DB_PASSWORD}@db:5432/spree_production
+  REDIS_URL: redis://redis:6379/1
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+  RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+  RAILS_SERVE_STATIC_FILES: "true"
+  RAILS_LOG_TO_STDOUT: "true"
+  FORCE_SSL: "true"
+  GENAI_SERVICE_URL: http://genai-theme-api:8000
+  PLATFORM_NAME: ${PLATFORM_NAME:-Tellora}
+  TENANT_DOMAINS: ${TENANT_DOMAINS}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  app:
+    image: ghcr.io/aideveloper2007/tellora:${IMAGE_TAG:-latest}
+    environment: *rails-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      genai-theme-api:
+        condition: service_started
+    volumes:
+      - app_storage:/rails/storage
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:3000/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  sidekiq:
+    image: ghcr.io/aideveloper2007/tellora:${IMAGE_TAG:-latest}
+    command: bundle exec sidekiq
+    environment: *rails-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - app_storage:/rails/storage
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+
+  genai-theme-api:
+    image: ghcr.io/aideveloper2007/tellora-genai:${IMAGE_TAG:-latest}
+    environment:
+      LLM_PROVIDER: claude
+      USE_REAL_LLM: "true"
+      CLAUDE_API_KEY: ${ANTHROPIC_API_KEY}
+      PIXABAY_API_KEY: ${PIXABAY_API_KEY:-}
+      RAILS_API_URL: http://app:3000
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  db:
+    image: pgvector/pgvector:pg14
+    environment:
+      POSTGRES_DB: spree_production
+      POSTGRES_USER: spree
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spree -d spree_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /opt/nginx/conf:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_storage:
+
+networks:
+  app-network:

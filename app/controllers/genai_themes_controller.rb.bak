@@ -1,0 +1,376 @@
+# frozen_string_literal: true
+
+class GenaiThemesController < ApplicationController
+  skip_before_action :set_current_store
+  before_action :set_genai_service
+
+  private
+
+  def set_genai_service
+    @genai_service = GenaiThemeService.new
+    Rails.logger.info "=== SET_GENAI_SERVICE: service initialized ==="
+    puts "\n\n>>> GENAI: set_genai_service CALLED <<<\n\n"
+    STDOUT.flush
+  end
+
+  public
+
+  # Landing page with options
+  def index
+    @api_status = begin
+      uri = URI("#{ENV.fetch("GENAI_SERVICE_URL", "http://localhost:8000")}/")
+      response = Net::HTTP.get_response(uri)
+      response.code == "200" ? { 'status' => 'online' } : { 'status' => 'error' }
+    rescue => e
+      { 'status' => 'error', 'message' => e.message }
+    end
+  end
+
+  # GET /genai_themes/chat
+
+
+  # Chat interface
+  def chat
+    session[:genai_conversation_id] ||= begin
+      result = @genai_service.start_conversation
+      result['conversation_id']
+    rescue StandardError => e
+      flash.now[:error] = "Failed to start conversation: #{e.message}"
+      nil
+    end
+
+    @conversation_id = session[:genai_conversation_id]
+  end
+
+  # POST /genai_themes/send_message
+  # Send a chat message (AJAX)
+  def send_message
+    message = params[:message]
+    context = params[:context] || {}
+    
+    Rails.logger.info "GenAI send_message: message=#{message}, conversation_id=#{session[:genai_conversation_id]}"
+
+    result = @genai_service.send_message(message: message, context: context)
+    
+    Rails.logger.info "GenAI send_message result: #{result.inspect}"
+
+    render json: {
+      success: true,
+      data: result
+    }
+  rescue StandardError => e
+    Rails.logger.error "GenAI send_message error: #{e.class} - #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # POST /genai_themes/upload_prd
+  # Upload PRD document (AJAX)
+  def upload_prd
+    unless params[:file].present?
+      return render json: {
+        success: false,
+        error: 'No file provided'
+      }, status: :unprocessable_entity
+    end
+
+    # Save uploaded file temporarily
+    file = params[:file]
+    temp_path = Rails.root.join('tmp', 'uploads', file.original_filename)
+    FileUtils.mkdir_p(File.dirname(temp_path))
+    File.open(temp_path, 'wb') { |f| f.write(file.read) }
+
+    result = @genai_service.upload_prd(file_path: temp_path)
+
+    # Clean up temp file
+    File.delete(temp_path) if File.exist?(temp_path)
+
+    render json: {
+      success: true,
+      data: result
+    }
+  rescue StandardError => e
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # POST /genai_themes/generate
+  # Generate theme from requirements
+  def generate
+    store_type = params[:store_type] || 'general'
+    template = params[:template]
+    requirements = params[:requirements] || {}
+
+    # Add store name from tenant if not provided
+    requirements['store_name'] ||= current_tenant.name
+
+    result = @genai_service.generate_theme(
+      store_type: store_type,
+      template: template,
+      requirements: requirements
+    )
+
+    # Store theme_id in session
+    session[:current_theme_id] = result['theme_id']
+
+    render json: {
+      success: true,
+      data: result
+    }
+  rescue StandardError => e
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # GET /genai_themes/status/:theme_id
+  # Check theme generation status (AJAX)
+  def status
+    theme_id = params[:id] || params[:theme_id] || session[:current_theme_id]
+
+    unless theme_id
+      return render json: {
+        success: false,
+        error: 'No theme ID provided'
+      }, status: :unprocessable_entity
+    end
+
+    result = @genai_service.get_theme_status(theme_id: theme_id)
+
+    render json: {
+      success: true,
+      data: result
+    }
+  rescue StandardError => e
+    Rails.logger.error "Status check error: #{e.message}"
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # GET /genai_themes/preview/:theme_id
+  # Preview generated theme
+  def preview
+    Rails.logger.info "=== PREVIEW ACTION STARTING ==="
+    Rails.logger.info "Params: #{params.inspect}"
+    
+    @theme_id = params[:id] || params[:theme_id] || session[:current_theme_id]
+    Rails.logger.info "Theme ID: #{@theme_id}"
+    
+    unless @theme_id
+      flash[:error] = 'No theme to preview'
+      return redirect_to genai_themes_path
+    end
+
+    result = @genai_service.get_theme_status(theme_id: @theme_id)
+    Rails.logger.info "API Result status: #{result['status']}"
+
+    if result['status'] == 'completed'
+      theme_data = result['theme_data']
+      
+      # Transform API response to match view expectations
+      @theme = {
+        'theme_id' => @theme_id,
+        'color_palette' => theme_data['colors'] || {},
+        'typography' => {
+          'heading' => {
+            'family' => theme_data.dig('typography', 'heading_font'),
+            'size' => '2rem',
+            'weight' => theme_data.dig('typography', 'heading_weight')
+          },
+          'body' => {
+            'family' => theme_data.dig('typography', 'body_font'),
+            'size' => '1rem',
+            'weight' => theme_data.dig('typography', 'body_weight')
+          }
+        },
+        'layout' => theme_data['layout'] || {},
+        'components' => theme_data['components'] || {},
+        'css' => theme_data['css'] || '',
+        'generated_at' => theme_data.dig('metadata', 'generated_at') ? Time.at(theme_data['metadata']['generated_at']).to_s : nil,
+        'template_used' => theme_data.dig('metadata', 'template'),
+        'validation_results' => {
+          'is_valid' => result.dig('validation_report', 'valid'),
+          'score' => result.dig('validation_report', 'overall_score'),
+          'issues' => result.dig('validation_report', 'issues') || []
+        }
+      }
+      Rails.logger.info "Theme prepared for view"
+
+
+    else
+      flash[:error] = "Theme not ready. Status: #{result['status']}"
+      redirect_to chat_genai_themes_path
+    end
+  rescue StandardError => e
+    Rails.logger.error "Preview error: #{e.message}"
+    Rails.logger.error e.backtrace.first(5).join("\n")
+    flash[:error] = "Failed to load theme: #{e.message}"
+    redirect_to genai_themes_path
+  end
+  def refine
+    theme_id = params[:id] || params[:theme_id]
+    feedback = params[:feedback]
+    
+    Rails.logger.info "Refining theme #{theme_id} with feedback: #{feedback}"
+    
+    # Call the refine API
+    result = @genai_service.refine_theme(
+      theme_id: theme_id,
+      feedback: feedback,
+      specific_changes: {}
+    )
+    
+    # Return new theme_id for polling
+    render json: {
+      success: true,
+      theme_id: result['theme_id'],
+      message: 'Refinement started'
+    }
+  rescue StandardError => e
+    Rails.logger.error "Refine error: #{e.message}"
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  # POST /genai_themes/apply
+
+/:theme_id
+  # Apply theme to Spree store
+  def apply
+    theme_id = params[:theme_id]
+    
+    # Get theme data
+    result = @genai_service.get_theme_status(theme_id)
+    
+    unless result['status'] == 'completed'
+      return render json: {
+        success: false,
+        error: 'Theme is not completed yet'
+      }, status: :unprocessable_entity
+    end
+
+    theme_data = result['theme_data']
+
+    # Create or update Spree theme
+    theme = create_or_update_spree_theme(theme_data)
+
+    if theme.persisted?
+      render json: {
+        success: true,
+        message: 'Theme applied successfully',
+        theme_id: theme.id
+      }
+    else
+      render json: {
+        success: false,
+        error: theme.errors.full_messages.join(', ')
+      }, status: :unprocessable_entity
+    end
+  rescue StandardError => e
+    render json: {
+      success: false,
+      error: e.message
+    }, status: :unprocessable_entity
+  end
+
+  private
+
+  def set_genai_service
+    Rails.logger.info "=== SET_GENAI_SERVICE CALLED FOR ACTION: #{action_name} ==="
+    
+    tenant = current_tenant_for_genai
+    Rails.logger.info "Tenant: #{tenant.inspect}"
+    
+    user = current_user_for_genai
+    Rails.logger.info "User: #{user.inspect}"
+    
+    @genai_service = GenaiThemeService.new(tenant_id: tenant[:subdomain], user_id: user[:id])
+    Rails.logger.info "Service initialized successfully"
+    
+    if session[:genai_conversation_id]
+      @genai_service.instance_variable_set(:@conversation_id, session[:genai_conversation_id])
+    end
+  rescue => e
+    Rails.logger.error "=== ERROR IN SET_GENAI_SERVICE: #{e.class} - #{e.message} ==="
+    Rails.logger.error e.backtrace.first(10).join("\n")
+    flash[:error] = "Service initialization failed: #{e.message}"
+    redirect_to genai_themes_path and return
+  end
+
+
+
+  def create_or_update_spree_theme(theme_data)
+    # Find or create theme
+    theme = Spree::Theme.find_or_initialize_by(
+      name: "GenAI Theme - #{Time.current.strftime('%Y%m%d_%H%M%S')}"
+    )
+
+    # Store theme data in preferences column (JSON)
+    theme.preferences = {
+      genai_generated: true,
+      generated_at: Time.current.iso8601,
+      colors: theme_data['colors'],
+      typography: theme_data['typography'],
+      layout: theme_data['layout'],
+      components: theme_data['components'],
+      css: theme_data['css'],
+      metadata: theme_data['metadata']
+    }
+
+    theme.save
+    theme
+  end
+
+  def current_tenant_for_genai
+    if Rails.env.development? && !current_user
+      # Development mode without authentication
+      { subdomain: 'dev_store', name: 'Development Store' }
+    else
+      @current_tenant ||= begin
+        tenant_subdomain = Apartment::Tenant.current || 'default'
+        { subdomain: tenant_subdomain, name: 'My Store' }
+      end
+    end
+  end
+  
+  def current_user_for_genai
+    if Rails.env.development? && !current_user
+      # Development mode without authentication
+      { id: 'dev_user_123', email: 'dev@example.com' }
+    else
+      { id: current_user.id, email: current_user.email }
+    end
+  end
+  
+  def current_tenant
+    @current_tenant ||= Apartment::Tenant.current
+    # If using ActsAsTenant or similar, adjust accordingly
+    # For now, return a mock object for development
+    OpenStruct.new(
+      subdomain: Apartment::Tenant.current || 'default',
+      name: 'My Store'
+    )
+  end
+  
+  def disable_http_caching
+    puts "\n=== PUTS: disable_http_caching called ===\n"
+    STDOUT.flush
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+  rescue => e
+    puts "\n=== PUTS: ERROR in disable_http_caching: #{e.class} - #{e.message} ===\n"
+    STDOUT.flush
+    Rails.logger.error "ERROR in disable_http_caching: #{e.message}"
+  end
+end

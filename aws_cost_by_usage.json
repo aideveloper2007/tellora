@@ -1,0 +1,4313 @@
+{
+    "GroupDefinitions": [
+        {
+            "Type": "DIMENSION",
+            "Key": "SERVICE"
+        },
+        {
+            "Type": "DIMENSION",
+            "Key": "USAGE_TYPE"
+        }
+    ],
+    "ResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-10-01",
+                "End": "2026-10-17"
+            },
+            "Total": {},
+            "Groups": [
+                {
+                    "Keys": [
+                        "AWS Certificate Manager",
+                        "USE1-IssuePublicCertificateDomain"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "8",
+                            "Unit": "Certificate Domain Name"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Certificate Manager",
+                        "USE1-IssuePublicCertificateWildcardDomain"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "4",
+                            "Unit": "Certificate Domain Name"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Glue",
+                        "EUC1-Catalog-Request"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000027",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "29",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Glue",
+                        "EUN1-Catalog-Request"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000029",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "31",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Glue",
+                        "USE1-Catalog-Request"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000029",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "31",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Key Management Service",
+                        "eu-central-1-KMS-Requests"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000006",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Key Management Service",
+                        "us-east-1-KMS-Requests"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000084",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "28",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Secrets Manager",
+                        "EUC1-AWSSecretsManager-Secrets"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.401074964",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1.0026873945",
+                            "Unit": "Secrets"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Secrets Manager",
+                        "EUC1-AWSSecretsManagerAPIRequest"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.13033",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "26066",
+                            "Unit": "API Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AWS Secrets Manager",
+                        "USE1-AWSSecretsManagerAPIRequest"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000005",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1",
+                            "Unit": "API Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0103068435",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.1079327776",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000005296",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000088265",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-Requests-HTTP-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000378",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "42",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0030096",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2508",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0157509",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "17501",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AP-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0592848",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "49404",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AU-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0021541841",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0202306122",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AU-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00028",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "224",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AU-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0067401",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "7489",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "AU-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.01722625",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "13781",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00070156",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0086343524",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000482",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000241",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-Requests-HTTP-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00000225",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "3",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000215",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "215",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00003825",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "51",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "CA-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.002059",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2059",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "Distribution_Tenant"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "3.7177414855",
+                            "Unit": "Months"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0154188261",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.3512631235",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000002351",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000117501",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-Requests-HTTP-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0001755",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "195",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00627",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "5225",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0099711",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "11079",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "EU-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0699396",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "58283",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "Executions-CloudFrontFunctions"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0199071",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "199071",
+                            "Unit": "FunctionExecutions"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "IN-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0025510404",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0298601145",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "IN-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000007359",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000045998",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "IN-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0011604",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "967",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "IN-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.002457",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2730",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "IN-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0150336",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "12528",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "Invalidations"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.005",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1",
+                            "Unit": "URLs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0046460593",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0493813301",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000000048",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-Requests-HTTP-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000027",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "3",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0012492",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1041",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0040554",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "4506",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "JP-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0217584",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "18132",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "KeyValueStore-APIOperations"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.782",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "782",
+                            "Unit": "API Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "KeyValueStore-EdgeReads"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0176532",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "597407",
+                            "Unit": "EdgeReads"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ME-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000408883",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0003874868",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ME-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000012",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "10",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ME-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000108",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "9",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "SA-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0019785151",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0187369769",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "SA-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000001912",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000153",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "SA-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0015026",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "683",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "SA-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0001472",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "92",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "SA-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0098912",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "4496",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0095380935",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.2215930833",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-DataTransfer-Out-OBytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000003565",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000178215",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-Requests-HTTP-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00039075",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "521",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.003858",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "3858",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00692625",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "9235",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "US-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.039868",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "39868",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ZA-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0002860725",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0026881709",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ZA-Requests-HTTPS-Proxy"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000132",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "110",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ZA-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000063",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "7",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon CloudFront",
+                        "ZA-Requests-Tier2-HTTPS"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000666",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "555",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon DevOps Guru",
+                        "EUC1-RDS-DBInstance-GroupB"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "1.5708",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "374",
+                            "Unit": "usagehours"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon EC2 Container Registry (ECR)",
+                        "EUC1-TimedStorage-ByteHrs"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.451265844",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "4.5126583872",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon ElastiCache",
+                        "EUC1-NodeUsage:cache.t4g.medium"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "107.424",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1492",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000021145",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APE2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000002912",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000012",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APN2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00012255",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APN2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000030634",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000153169",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0002087489",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000027282",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001364202",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000758207",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000025955",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001297695",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS3-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000601737",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS3-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000022838",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001142075",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS5-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000002032",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS5-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000022",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000001146",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS8-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-APS9-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000004",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-CAN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00021814",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-CAN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000101828",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0005091447",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-DataTransfer-Regional-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0113476485",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1.1347642303",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EBS:VolumeUsage.gp3"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "2.840645116",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "29.8387091677",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EBSOptimized:t3.medium"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "742",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EBSOptimized:t3.small"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "371",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EU-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0007298873",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EU-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000053246",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0002662537",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000001685",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000001564",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUW2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000776492",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUW2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000025684",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001284363",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUW3-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000012",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-EUW3-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000008",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000004",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-NYC1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000102856",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00051428",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-NatGateway-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "15.9151255182",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "306.0601061335",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-NatGateway-Hours"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "38.792",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "746",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-SAE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000000559",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0025814802",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000635338",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0031767781",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USE2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0005206532",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USE2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000111996",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0005600065",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USW1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000032296",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USW1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000010683",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000534171",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USW2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0003488553",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "EC2 - Other",
+                        "EUC1-USW2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000125542",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0006277643",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-BoxUsage:t3.medium"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "742.883334",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-BoxUsage:t3.small"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "371.563611",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-CloudFront-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0874339762",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-CloudFront-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001598095",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-DataTransfer-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "305.7403567309",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0541334842",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.7581938865",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-EUN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000780163",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Compute Cloud - Compute",
+                        "EUC1-EUN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000018893",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000944639",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Container Service",
+                        "EUC1-DataTransfer-Regional-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "1.5292526711",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "152.9252659952",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Container Service",
+                        "EUC1-DataTransfer-xAZ-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.3978305737",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Container Service",
+                        "EUC1-DataTransfer-xAZ-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.452124862",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Container Service",
+                        "EUC1-Fargate-GB-Hours"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.784586601",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1118.7283630059",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Container Service",
+                        "EUC1-Fargate-vCPU-Hours:perCPU"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "18.987535037",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "559.364181388",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-AFS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000007",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-AFS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000008",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000004",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-AKL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-AKL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000314",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000157",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000016",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000016",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN3-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00001358",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APN3-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000004939",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000246958",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001224371",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000064982",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0003249101",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0002000076",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000244844",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0012242155",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS3-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0011156635",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS3-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0001402393",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.007011986",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS4-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-APS4-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000016",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-ATL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-ATL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BKK1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BKK1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BOS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BOS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BUE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-BUE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CAN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001427778",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CAN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000276877",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0013843854",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CCU1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CCU1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CHI1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-CHI1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DEL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DEL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DEN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DEN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DFW1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DFW1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DataTransfer-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.2351187996",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.2218399175",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "3.2730534218",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-DataTransfer-Regional-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0030470618",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.3047059402",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EU-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000138771",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EU-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000036216",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0001810777",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUN1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000607073",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000200854",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00100427",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000016",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUW2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000837706",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUW2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000048605",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0002430281",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUW3-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000022",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-EUW3-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000024",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000012",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-HNL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000029895",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-HNL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000001132",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000056596",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-IAH1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-IAH1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LAS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LAS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LAX1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000029",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LAX1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LCUUsage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.042158293",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "5.2697866321",
+                            "Unit": "LCU-Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LIM1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LIM1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LOS1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000596",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LOS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000064",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000032",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-LoadBalancerUsage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "10.071",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "373",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MCI2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000596",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MCI2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000064",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000032",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MIA1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MIA1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MNL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000596",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MNL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000064",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000032",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MSP1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000029",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-MSP1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-NYC1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PDX1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000029",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PDX1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PER1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PER1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PHL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PHL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PHX1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-PHX1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-QRO1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-QRO1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SAE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000149",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SAE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000016",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000008",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SCL1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SCL1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SEA1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-SEA1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-TPE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000000298",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-TPE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00000016",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USE1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.001523219",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000156035",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0078017731",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USE2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0004474739",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USE2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000240347",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0012017375",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USW1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00001007",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USW1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000013296",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000664787",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USW2-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0029810778",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Elastic Load Balancing",
+                        "EUC1-USW2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0001255199",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0062759892",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-DataTransfer-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0174284965",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0012538466",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0174399094",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-InstanceUsage:db.t4g.medium"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "27.528",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "372",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-Multi-AZUsage:db.t4g.medium"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "55.428",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "372",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-RDS:ChargedBackupUsage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "6.2714423489",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "60.8877897948",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-RDS:GP3-Storage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "1.3699999784",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "9.9999998293",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Relational Database Service",
+                        "EUC1-RDS:Multi-AZ-GP3-Storage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "3.6459676835",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "13.3064513972",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Route 53",
+                        "DNS-Queries"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000108",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "27",
+                            "Unit": "Queries"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Route 53",
+                        "HostedZone"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.7",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "7",
+                            "Unit": "HostedZone"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Notification Service",
+                        "EUC1-DataTransfer-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000043935",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Notification Service",
+                        "EUC1-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000028172",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000402424",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Notification Service",
+                        "EUC1-DeliveryAttempts-SMTP"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00032",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "16",
+                            "Unit": "Notifications"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Notification Service",
+                        "EUC1-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.000008",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "16",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000001372",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.000001615",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUC1-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000108",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-APS1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000011456",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.00005728",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-CloudFront-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.4770551774",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-DataTransfer-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.1915388395",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-DataTransfer-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0341399019",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.3933923612",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-EUC1-AWS-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000856396",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-EUC1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000011473",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000573667",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.007865",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1573",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-Requests-Tier2"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0032896",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "8224",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-TimedStorage-ByteHrs"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.003455733",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.1548382947",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-USE1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000954981",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0047749015",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-USE2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000001621",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000081063",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-USW1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000484409",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0024220429",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "EUN1-USW2-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000074539",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0003726962",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "Global-Bucket-Hrs-FreeTier"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0806450985",
+                            "Unit": "Bucket-Mo"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "Requests-Tier1"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.00005",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "10",
+                            "Unit": "Requests"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Simple Storage Service",
+                        "USE1-EUN1-AWS-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0000000414",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.0000020685",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-DataTransfer-xAZ-In-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.4521394985",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-DataTransfer-xAZ-Out-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.3978606589",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-PublicIPv4:IdleAddress"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "1.86550001",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "373.100002",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-PublicIPv4:InUseAddress"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "13.07312222",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2614.624444",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-VpcEndpoint-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0169159266",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1.6915925771",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Amazon Virtual Private Cloud",
+                        "EUC1-VpcEndpoint-Hours"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "35.904",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2992",
+                            "Unit": "Hrs"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AmazonCloudWatch",
+                        "EUC1-CW:AlarmMonitorUsage"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.201075116",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "2.0107511647",
+                            "Unit": "Alarms"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AmazonCloudWatch",
+                        "EUC1-CW:DatabaseInsights-vCPU-Hours"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "18.65",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1492",
+                            "Unit": "vCPU-Hours"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AmazonCloudWatch",
+                        "EUC1-DataProcessing-Bytes"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.315035797",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.5000568208",
+                            "Unit": "GB"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "AmazonCloudWatch",
+                        "EUC1-TimedStorage-ByteHrs"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0.0094139397",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0.2905536965",
+                            "Unit": "GB-Month"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "CloudFront Flat-Rate Plans",
+                        "Global-CloudFrontPlan-Pro"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "15",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "1",
+                            "Unit": "Count"
+                        }
+                    }
+                },
+                {
+                    "Keys": [
+                        "Tax",
+                        "NoUsageType"
+                    ],
+                    "Metrics": {
+                        "UnblendedCost": {
+                            "Amount": "0",
+                            "Unit": "USD"
+                        },
+                        "UsageQuantity": {
+                            "Amount": "0",
+                            "Unit": ""
+                        }
+                    }
+                }
+            ],
+            "Estimated": true
+        }
+    ],
+    "DimensionValueAttributes": []
+}

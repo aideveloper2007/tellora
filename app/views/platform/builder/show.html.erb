@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Builder | <%= @build.store_name %></title>
+  <%= csrf_meta_tags %>
+  <link rel="icon" type="image/svg+xml" href="/brand/tellora-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="<%= StyleFamily.all_fonts_url %>" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #18163a; --ink-soft: #2c2a57; --paper: #ffffff; --mist: #f1f2f7; --line: #dadce8;
+      --muted: #5b5e78; --marigold: #f2b100; --danger: #b42318; --ok: #1f7a4d;
+      --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--mist); display: flex; flex-direction: column; }
+    :focus-visible { outline: 3px solid var(--marigold); outline-offset: 2px; border-radius: 4px; }
+
+    /* Top bar */
+    .topbar { display: flex; align-items: center; gap: 1rem; padding: 0.6rem 1rem; background: var(--paper); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+    .topbar img { width: 1.9rem; height: 1.9rem; border-radius: 6px; }
+    .store-name { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; }
+    .badge { font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; background: var(--mist); color: var(--muted); }
+    .badge-live { background: #e3f4ea; color: var(--ok); }
+    .spacer { flex: 1; }
+    .devices { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .devices button { font: 500 0.85rem var(--font-body); border: 0; background: var(--paper); color: var(--muted); padding: 0.45rem 0.9rem; cursor: pointer; }
+    .devices button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .link { color: var(--muted); font-weight: 500; text-decoration: none; font-size: 0.95rem; }
+    .link:hover { color: var(--ink); text-decoration: underline; }
+    .button { font: 600 0.95rem/1 var(--font-body); padding: 0.7rem 1.15rem; border-radius: 999px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; white-space: nowrap; }
+    .button:hover { background: var(--ink-soft); }
+    .button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Workspace */
+    .workspace { flex: 1; display: grid; grid-template-columns: 24rem minmax(0, 1fr); min-height: 0; }
+    @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; grid-template-rows: auto 70vh; } }
+
+    /* Chat */
+    .chat { display: flex; flex-direction: column; background: var(--paper); border-right: 1px solid var(--line); min-height: 0; }
+    .messages { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .msg { max-width: 92%; padding: 0.75rem 0.95rem; border-radius: 14px; line-height: 1.5; font-size: 0.95rem; }
+    .msg-ai { background: var(--mist); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-you { background: var(--ink); color: var(--paper); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-error { background: #fdecea; color: var(--danger); align-self: flex-start; }
+    .msg-working { display: flex; align-items: center; gap: 0.6rem; }
+    .msg-working::before { content: ''; width: 0.9rem; height: 0.9rem; border-radius: 50%; border: 2px solid var(--ink); border-top-color: transparent; animation: spin 0.9s linear infinite; flex: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .suggestions { display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0 1.25rem 0.75rem; }
+    .suggestions button { font: 500 0.8rem/1 var(--font-body); padding: 0.5rem 0.75rem; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+    .suggestions button:hover { border-color: var(--ink); }
+
+    .composer { border-top: 1px solid var(--line); padding: 0.85rem 1rem 1rem; }
+    .composer label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .composer-box { display: flex; gap: 0.5rem; align-items: flex-end; border: 2px solid var(--ink); border-radius: 14px; padding: 0.35rem; }
+    .composer-box:focus-within { border-color: var(--marigold); }
+    .composer textarea { flex: 1; border: 0; outline: none; resize: none; font: 400 0.95rem/1.45 var(--font-body); color: var(--ink); padding: 0.45rem 0.55rem; min-height: 2.8rem; max-height: 8rem; background: transparent; }
+
+    /* Style picker */
+    .styles { padding: 1rem 1.25rem 0.9rem; border-bottom: 1px solid var(--line); }
+    .styles-label { margin: 0 0 0.55rem; font-weight: 600; font-size: 0.9rem; }
+    .style-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+    .style-card { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.4rem; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: border-color 0.15s; }
+    .style-card:hover { border-color: var(--muted); }
+    .style-card[aria-checked="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+    .style-card:disabled { cursor: wait; opacity: 0.6; }
+    .style-sample { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 3.2rem; padding: 0.35rem 0.5rem; border-radius: 6px; background: var(--sw-bg); color: var(--sw-ink); overflow: hidden; }
+    .style-sample .aa { font-family: var(--sw-font); font-size: 1.55rem; line-height: 1; }
+    .style-sample .dots { display: flex; gap: 0.2rem; }
+    .style-sample .dots i { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
+    .style-name { font-size: 0.78rem; font-weight: 600; line-height: 1.2; padding: 0 0.15rem 0.1rem; }
+    .style-hint { margin: 0.55rem 0 0; font-size: 0.82rem; color: var(--muted); }
+
+    /* Preview */
+    .preview { display: flex; justify-content: center; padding: 1rem; min-height: 0; }
+    .frame-wrap { width: 100%; height: 100%; background: var(--paper); border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 20px 50px -30px rgba(24, 22, 58, 0.4); transition: width 0.25s ease; position: relative; }
+    .frame-wrap.mobile { width: 24.5rem; }
+    .frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .frame-wrap.is-updating::after { content: 'Applying your change…'; position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255, 255, 255, 0.75); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img src="/brand/tellora-icon.svg" alt="Tellora">
+    <span class="store-name"><%= @build.store_name %></span>
+    <% if @build.published? %>
+      <span class="badge badge-live">Live</span>
+    <% else %>
+      <span class="badge">Private: only you can see this store</span>
+    <% end %>
+    <span class="spacer"></span>
+    <div class="devices" role="group" aria-label="Preview size">
+      <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+      <button type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+    </div>
+    <a class="link" href="/admin" target="_blank" rel="noopener">Products and orders</a>
+    <% if @build.published? %>
+      <a class="button" href="/" target="_blank" rel="noopener">View live store</a>
+    <% else %>
+      <%= button_to 'Publish store', '/tellora/builder/publish', class: 'button', form: { data: { turbo: false }, onsubmit: "return confirm('Publish #{j @build.store_name}? Anyone with the link will be able to see and buy from it.')" } %>
+    <% end %>
+  </header>
+
+  <div class="workspace">
+    <section class="chat" aria-label="Design assistant">
+      <div class="styles">
+        <p class="styles-label" id="styles-label">Style</p>
+        <div class="style-cards" role="radiogroup" aria-labelledby="styles-label">
+          <% StyleFamily::FAMILIES.each do |key, family| %>
+            <button type="button" class="style-card" role="radio" data-family="<%= key %>" data-name="<%= family[:name] %>" data-summary="<%= family[:summary] %>" aria-checked="<%= key == @current_family %>"
+                    style="--sw-bg: <%= family[:swatch][:background] %>; --sw-ink: <%= family[:swatch][:ink] %>; --sw-font: <%= family[:swatch][:display] %>;">
+              <span class="style-sample" aria-hidden="true">
+                <span class="aa">Aa</span>
+                <span class="dots"><i style="background: <%= family[:swatch][:ink] %>"></i><i style="background: <%= family[:swatch][:accent] %>"></i></span>
+              </span>
+              <span class="style-name"><%= family[:name] %></span>
+            </button>
+          <% end %>
+        </div>
+        <p class="style-hint" id="style-hint"><%= StyleFamily::FAMILIES.dig(@current_family, :summary) %></p>
+      </div>
+
+      <div class="messages" id="messages" aria-live="polite">
+        <div class="msg msg-ai">Your store is ready. Tell me what to change: colours, fonts, layout, mood. I'll update the design and you'll see it on the right.</div>
+      </div>
+
+      <div class="suggestions" id="suggestions">
+        <button type="button">Darker, more premium colours</button>
+        <button type="button">Brighter and more playful</button>
+        <button type="button">Bigger product photos</button>
+        <button type="button">More minimal, lots of white space</button>
+      </div>
+
+      <form class="composer" id="composer">
+        <label for="feedback">What should change?</label>
+        <div class="composer-box">
+          <textarea id="feedback" name="feedback" rows="2" maxlength="500" placeholder="Make the header green and the buttons rounder"></textarea>
+          <button type="submit" class="button" id="send">Apply</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="preview" aria-label="Store preview">
+      <div class="frame-wrap" id="frame-wrap">
+        <iframe id="store-frame" src="/" title="Your store"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var csrf = document.querySelector('meta[name="csrf-token"]').content;
+      var messages = document.getElementById('messages');
+      var form = document.getElementById('composer');
+      var input = document.getElementById('feedback');
+      var send = document.getElementById('send');
+      var frame = document.getElementById('store-frame');
+      var frameWrap = document.getElementById('frame-wrap');
+      var busy = false;
+
+      function add(text, kind) {
+        var div = document.createElement('div');
+        div.className = 'msg ' + kind;
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
+      }
+
+      function setBusy(state) {
+        busy = state;
+        send.disabled = state;
+        input.disabled = state;
+        document.querySelectorAll('#suggestions button').forEach(function (b) { b.disabled = state; });
+      }
+
+      function finish(working, ok, text) {
+        working.remove();
+        frameWrap.classList.remove('is-updating');
+        add(text, ok ? 'msg-ai' : 'msg-error');
+        setBusy(false);
+        input.focus();
+      }
+
+      function poll(themeId, working) {
+        fetch('/tellora/builder/refine/' + encodeURIComponent(themeId), { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.state === 'applied') {
+              frameWrap.classList.add('is-updating');
+              frame.addEventListener('load', function onLoad() {
+                frame.removeEventListener('load', onLoad);
+                finish(working, true, 'Done. Your store now shows the new design. What next?');
+              });
+              frame.src = '/?v=' + Date.now();
+            } else if (data.state === 'failed' || data.state === 'unknown') {
+              finish(working, false, data.error || 'That change did not work. Try describing it differently.');
+            } else {
+              setTimeout(function () { poll(themeId, working); }, 3000);
+            }
+          })
+          .catch(function () { setTimeout(function () { poll(themeId, working); }, 5000); });
+      }
+
+      function requestChange(text) {
+        if (busy || !text.trim()) return;
+        setBusy(true);
+        add(text, 'msg-you');
+        input.value = '';
+        var working = add('Redesigning your store. This takes about 30 to 60 seconds.', 'msg-ai msg-working');
+
+        fetch('/tellora/builder/refine', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrf },
+          body: JSON.stringify({ feedback: text })
+        })
+          .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+          .then(function (res) {
+            if (!res.ok) return finish(working, false, res.data.error || 'That change could not be started.');
+            poll(res.data.theme_id, working);
+          })
+          .catch(function () { finish(working, false, 'Could not reach the server. Check your connection and try again.'); });
+      }
+
+      form.addEventListener('submit', function (e) { e.preventDefault(); requestChange(input.value); });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); requestChange(input.value); }
+      });
+      document.querySelectorAll('#suggestions button').forEach(function (b) {
+        b.addEventListener('click', function () { requestChange(b.textContent); });
+      });
+
+      // Style picker: switch the store's designer style (no AI, about a second)
+      var styleCards = document.querySelectorAll('.style-card');
+      var styleHint = document.getElementById('style-hint');
+      styleCards.forEach(function (card) {
+        card.addEventListener('click', function () {
+          if (busy || card.getAttribute('aria-checked') === 'true') return;
+          setBusy(true);
+          styleCards.forEach(function (c) { c.disabled = true; });
+          frameWrap.classList.add('is-updating');
+
+          fetch('/tellora/builder/style', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-Token': csrf },
+            body: JSON.stringify({ family: card.dataset.family })
+          })
+            .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+            .then(function (res) {
+              if (!res.ok) throw new Error(res.data.error || 'The style could not be changed.');
+              styleCards.forEach(function (c) { c.setAttribute('aria-checked', c === card ? 'true' : 'false'); });
+              styleHint.textContent = card.dataset.summary;
+              frame.addEventListener('load', function onLoad() {
+                frame.removeEventListener('load', onLoad);
+                frameWrap.classList.remove('is-updating');
+                add('Your store now uses the ' + card.dataset.name + ' style. Your products, text and photos are unchanged.', 'msg-ai');
+                styleCards.forEach(function (c) { c.disabled = false; });
+                setBusy(false);
+              });
+              frame.src = '/?v=' + Date.now();
+            })
+            .catch(function (err) {
+              frameWrap.classList.remove('is-updating');
+              add(err.message || 'The style could not be changed. Please try again.', 'msg-error');
+              styleCards.forEach(function (c) { c.disabled = false; });
+              setBusy(false);
+            });
+        });
+      });
+
+      document.querySelectorAll('[data-device]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          document.querySelectorAll('[data-device]').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+          b.setAttribute('aria-pressed', 'true');
+          frameWrap.classList.toggle('mobile', b.dataset.device === 'mobile');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<%# Brand story: photo beside two short paragraphs. locals: story, image %>
+<section class="tl-section tl-story" id="tl-story" aria-labelledby="tl-story-title">
+  <div class="tl-wrap tl-story-grid">
+    <%= render 'storefront_sections/photo', image: image, width: 720, height: 576, alt: '', label: current_store.name, klass: 'tl-story-photo' %>
+    <div class="tl-story-text">
+      <h2 id="tl-story-title"><%= story['title'] %></h2>
+      <% story['paragraphs'].each do |paragraph| %>
+        <p><%= paragraph %></p>
+      <% end %>
+      <% if story['signature'].present? %><p class="tl-signature"><%= story['signature'] %></p><% end %>
+    </div>
+  </div>
+</section>

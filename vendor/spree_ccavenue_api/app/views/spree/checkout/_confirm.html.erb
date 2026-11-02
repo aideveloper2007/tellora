@@ -1,0 +1,18 @@
+<div class="ccavenue-confirm">
+  <h4>Order Summary</h4>
+  
+  <div class="order-details">
+    <p><strong>Order Number:</strong> <%= @order.number %></p>
+    <p><strong>Total Amount:</strong> <%= number_to_currency(@order.total) %></p>
+    <p><strong>Email:</strong> <%= @order.email %></p>
+  </div>
+  
+  <div class="payment-info">
+    <p>You will be redirected to CCAvenue secure payment gateway to complete your payment.</p>
+    <p>Please click the button below to proceed with payment.</p>
+  </div>
+  
+  <div class="form-buttons">
+    <%= submit_tag "Proceed to Payment", class: "btn btn-primary btn-large" %>
+  </div>
+</div>

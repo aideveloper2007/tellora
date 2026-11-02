@@ -1,0 +1,8 @@
+  <%= hidden_field_tag 'delivery_cust_name',         ship_address.full_name %>
+<%= hidden_field_tag 'delivery_cust_address',        ship_address.address1 %>
+<%= hidden_field_tag 'delivery_cust_city',           ship_address.city %>
+<%= hidden_field_tag 'delivery_cust_state',          (ship_address.state.try(:name) || ship_address.state_name) %>
+<%= hidden_field_tag 'delivery_zip_code',            ship_address.zipcode %>
+<%= hidden_field_tag 'delivery_cust_country',        ship_address.country.name %>
+<%= hidden_field_tag 'delivery_cust_tel',            ship_address.phone %>
+<%= hidden_field_tag 'delivery_cust_email',          order.email %>

@@ -1,0 +1,19 @@
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Description Display Settings</h5>
+  </div>
+  <div class="card-body">
+    <div class="form-group">
+      <%= f.label :description_display_type, "Description Display Type" %>
+      <%= f.select :description_display_type, 
+          options_for_select([
+            ['Simple List View', 'list'],
+            ['Tabbed Interface', 'tabs']
+          ], f.object.description_display_type || 'list'),
+          {}, { class: 'form-control' } %>
+      <small class="form-text text-muted">
+        Choose how product description is displayed on the storefront
+      </small>
+    </div>
+  </div>
+</div>

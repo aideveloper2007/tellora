@@ -1,0 +1,412 @@
+<%# app/views/genai_themes/_storefront_preview.html.erb %>
+<%# Full storefront mockup with theme applied %>
+
+<% 
+  # Check if theme has stored custom CSS from Claude/Mock LLM
+  has_custom_css = theme.dig('css').present?
+  
+  # Generate CSS variables from theme JSON for fallback
+  colors = theme.dig('colors') || {}
+  typography = theme.dig('typography') || {}
+  layout = theme.dig('layout') || {}
+  components = theme.dig('components') || {}
+%>
+
+<style>
+  /* GenAI Theme CSS */
+  <% if has_custom_css %>
+    /* Using stored CSS from AI generation (includes .genai-nav, .genai-footer) */
+    <%= raw theme['css'] %>
+  <% else %>
+  /* Fallback: Auto-generated from JSON (older themes) */
+  :root {
+    /* Colors */
+    --theme-primary: <%= colors['primary'] || '#333333' %>;
+    --theme-secondary: <%= colors['secondary'] || '#666666' %>;
+    --theme-accent: <%= colors['accent'] || '#007bff' %>;
+    --theme-background: <%= colors['background'] || '#ffffff' %>;
+    --theme-text: <%= colors['text'] || '#333333' %>;
+    
+    /* Typography */
+    --theme-font-heading: <%= typography['heading_font'] || 'system-ui' %>, serif;
+    --theme-font-body: <%= typography['body_font'] || 'system-ui' %>, sans-serif;
+    
+    /* Layout */
+    --theme-container-width: <%= layout['container_width'] || '1200px' %>;
+    --theme-grid-columns: <%= layout['product_grid_columns'] || '3' %>;
+    --theme-spacing: <%= layout['spacing_unit'] || '16px' %>;
+    --theme-border-radius: <%= components.dig('buttons', 'border_radius') || '8px' %>;
+  }
+  
+  <% if typography['heading_font'].present? %>
+  @import url('https://fonts.googleapis.com/css2?family=<%= typography['heading_font'].gsub(' ', '+') %>:wght@400;700&display=swap');
+  <% end %>
+  <% if typography['body_font'].present? && typography['body_font'] != typography['heading_font'] %>
+  @import url('https://fonts.googleapis.com/css2?family=<%= typography['body_font'].gsub(' ', '+') %>:wght@400;600&display=swap');
+  <% end %>
+  
+  .storefront-preview {
+    font-family: var(--theme-font-body);
+    color: var(--theme-text);
+    background: var(--theme-background);
+  }
+  
+  .storefront-preview h1, 
+  .storefront-preview h2, 
+  .storefront-preview h3 {
+    font-family: var(--theme-font-heading);
+    color: var(--theme-primary);
+  }
+  
+  .container {
+    max-width: var(--theme-container-width);
+    margin: 0 auto;
+    padding: 0 var(--theme-spacing);
+  }
+  
+  /* Navigation */
+  .site-nav {
+    background: var(--theme-primary);
+    color: white;
+    padding: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nav-logo {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: var(--theme-font-heading);
+  }
+  
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+  
+  .nav-link:hover {
+    opacity: 0.8;
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+    margin-bottom: 64px;
+  }
+  
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .hero-content {
+    text-align: center;
+    color: white;
+    max-width: 800px;
+    padding: 0 20px;
+  }
+  
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 32px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  
+  /* Product Grid */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--theme-grid-columns), 1fr);
+    gap: calc(var(--theme-spacing) * 2);
+    margin-bottom: 80px;
+  }
+  
+  @media (max-width: 1024px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .product-card {
+    background: white;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: var(--theme-border-radius);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+  
+  .product-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #f5f5f5;
+  }
+  
+  .product-info {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .product-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--theme-primary);
+  }
+  
+  .product-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--theme-accent);
+    margin-top: auto;
+  }
+  <% end %>
+  
+  /* Buttons */
+  .btn {
+    padding: <%= components.dig('buttons', 'padding') || '12px 24px' %>;
+    border-radius: var(--theme-border-radius);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    font-family: var(--theme-font-body);
+  }
+  
+  .btn-primary {
+    background: var(--theme-accent);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background: var(--theme-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  
+  .btn-secondary {
+    background: var(--theme-secondary);
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background: var(--theme-accent);
+  }
+  
+  /* Footer */
+  .site-footer {
+    background: var(--theme-primary);
+    color: white;
+    padding: 48px 0 24px;
+    margin-top: 80px;
+  }
+  
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+    margin-bottom: 32px;
+  }
+  
+  @media (max-width: 768px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+  
+  .footer-section h4 {
+    color: white;
+    margin-bottom: 16px;
+  }
+  
+  /* ⭐ Custom CSS from Claude AI - Theme-specific styling */
+  <%= raw theme['css'] if theme['css'].present? %>
+</style>
+
+<div class="storefront-preview">
+  <!-- Navigation -->
+  <header class="genai-header">
+    <nav class="genai-nav">
+      <div class="genai-container">
+        <div class="genai-nav-wrapper" style="gap: 2rem;">
+          <div class="genai-logo">
+            <a href="#" class="genai-logo-link"><%= theme.dig('metadata', 'requirements', 'store_name') || 'My Store' %></a>
+          </div>
+          <ul class="genai-nav-menu" style="gap: 1.5rem;">
+            <li class="genai-nav-item"><a href="#products" class="genai-nav-link">Products</a></li>
+            <li class="genai-nav-item"><a href="#" class="genai-nav-link">Collections</a></li>
+            <li class="genai-nav-item"><a href="#" class="genai-nav-link">About</a></li>
+            <li class="genai-nav-item"><a href="#" class="genai-nav-link">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero Section (Overlay design with text on background image) -->
+  <%
+    hero_image = theme.dig('images', 'hero')
+    hero_height = (theme.dig('layout', 'hero', 'height') || '500px').gsub('px', '')
+    hero_url = if hero_image && (hero_image['url'] || hero_image['preview_url'])
+                 hero_image['url'] || hero_image['preview_url']
+               elsif hero_image && hero_image['search_term']
+                 # Use Unsplash with search term as fallback
+                 "https://source.unsplash.com/1600x#{hero_height}/?#{hero_image['search_term'].gsub(' ', ',')}"
+               else
+                 "https://source.unsplash.com/1600x900/?ecommerce,shop,store"
+               end
+  %>
+  
+  <section class="genai-hero" style="background-image: url('<%= hero_url %>'); background-size: cover; background-position: center; min-height: <%= hero_height %>px;">
+    <div class="genai-hero-content">
+      <h1>Welcome to <%= theme.dig('metadata', 'requirements', 'store_name') || 'Our Store' %></h1>
+      <p>Discover amazing products crafted just for you</p>
+      <a href="#products" class="genai-hero-cta">Shop Now →</a>
+    </div>
+  </section>
+
+  <!-- Product Grid -->
+  <section id="products" class="container">
+    <div style="text-align: center; margin: 48px 0 32px 0;">
+      <h2 style="font-size: 2.5rem; margin-bottom: 16px;">Featured Products</h2>
+      <p style="font-size: 1.125rem; opacity: 0.8;">Handpicked selection of our best sellers</p>
+    </div>
+
+    <div class="genai-products product-grid">
+      <% 
+        # Get real images if available, otherwise use placeholders
+        product_images = theme.dig('images', 'featured_products', 'images') || []
+        columns = theme.dig('layout', 'product_grid', 'columns_desktop') || 3
+        product_count = columns * 2  # Always show 2 rows
+        aspect_ratio = theme.dig('layout', 'product_grid', 'aspect_ratio') || '1:1'
+        
+        # Convert aspect ratio to dimensions for placeholders
+        width = 400
+        height = case aspect_ratio
+          when '1:1' then 400
+          when '3:4' then 533
+          when '4:3' then 300
+          when '16:9' then 225
+          else 400
+        end
+        
+        product_count.times do |i|
+          # Use real image if available, otherwise try Unsplash with search term
+          image = product_images[i]
+          product_search = theme.dig('images', 'featured_products', 'search_term')
+          
+          image_url = if image && (image['preview_url'] || image['url'])
+                        image['preview_url'] || image['url']
+                      elsif product_search
+                        # Use Unsplash with search term
+                        "https://source.unsplash.com/#{width}x#{height}/?#{product_search.gsub(' ', ',')}&sig=#{i}"
+                      else
+                        "https://placehold.co/#{width}x#{height}/E8E8E8/666666?text=Product+#{i + 1}"
+                      end
+      %>
+        <div class="genai-product-card product-card">
+          <img 
+            src="<%= image_url %>" 
+            alt="Product <%= i + 1 %>" 
+            class="product-image"
+          >
+          <div class="product-info">
+            <h3 class="product-title">Sample Product <%= i + 1 %></h3>
+            <p class="product-price">$<%= rand(29..299) %>.99</p>
+            <button class="btn btn-secondary" style="margin-top: 12px; width: 100%;">Add to Cart</button>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="genai-footer">
+    <div class="genai-container">
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">About Us</h3>
+        <p class="genai-footer-text">
+          We are passionate about bringing you the best products with exceptional quality and service.
+        </p>
+      </div>
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">Quick Links</h3>
+        <div>
+          <a href="#" class="genai-footer-link">Shop</a>
+          <a href="#" class="genai-footer-link">About</a>
+          <a href="#" class="genai-footer-link">Contact</a>
+          <a href="#" class="genai-footer-link">Shipping</a>
+        </div>
+      </div>
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">Connect</h3>
+        <p class="genai-footer-social">Follow us on social media for updates and exclusive offers.</p>
+      </div>
+    </div>
+    <div class="genai-container" style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 32px; padding-top: 24px; text-align: center; opacity: 0.8;">
+      <p style="font-size: 0.875rem;">&copy; <%= Time.current.year %> <%= theme.dig('metadata', 'requirements', 'store_name') || 'My Store' %>. All rights reserved.</p>
+    </div>
+  </footer>
+</div>
+
+<style>
+  /* Additional scoped styles for preview */
+  .storefront-preview {
+    background: white;
+    min-height: 100vh;
+  }
+</style>

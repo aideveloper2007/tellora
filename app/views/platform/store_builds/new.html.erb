@@ -1,0 +1,105 @@
+<% content_for :title, "Create your account | #{platform_name}" %>
+<% content_for :head do %>
+<style>
+  .signup { padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem); }
+  .signup .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+  @media (max-width: 860px) { .signup .wrap { grid-template-columns: 1fr; } }
+
+  .signup h1 { font-size: var(--step-3); font-weight: 800; }
+  .signup-lede { margin-top: 0.75rem; color: var(--muted); font-size: var(--step-1); line-height: 1.5; }
+  .idea { margin-top: 1.75rem; padding: 1.1rem 1.25rem; background: var(--mist); border-left: 3px solid var(--marigold); border-radius: var(--radius-s); }
+  .idea p { font-size: var(--step-1); }
+  .idea a { display: inline-block; margin-top: 0.6rem; font-size: var(--step--1); color: var(--muted); }
+
+  .form-card { border: 2px solid var(--ink); border-radius: var(--radius-l); padding: clamp(1.25rem, 3vw, 2rem); box-shadow: 6px 6px 0 var(--ink); background: var(--paper); }
+  .field { margin-bottom: 1.15rem; }
+  .field label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+  .field input, .field select {
+    width: 100%; font: 400 var(--step-0)/1.4 var(--font-body); color: var(--ink);
+    padding: 0.75rem 0.9rem; border: 1px solid var(--line); border-radius: 10px; background: var(--paper);
+  }
+  .field input:focus, .field select:focus { outline: 3px solid var(--marigold); outline-offset: 1px; border-color: var(--ink); }
+  .field .hint { margin-top: 0.35rem; font-size: var(--step--1); color: var(--muted); }
+  .address { display: flex; align-items: stretch; }
+  .address input { border-radius: 10px 0 0 10px; }
+  .address span { display: flex; align-items: center; padding: 0 0.85rem; border: 1px solid var(--line); border-left: 0; border-radius: 0 10px 10px 0; background: var(--mist); color: var(--muted); font-size: var(--step--1); white-space: nowrap; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+  .errors { background: #fdecea; color: var(--danger); border: 1px solid #f4c7c3; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; }
+  .errors ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+  .form-card .button { width: 100%; margin-top: 0.5rem; }
+</style>
+<% end %>
+
+<section class="signup" aria-labelledby="signup-title">
+  <div class="wrap">
+    <div>
+      <h1 id="signup-title">Create your account</h1>
+      <p class="signup-lede">We'll build your store from your description while you wait. It usually takes a minute or two.</p>
+      <div class="idea">
+        <p><%= session[:store_prompt] %></p>
+        <a href="<%= platform_landing_path(anchor: 'build') %>">Edit description</a>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <%= form_with model: @build, url: platform_store_builds_path, scope: :store_build, data: { turbo: false } do |f| %>
+        <% if @build.errors.any? %>
+          <div class="errors" role="alert">
+            <strong>Please fix the following:</strong>
+            <ul><% @build.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul>
+          </div>
+        <% end %>
+
+        <div class="field">
+          <%= f.label :store_name, 'Store name', for: 'store_name' %>
+          <%= f.text_field :store_name, required: true, maxlength: 60, autocomplete: 'organization', placeholder: 'Malabar Harvest', id: 'store_name' %>
+        </div>
+
+        <div class="field">
+          <%= f.label :subdomain, 'Store web address', for: 'subdomain' %>
+          <div class="address">
+            <%= f.text_field :subdomain, required: true, maxlength: 30, pattern: '[a-z0-9]{3,30}', id: 'subdomain',
+                             autocapitalize: 'none', spellcheck: false, placeholder: 'malabarharvest' %>
+            <span>.<%= TenantResolver.platform_domains.first %></span>
+          </div>
+          <p class="hint">Lowercase letters and numbers only. You can connect your own domain later.</p>
+        </div>
+
+        <div class="field">
+          <%= f.label :email, 'Email' %>
+          <%= f.email_field :email, required: true, autocomplete: 'email', placeholder: 'you@example.com' %>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <%= f.label :password, 'Password' %>
+            <%= f.password_field :password, required: true, minlength: 8, autocomplete: 'new-password' %>
+            <p class="hint">At least 8 characters.</p>
+          </div>
+          <div class="field">
+            <%= f.label :currency, 'Store currency' %>
+            <%= f.select :currency, StoreBuild::CURRENCIES %>
+          </div>
+        </div>
+
+        <%= f.submit 'Build my store', class: 'button' %>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Suggest a web address from the store name until the owner edits it themselves
+  (function () {
+    var name = document.getElementById('store_name');
+    var sub = document.getElementById('subdomain');
+    var edited = sub.value !== '';
+    sub.addEventListener('input', function () { edited = true; sub.value = sub.value.toLowerCase().replace(/[^a-z0-9]/g, ''); });
+    name.addEventListener('input', function () {
+      if (edited) return;
+      sub.value = name.value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30);
+    });
+  })();
+</script>
+

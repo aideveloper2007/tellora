@@ -1,0 +1,45 @@
+<%# GenAI Theme - Featured Products Section %>
+<% if using_genai_theme? %>
+  <% 
+    layout_config = current_genai_theme.layout
+    grid_columns = layout_config['grid_columns'] || 3
+    product_images = genai_product_images
+  %>
+  
+  <section class="genai-section" style="padding: 3rem 0;">
+    <div class="genai-container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+      <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem; color: var(--primary);">
+        Featured Products
+      </h2>
+      
+      <%# Use genai-products class that matches the CSS grid layout %>
+      <div class="genai-products">
+        <% products.each_with_index do |product, index| %>
+          <div class="genai-product-card">
+            <%= link_to spree.product_path(product), style: 'text-decoration: none; color: inherit;' do %>
+              <% if product.images.any? %>
+                <%= image_tag main_app.url_for(product.images.first.attachment), alt: product.name, loading: 'lazy' %>
+              <% elsif product_images[index]&.image&.attached? %>
+                <%= image_tag main_app.url_for(product_images[index].image), alt: "Product #{index + 1}", loading: 'lazy' %>
+              <% else %>
+                <div style="height: 250px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                  <span style="color: #999;">No Image</span>
+                </div>
+              <% end %>
+              
+              <div class="product-info">
+                <h3 class="product-name"><%= product.name %></h3>
+                <p class="product-price"><%= product.display_price %></p>
+                <div class="mt-2">
+                  <span class="genai-btn genai-btn-secondary" style="display: inline-block; padding: 8px 16px; font-size: 14px;">
+                    View Details
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

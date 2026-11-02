@@ -1,0 +1,89 @@
+test:
+  service: Disk
+  root: <%= Rails.root.join("tmp/storage") %>
+local:
+  service: Disk
+  root: <%= Rails.root.join("storage") %>
+chandels_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "chandels") %>
+mypleasuretoy_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "mypleasuretoy") %>
+ecodentdental_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ecodentdental") %>
+magnafieldstore_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "magnafieldstore") %>
+swastikpaints_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "swastikpaints") %>
+vikayindia_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "vikayindia") %>
+zatpatprinting_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "zatpatprinting") %>
+ananyaonline_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ananyaonline") %>
+screwfix_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "screwfix") %>
+miningequipment_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "miningequipment") %>
+
+ktechsafe_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ktechsafe") %>
+swawlamban_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "swawlamban") %>
+
+creativecraftindia_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "creativecraftindia") %>
+ranoida_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ranoida") %>
+ktechsorb_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ktechsorb") %>
+amitrjmart_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "amitrjmart") %>
+motologic_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "motologic") %>
+mrhkshope_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "mrhkshope") %>
+radhepesticides_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "radhepesticides") %>
+vkfittings_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "vkfittings") %>
+ktmumbai_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "ktmumbai") %>
+indianspicesbazaar_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "indianspicesbazaar") %>
+nnipl_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "nnipl") %>
+bhaskarroy_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "bhaskarroy") %>
+
+luxecarevitastore_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "luxecarevitastore") %>
+
+hilaptop_local:
+  service: Disk
+  root: <%= Rails.root.join("storage", "hilaptop") %>
+  

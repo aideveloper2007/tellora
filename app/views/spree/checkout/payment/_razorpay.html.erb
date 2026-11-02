@@ -1,0 +1,229 @@
+<!-- This goes in your Spree payment method partial -->
+<!-- app/views/spree/checkout/payment/_razorpay.html.erb -->
+
+<div class="razorpay-payment-section">
+  <!-- Payment Info -->
+  <div class="payment-info">
+    <div class="secure-badge">
+      🔒 Secure Payment via Razorpay
+    </div>
+    <div class="accepted-cards">
+      Cards, UPI, Wallets & Net Banking accepted
+    </div>
+  </div>
+
+  <!-- Razorpay Button -->
+  <button id="razorpay-custom-button" type="button">
+    Pay ₹<%= number_with_precision(@order.total, precision: 2) %> Securely
+  </button>
+
+  <!-- Hidden input for form compatibility -->
+  <input type="hidden" 
+         name="payment_source[<%= payment_method.id %>][razorpay_payment_id]" 
+         id="razorpay_payment_id" 
+         value="">
+</div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.addEventListener("turbo:load", setupRazorpay);
+document.addEventListener("DOMContentLoaded", setupRazorpay);
+
+function setupRazorpay() {
+  const payBtn = document.getElementById("checkout-payment-submit");
+  const razorpayBtn = document.getElementById("razorpay-custom-button");
+  const form = document.querySelector("form");
+  
+  if (!payBtn || !razorpayBtn || !form) return;
+
+  // Hide default payment button, show Razorpay button
+  payBtn.style.display = "none";
+  razorpayBtn.style.display = "block";
+  
+  let razorpayCompleted = false;
+  let processing = false;
+
+  // Intercept form submission
+  form.addEventListener("submit", function (e) {
+    if (!razorpayCompleted) {
+      e.preventDefault();
+      if (!processing) {
+        initiateRazorpayPayment();
+      }
+      return false;
+    }
+  });
+
+  // Razorpay button click handler
+  razorpayBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    initiateRazorpayPayment();
+  });
+
+  function initiateRazorpayPayment() {
+    if (processing) return;
+    
+    processing = true;
+    updateButtonState("Processing...", true);
+
+    const options = {
+      key: "<%= payment_method.preferences[:key_id] %>",
+      amount: "<%= (@order.total * 100).to_i %>",
+      currency: "INR",
+      name: "<%= current_store.name %>",
+      description: "Order Payment - #<%= @order.number %>",
+      handler: function (response) {
+        console.log("Payment successful:", response.razorpay_payment_id);
+        handlePaymentSuccess(response);
+      },
+      prefill: {
+        name: "<%= "#{@order.bill_address&.firstname} #{@order.bill_address&.lastname}".strip %>",
+        email: "<%= @order.email %>",
+        contact: "<%= @order.bill_address&.phone %>"
+      },
+      theme: { 
+        color: "#3F51B5" 
+      },
+      modal: {
+        ondismiss: function() {
+          console.log("Payment cancelled");
+          resetButtonState();
+        }
+      }
+    };
+
+    try {
+      const rzp = new Razorpay(options);
+      
+      rzp.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        showError('Payment failed: ' + response.error.description);
+        resetButtonState();
+      });
+      
+      rzp.open();
+    } catch (error) {
+      console.error("Razorpay error:", error);
+      showError("Unable to initialize payment. Please refresh and try again.");
+      resetButtonState();
+    }
+  }
+
+  function handlePaymentSuccess(response) {
+    razorpayCompleted = true;
+    updateButtonState("Completing Order...", true);
+    
+    // Submit payment data to server
+    const form = createPaymentForm(response);
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function createPaymentForm(response) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/razorpay/payment/success';
+    form.style.display = 'none';
+    
+    // Add CSRF token
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      addHiddenInput(form, 'authenticity_token', csrfToken);
+    }
+    
+    // Add payment ID
+    addHiddenInput(form, 'razorpay_payment_id', response.razorpay_payment_id);
+    
+    // Add order token for the spree_razorpay gem
+    addHiddenInput(form, 'order_token', '<%= @order.token %>');
+    
+    return form;
+  }
+
+  function addHiddenInput(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  }
+
+  function getCSRFToken() {
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    const hiddenInput = document.querySelector('input[name="authenticity_token"]');
+    return metaTag ? metaTag.getAttribute('content') : (hiddenInput ? hiddenInput.value : null);
+  }
+
+  function updateButtonState(text, disabled) {
+    razorpayBtn.textContent = text;
+    razorpayBtn.disabled = disabled;
+    processing = disabled;
+  }
+
+  function resetButtonState() {
+    updateButtonState("Pay ₹<%= number_with_precision(@order.total, precision: 2) %> Securely", false);
+  }
+
+  function showError(message) {
+    // You can customize this to match your app's error display
+    alert(message);
+  }
+}
+</script>
+
+<style>
+.razorpay-payment-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  background: #f9f9f9;
+}
+
+.payment-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.secure-badge {
+  color: #4CAF50;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.accepted-cards {
+  color: #666;
+  font-size: 14px;
+}
+
+#razorpay-custom-button {
+  background: #3F51B5 !important;
+  color: white !important;
+  border: none !important;
+  padding: 15px 30px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+#razorpay-custom-button:hover {
+  background: #303F9F !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
+}
+
+#razorpay-custom-button:disabled {
+  background: #cccccc !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+#razorpay-custom-button:active {
+  transform: translateY(1px);
+}
+</style>

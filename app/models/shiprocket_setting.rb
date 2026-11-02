@@ -1,0 +1,2 @@
+class ShiprocketSetting < ApplicationRecord
+end

@@ -1,0 +1,83 @@
+<% content_for :title, "Building #{@build.store_name} | #{platform_name}" %>
+<% content_for :head do %>
+<style>
+  .progress { padding: clamp(3rem, 8vw, 5.5rem) 0; }
+  .progress .wrap { max-width: 40rem; }
+  .progress h1 { font-size: var(--step-3); font-weight: 800; }
+  .progress-lede { margin-top: 0.75rem; color: var(--muted); font-size: var(--step-1); line-height: 1.5; }
+  .progress-address { margin-top: 0.5rem; font-weight: 600; word-break: break-all; }
+
+  .build-steps { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.25rem; }
+  .build-steps li { display: flex; align-items: center; gap: 0.9rem; padding: 0.85rem 0; border-bottom: 1px solid var(--line); font-size: var(--step-1); color: var(--muted); }
+  .build-steps li::before {
+    content: ''; flex: none; width: 1.35rem; height: 1.35rem; border-radius: 50%;
+    border: 2px solid var(--line); background: var(--paper);
+  }
+  .build-steps li[data-state="done"] { color: var(--ink); }
+  .build-steps li[data-state="done"]::before { background: var(--marigold); border-color: var(--marigold); }
+  .build-steps li[data-state="active"] { color: var(--ink); font-weight: 600; }
+  .build-steps li[data-state="active"]::before { border-color: var(--ink); border-top-color: transparent; animation: spin 0.9s linear infinite; }
+  .build-steps li[data-state="failed"] { color: var(--danger); font-weight: 600; }
+  .build-steps li[data-state="failed"]::before { background: var(--danger); border-color: var(--danger); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result { margin-top: 2rem; }
+  .result[hidden] { display: none; }
+  .result .errors { background: #fdecea; color: var(--danger); border: 1px solid #f4c7c3; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1rem; }
+  .result form { display: inline; }
+</style>
+<% end %>
+
+<section class="progress" aria-labelledby="progress-title">
+  <div class="wrap">
+    <h1 id="progress-title">Building <%= @build.store_name %></h1>
+    <p class="progress-lede">This usually takes a minute or two. You can keep this page open; it updates by itself.</p>
+    <p class="progress-address"><%= @build.store_url %></p>
+
+    <ol class="build-steps" id="build-steps" aria-live="polite">
+      <% @build.steps_for_display.each do |step| %>
+        <li data-key="<%= step[:key] %>" data-state="<%= step[:state] %>"><%= step[:label] %></li>
+      <% end %>
+    </ol>
+
+    <div class="result" id="result-done" hidden>
+      <a class="button" href="<%= platform_store_build_open_path(@build.token) %>">Open my store</a>
+    </div>
+
+    <div class="result" id="result-failed" hidden>
+      <p class="errors" id="error-text" role="alert"></p>
+      <%= button_to 'Try again', platform_store_build_retry_path(@build.token), class: 'button', form: { data: { turbo: false } } %>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var statusUrl = <%= raw platform_store_build_status_path(@build.token).to_json %>;
+    var steps = document.getElementById('build-steps');
+    var done = document.getElementById('result-done');
+    var failed = document.getElementById('result-failed');
+    var errorText = document.getElementById('error-text');
+
+    function render(data) {
+      data.steps.forEach(function (step) {
+        var li = steps.querySelector('[data-key="' + step.key + '"]');
+        if (li) li.setAttribute('data-state', step.state);
+      });
+      done.hidden = data.status !== 'done';
+      failed.hidden = data.status !== 'failed';
+      if (data.status === 'failed') errorText.textContent = data.error || 'Something went wrong while building your store.';
+      return data.status === 'done' || data.status === 'failed';
+    }
+
+    function poll() {
+      fetch(statusUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { if (!render(data)) setTimeout(poll, 2000); })
+        .catch(function () { setTimeout(poll, 4000); });
+    }
+
+    poll();
+  })();
+</script>
+

@@ -1,0 +1,15 @@
+{
+    "Total": {
+        "Amount": "733.0875316426219",
+        "Unit": "USD"
+    },
+    "ForecastResultsByTime": [
+        {
+            "TimePeriod": {
+                "Start": "2026-10-01",
+                "End": "2026-11-01"
+            },
+            "MeanValue": "733.0875316426219"
+        }
+    ]
+}

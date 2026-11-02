@@ -1,0 +1,119 @@
+<div class="payment-container">
+  <div class="payment-header">
+    <div class="secure-icon">🔒</div>
+    <h1>Secure Payment</h1>
+    <p>Complete your order securely</p>
+  </div>
+
+  <div class="order-summary">
+    <h3>Order Summary</h3>
+    <div class="order-details">
+      <div class="row">
+        <span>Order</span>
+        <span><%= @order.number %></span>
+      </div>
+      <div class="row total">
+        <span>Total</span>
+        <span><%= number_to_currency(@order.total) %></span>
+      </div>
+    </div>
+  </div>
+
+  <%= form_tag @payment_method.url do %>
+    <%
+       merchant_id     = @payment_method.preferred_merchant_id
+       access_code     = @payment_method.preferred_access_code
+       encryption_key  = @payment_method.preferred_encryption_key
+       redirect_url    = gateway_ccavenue_callback_url(@transaction, :protocol => 'https')
+       enc_request     = encrypted_request(@payment_method, @transaction, @order, redirect_url, encryption_key)
+    %>
+    
+    <%= hidden_field_tag 'command', 'initiateTransaction' %>
+    <%= hidden_field_tag 'merchant_id', merchant_id %>
+    <%= hidden_field_tag 'access_code', access_code %>
+    <%= hidden_field_tag 'encRequest', enc_request %>
+    <%= hidden_field_tag 'redirect_url', redirect_url %>
+    
+    <button type="submit" class="pay-btn">Complete Payment</button>
+  <% end %>
+</div>
+
+<style>
+.payment-container {
+  max-width: 400px;
+  margin: 50px auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.payment-header {
+  background: #2563eb;
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.secure-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.payment-header h1 {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.payment-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.order-summary {
+  padding: 30px;
+}
+
+.order-summary h3 {
+  margin: 0 0 20px 0;
+  color: #374151;
+  font-size: 18px;
+}
+
+.order-details .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.order-details .row.total {
+  border-bottom: none;
+  font-weight: 600;
+  font-size: 18px;
+  color: #1f2937;
+  border-top: 2px solid #e5e7eb;
+  margin-top: 10px;
+  padding-top: 15px;
+}
+
+.pay-btn {
+  width: calc(100% - 60px);
+  margin: 0 30px 30px 30px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pay-btn:hover {
+  background: #1d4ed8;
+}
+</style>

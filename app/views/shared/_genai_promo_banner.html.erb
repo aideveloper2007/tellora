@@ -1,0 +1,26 @@
+<%# GenAI Theme - Promotional Banner %>
+<% if genai_promo_banner_enabled? %>
+  <% promo = genai_promo_banner %>
+  <div class="genai-promo-banner" 
+       style="background-color: <%= promo['background_color'] || 'var(--genai-accent)' %>; 
+              color: <%= promo['text_color'] || 'white' %>; 
+              padding: 12px 24px; 
+              text-align: center;
+              position: relative;"
+       data-controller="<%= promo['dismissible'] ? 'dismissible-banner' : '' %>">
+    <p style="margin: 0; font-size: 16px; font-weight: 500;">
+      <% if promo['link'].present? %>
+        <%= link_to promo['text'], promo['link'], style: "color: #{promo['text_color'] || 'white'}; text-decoration: underline;" %>
+      <% else %>
+        <%= promo['text'] %>
+      <% end %>
+    </p>
+    
+    <% if promo['dismissible'] %>
+      <button onclick="this.parentElement.style.display='none'" 
+              style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: <%= promo['text_color'] || 'white' %>; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;">
+        ×
+      </button>
+    <% end %>
+  </div>
+<% end %>

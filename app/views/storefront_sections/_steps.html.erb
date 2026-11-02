@@ -1,0 +1,11 @@
+<%# A short numbered sequence (how it is made, how ordering works). locals: steps %>
+<section class="tl-section tl-steps" aria-labelledby="tl-steps-title">
+  <div class="tl-wrap">
+    <div class="tl-head"><h2 id="tl-steps-title"><%= steps['title'] %></h2></div>
+    <ol class="tl-steps-list">
+      <% steps['items'].each do |item| %>
+        <li><h3><%= item['title'] %></h3><% if item['text'].present? %><p><%= item['text'] %></p><% end %></li>
+      <% end %>
+    </ol>
+  </div>
+</section>

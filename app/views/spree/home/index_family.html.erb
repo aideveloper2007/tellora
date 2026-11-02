@@ -1,0 +1,12 @@
+<%# Tellora home page: designer-made sections filled from the page plan.
+    Spree's layout adds the announcement bar, header, newsletter and footer around it.
+    The look comes from the store's style family stylesheet (public/families). %>
+<% plan = @page_plan %>
+<div class="tl-home tl-family-<%= @style_family.to_s.dasherize %>">
+  <%= render 'storefront_sections/hero', hero: plan['hero'], image: @plan_images['hero'] %>
+  <%= render 'storefront_sections/promise', promises: plan['promises'] %>
+  <%= render 'storefront_sections/products', section: plan['products'], products: @products %>
+  <%= render 'storefront_sections/story', story: plan['story'], image: @plan_images['story'] %>
+  <%= render 'storefront_sections/steps', steps: plan['steps'] %>
+  <%= render 'storefront_sections/banner', banner: plan['banner'], image: @plan_images['banner'] %>
+</div>

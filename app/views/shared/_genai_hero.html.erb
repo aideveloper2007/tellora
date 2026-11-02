@@ -1,0 +1,23 @@
+<%# GenAI Theme - Hero Section (Overlay design with text on background image) %>
+<% if using_genai_theme? %>
+  <% 
+    hero_image = genai_hero_image
+    layout_config = current_genai_theme.layout
+    hero_height = layout_config['hero_height'] || '500px'
+    hero_heading = layout_config['hero_heading'] || "Welcome to #{current_store.name}"
+    hero_subheading = layout_config['hero_subheading'] || "Discover our amazing collection of products"
+    hero_image_url = if hero_image&.image&.attached?
+                       main_app.url_for(hero_image.image)
+                     else
+                       'https://source.unsplash.com/1600x900/?ecommerce,shop,store'
+                     end
+  %>
+  
+  <section class="genai-hero" style="min-height: <%= hero_height %>; background-image: url('<%= hero_image_url %>'); background-size: cover; background-position: center;">
+    <div class="genai-hero-content">
+      <h1><%= hero_heading %></h1>
+      <p><%= hero_subheading %></p>
+      <%= link_to 'Shop Now →', spree.products_path, class: 'genai-hero-cta' %>
+    </div>
+  </section>
+<% end %>

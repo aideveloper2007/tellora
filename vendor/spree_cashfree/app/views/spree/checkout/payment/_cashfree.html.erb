@@ -1,0 +1,49 @@
+<%= hidden_field_tag "payment_source[#{payment_method.id}][placeholder]", "cashfree" %>
+
+<button id="cashfree-button" type="button" class="btn btn-outline-primary rounded-lg font-weight-bold">
+  Pay with Cashfree
+</button>
+
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+<div id="payment-method-container" data-payment-method-id="<%= payment_method.id %>"></div>
+
+<div
+  id="cashfree-options"
+  data-cf-payment-session-id="<%= Cashfree::CfOrder::Api.new.create(current_order.try(:id)) %>"
+  data-cf-environment="<%= payment_method.preferences[:environment] %>"
+  data-cf-return-url="<%= cashfree_response_url(order_id: current_order.number, payment_method_id: payment_method.id) %>"
+></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const cashfreeBtn = document.getElementById('cashfree-button');
+  const cashfreeOptions = document.getElementById('cashfree-options');
+  
+  if (cashfreeBtn && cashfreeOptions) {
+    const environment = cashfreeOptions.dataset.cfEnvironment;
+    const sessionId = cashfreeOptions.dataset.cfPaymentSessionId;
+    const returnUrl = cashfreeOptions.dataset.cfReturnUrl;
+    
+    console.log('Cashfree initialized:', { environment, sessionId, returnUrl });
+    
+    const cashfree = Cashfree({
+      mode: environment === 'production' ? 'production' : 'sandbox'
+    });
+    
+    cashfreeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('Opening Cashfree checkout...');
+      
+      cashfree.checkout({
+        paymentSessionId: sessionId,
+        returnUrl: returnUrl
+      }).then(function(result) {
+        console.log('Cashfree result:', result);
+      }).catch(function(error) {
+        console.error('Cashfree error:', error);
+      });
+    });
+  }
+});
+</script>

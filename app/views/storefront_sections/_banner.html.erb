@@ -1,0 +1,11 @@
+<%# Full-width banner: photo beside a short message and one button. locals: banner, image %>
+<section class="tl-banner" aria-labelledby="tl-banner-title">
+  <div class="tl-banner-grid">
+    <%= render 'storefront_sections/photo', image: image, width: 960, height: 640, alt: '', label: current_store.name, klass: 'tl-banner-photo' %>
+    <div class="tl-banner-text">
+      <h2 id="tl-banner-title"><%= banner['title'] %></h2>
+      <% if banner['text'].present? %><p><%= banner['text'] %></p><% end %>
+      <a class="tl-btn" href="<%= spree.products_path %>"><%= banner['cta'] %></a>
+    </div>
+  </div>
+</section>

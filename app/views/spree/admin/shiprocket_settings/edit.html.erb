@@ -1,0 +1,22 @@
+<div class="card mt-3">
+  <div class="card-header">
+    <h5>Shiprocket API Settings</h5>
+  </div>
+  <div class="card-body">
+    <%= form_with model: @shiprocket_setting, url: admin_shiprocket_settings_path, method: :put, local: true do |f| %>
+      <div class="form-group mb-3">
+        <%= f.label :email, "Shiprocket Email" %>
+        <%= f.text_field :email, class: 'form-control', required: true %>
+      </div>
+
+      <div class="form-group mb-3">
+        <%= f.label :password, "Shiprocket Password" %>
+        <%= f.text_field :password, class: 'form-control', required: true %>
+      </div>
+
+      <div>
+        <%= f.submit 'Save Settings', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+</div>

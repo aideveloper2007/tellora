@@ -1,0 +1,95 @@
+<%# GenAI Theme Homepage %>
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= current_store.name %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  
+  <%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" %>
+  
+  <%# GenAI Theme CSS %>
+  <% if using_genai_theme? %>
+    <style id="genai-theme-styles" data-theme-id="<%= current_genai_theme.id %>">
+      <%= genai_theme_css %>
+    </style>
+  <% end %>
+  
+  <style>
+    /* Additional base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body class="<%= genai_body_class %>">
+  <%# Navigation Bar - Styled by GenAI CSS %>
+  <header id="header" class="genai-header">
+    <nav class="genai-nav">
+      <div class="genai-container">
+        <div class="genai-nav-wrapper" style="gap: 2rem;">
+          <div class="genai-logo">
+            <%= link_to current_store.name, root_path, class: 'genai-logo-link' %>
+          </div>
+          <ul class="genai-nav-menu" style="gap: 1.5rem;">
+            <li class="genai-nav-item"><a href="/products" class="genai-nav-link">Products</a></li>
+            <li class="genai-nav-item"><a href="/collections" class="genai-nav-link">Collections</a></li>
+            <li class="genai-nav-item"><a href="/pages/about" class="genai-nav-link">About</a></li>
+            <li class="genai-nav-item"><a href="/contact" class="genai-nav-link">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <%# Promotional Banner (if enabled) %>
+  <%= render 'shared/genai_promo_banner' %>
+  
+  <%# Hero Section %>
+  <%= render 'shared/genai_hero' %>
+  
+  <%# Featured Products: the store's active products, newest first (2 rows) %>
+  <%
+    columns = (genai_layout('product_grid_columns').to_i.nonzero? || 4)
+    featured_products = current_store.products
+                                     .active(current_store.default_currency)
+                                     .reorder(created_at: :desc)
+                                     .limit(columns * 2)
+                                     .to_a
+  %>
+  <% if featured_products.any? %>
+    <%= render 'shared/genai_featured_products', products: featured_products %>
+  <% end %>
+  
+  <%# Footer - Matches preview template structure %>
+  <footer class="genai-footer">
+    <div class="genai-container">
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">About Us</h3>
+        <p class="genai-footer-text">
+          <%= current_store.name %> - Your destination for quality products and exceptional service.
+        </p>
+      </div>
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">Quick Links</h3>
+        <div>
+          <a href="/products" class="genai-footer-link">Products</a>
+          <a href="/pages/about" class="genai-footer-link">About</a>
+          <a href="/contact" class="genai-footer-link">Contact</a>
+          <a href="/pages/shipping" class="genai-footer-link">Shipping</a>
+        </div>
+      </div>
+      <div class="genai-footer-section">
+        <h3 class="genai-footer-heading">Connect</h3>
+        <p class="genai-footer-text">Follow us on social media for updates and exclusive offers.</p>
+      </div>
+    </div>
+    <div class="genai-container" style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 32px; padding-top: 24px; text-align: center; opacity: 0.8;">
+      <p style="font-size: 0.875rem;">&copy; <%= Time.current.year %> <%= current_store.name %>. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

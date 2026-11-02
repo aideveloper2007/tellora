@@ -1,0 +1,18 @@
+source 'https://rubygems.org'
+
+#gem 'spree', '~> 4.0'
+#gem 'spree_auth_devise', '~> 4.0'
+
+# Spree gems
+spree_opts = '>= 4.4.0'
+gem 'spree', spree_opts
+gem 'spree_sample', spree_opts
+gem 'spree_emails', spree_opts
+gem 'spree_backend', spree_opts
+gem 'spree_frontend', spree_opts
+gem 'spree_gateway'
+gem 'spree_auth_devise'
+gem 'spree_i18n'
+#gem 'spree_dev_tools', require: false, group: %w[test development]
+
+gemspec

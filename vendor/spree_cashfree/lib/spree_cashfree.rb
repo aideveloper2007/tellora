@@ -1,0 +1,5 @@
+require 'spree_core'
+require 'spree_extension'
+require 'spree_cashfree/version'
+require 'spree_cashfree/configuration'
+require 'spree_cashfree/engine'

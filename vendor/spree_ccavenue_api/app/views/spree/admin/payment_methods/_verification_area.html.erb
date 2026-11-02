@@ -1,0 +1,14 @@
+<%= link_to 'Verify entered data', '#', {id: 'verify-data'} %>
+<div id="verification-status"></div>
+
+<%= javascript_tag do %>
+  jQuery(document).ready(function() {
+    $("#verify-data").click(function(){
+      var path = '<%= verify_admin_payment_method_path(@object) %>';
+      $.get(path + "?" + $("form").serialize())
+        .done(function (data) {
+        $( "#verification-status" ).html(data);
+      });
+    });
+  });
+<% end %>

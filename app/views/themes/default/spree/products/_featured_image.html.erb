@@ -1,0 +1,14 @@
+<% with_cover_image ||= false %>
+<% object ||= product %>
+
+<% if object.default_image.present? && object.default_image.attached? %>
+  <% width ||= theme_setting('product_listing_image_width') %>
+  
+  <div style="width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+    <%= spree_image_tag(object.default_image, width: width, loading: :lazy, alt: object.default_image.alt, style: 'width: 100%; height: 100%; object-fit: contain; object-position: center;') %>
+  </div>
+<% else %>
+  <div style="width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background: #e5e7eb;">
+    <span style="color: #6b7280;">No Image</span>
+  </div>
+<% end %>

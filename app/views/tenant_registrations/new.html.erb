@@ -1,0 +1,132 @@
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <h1 class="text-center text-3xl font-extrabold text-gray-900">
+      Create Your Store
+    </h1>
+    <p class="mt-2 text-center text-sm text-gray-600">
+      Start your online business in minutes
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <%= form_tag tenant_registrations_path, data: { turbo: false }, class: "space-y-6" do %>
+        <div>
+          <%= label_tag 'store[name]', 'Store Name', class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1">
+            <%= text_field_tag 'store[name]', nil, 
+                placeholder: 'Your awesome store name', 
+                required: true,
+                class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+        </div>
+
+        <div>
+          <%= label_tag 'store[subdomain]', 'Store URL', class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1 flex rounded-md shadow-sm">
+            <%= text_field_tag 'store[subdomain]', nil, 
+                placeholder: 'yourstore', 
+                required: true,
+                pattern: '[a-zA-Z0-9]+',
+                title: 'Alphanumeric characters only, no spaces',
+                class: "flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+            <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+              .zencommerce.xyz
+            </span>
+          </div>
+          <p class="mt-1 text-xs text-gray-500">Your store will be accessible at: http://<%= "$subdomain" %>.zencommerce.xyz</p>
+        </div>
+
+        <div>
+          <%= label_tag 'user[email]', 'Email Address', class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1">
+            <%= email_field_tag 'user[email]', nil, 
+                placeholder: 'you@example.com', 
+                required: true,
+                class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+        </div>
+
+        <div>
+          <%= label_tag 'user[password]', 'Password', class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1">
+            <%= password_field_tag 'user[password]', nil, 
+                placeholder: 'Choose a strong password', 
+                required: true,
+                minlength: 8,
+                class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+          <p class="mt-1 text-xs text-gray-500">At least 8 characters</p>
+        </div>
+
+        <div>
+          <%= label_tag 'user[password_confirmation]', 'Confirm Password', class: "block text-sm font-medium text-gray-700" %>
+          <div class="mt-1">
+            <%= password_field_tag 'user[password_confirmation]', nil, 
+                placeholder: 'Repeat your password', 
+                required: true,
+                minlength: 8,
+                class: "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+          </div>
+        </div>
+
+        <div>
+          <%= submit_tag 'Start Your Free Store', 
+              class: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+        </div>
+      <% end %>
+
+      <div class="mt-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">
+              Already have a store?
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-6">
+<%= link_to 'Log In', '/account/login', 
+    class: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Theme Designer Chatbot -->
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div class="bg-gradient-to-r from-purple-600 to-blue-600 py-6 px-4 shadow-lg sm:rounded-lg sm:px-10 text-white">
+        <div class="text-center">
+          <div class="text-4xl mb-3">🤖✨</div>
+          <h3 class="text-xl font-bold mb-2">AI Theme Designer</h3>
+          <p class="text-sm text-purple-100 mb-4">
+            Let AI design your perfect store theme! Upload your requirements or chat about your vision.
+          </p>
+          <%= link_to 'Launch Theme Designer →', theme_designer_index_path, 
+              class: "inline-flex items-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-purple-600 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 text-center text-xs text-gray-500">
+      <p>&copy; <%= Date.current.year %> Your Company. All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('password_confirmation');
+
+    confirmPasswordField.addEventListener('input', function() {
+      if (passwordField.value !== confirmPasswordField.value) {
+        confirmPasswordField.setCustomValidity('Passwords do not match');
+      } else {
+        confirmPasswordField.setCustomValidity('');
+      }
+    });
+  });
+</script>

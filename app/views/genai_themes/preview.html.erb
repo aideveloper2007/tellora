@@ -1,0 +1,319 @@
+<%# app/views/genai_themes/preview.html.erb %>
+<div class="min-h-screen bg-gray-50" data-controller="genai-preview" data-theme-id="<%= @theme['theme_id'] %>">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Theme Preview</h1>
+          <p class="text-sm text-gray-600 mt-1">Review and refine your generated theme</p>
+        </div>
+        <div class="flex gap-3">
+          <%= link_to genai_themes_path, class: "px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition" do %>
+            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            Home
+          <% end %>
+          <%= link_to chat_genai_themes_path, class: "px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition" do %>
+            <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+            </svg>
+            Chat
+          <% end %>
+          
+          <% if params[:onboarding] == 'true' %>
+            <button 
+                type="button"
+                data-action="click->genai-preview#applyAndActivate" 
+                data-genai-preview-target="applyAndGoLiveButton"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60">
+              Apply & Go Live
+            </button>
+          <% else %>
+            <button 
+                type="button"
+                data-action="click->genai-preview#applyTheme" 
+                data-genai-preview-target="applyButton"
+                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60">
+              Apply Theme
+            </button>
+            <button 
+                type="button"
+                data-action="click->genai-preview#activateTheme" 
+                data-genai-preview-target="activateButton"
+                disabled
+                class="px-6 py-2 bg-gray-400 text-gray-200 rounded-lg cursor-not-allowed opacity-60 transition font-medium enabled:bg-blue-600 enabled:text-white enabled:hover:bg-blue-700 enabled:cursor-pointer enabled:opacity-100">
+              Activate Theme
+            </button>
+          <% end %>
+        </div>
+        
+        <% if @spree_theme&.default? %>
+          <div class="mt-4 text-center">
+            <p class="text-sm text-green-600 mb-2">✓ This theme is currently active on your store</p>
+            <button 
+                type="button"
+                data-action="click->genai-preview#deactivateTheme" 
+                data-theme-id="<%= @spree_theme.id %>"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+              Return to Default Theme
+            </button>
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="flex gap-4 mt-4 border-b">
+        <button onclick="showTab('live-preview')" id="tab-live-preview" class="px-4 py-2 font-medium border-b-2 border-blue-600 text-blue-600">
+          Live Preview
+        </button>
+        <button onclick="showTab('theme-details')" id="tab-theme-details" class="px-4 py-2 font-medium text-gray-600 hover:text-gray-900">
+          Theme Details
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Preview Tab -->
+  <div id="content-live-preview" class="tab-content">
+    <div class="bg-white border-b shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">
+            <strong>Store Type:</strong> <%= @theme.dig('metadata', 'store_type')&.titleize || 'General' %> | 
+            <strong>Template:</strong> <%= @theme.dig('metadata', 'template')&.titleize || 'Custom' %>
+          </p>
+          <div class="flex gap-2">
+            <button class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200">Desktop</button>
+            <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">Tablet</button>
+            <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded">Mobile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <%= render partial: 'storefront_preview', locals: { theme: @theme } %>
+  </div>
+
+  <!-- Theme Details Tab -->
+  <div id="content-theme-details" class="tab-content hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column: Theme Details -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Color Palette -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Color Palette</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <% (@theme['color_palette'] || {}).each do |name, color| %>
+              <div class="space-y-2">
+                <div class="h-20 rounded-lg border-2 border-gray-200" style="background-color: <%= color %>;"></div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900"><%= name.titleize %></p>
+                  <p class="text-xs text-gray-500"><%= color %></p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Typography -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Typography</h2>
+          <div class="space-y-4">
+            <% (@theme['typography'] || {}).each do |level, font| %>
+              <div class="border-b border-gray-200 pb-3 last:border-b-0">
+                <p class="text-sm text-gray-600 mb-1"><%= level.titleize %></p>
+                <p style="font-family: '<%= font['family'] %>'; font-size: <%= font['size'] %>; font-weight: <%= font['weight'] %>;">
+                  <%= font['family'] %> - <%= font['size'] %> / <%= font['weight'] %>
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Layout Settings -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Layout Settings</h2>
+          <div class="grid grid-cols-2 gap-4">
+            <% @theme['layout'].each do |key, value| %>
+              <div class="border-b border-gray-200 pb-2">
+                <p class="text-xs text-gray-600"><%= key.titleize %></p>
+                <p class="text-sm font-medium text-gray-900"><%= value %></p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- CSS Preview -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">CSS Code</h2>
+          <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+            <pre class="text-sm text-green-400 font-mono"><%= @theme['css'] || '' %></pre>
+          </div>
+        </div>
+
+        <!-- Visual Preview -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Visual Preview</h2>
+          <div class="border-2 border-gray-200 rounded-lg p-6" style="<%= generate_preview_styles(@theme) %>">
+            <h1 class="heading-1 mb-4">Sample Heading</h1>
+            <p class="body-text mb-4">This is sample body text to show how your theme looks in action. The colors, fonts, and spacing are all applied based on your generated theme.</p>
+            <button class="px-6 py-3 rounded-lg font-medium" style="background-color: <%= @theme.dig('color_palette', 'primary') || '#007bff' %>; color: <%= @theme.dig('color_palette', 'text_on_primary') || '#ffffff' %>;">
+              Sample Button
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Actions & Info -->
+      <div class="space-y-6">
+        <!-- Theme Info -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Theme Information</h3>
+          <div class="space-y-3">
+            <div>
+              <p class="text-xs text-gray-600">Theme ID</p>
+              <p class="text-sm font-mono text-gray-900"><%= @theme['theme_id'] %></p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-600">Generated At</p>
+              <p class="text-sm text-gray-900"><%= Time.parse(@theme['generated_at']).strftime('%B %d, %Y %I:%M %p') rescue 'N/A' %></p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-600">Template Used</p>
+              <p class="text-sm text-gray-900"><%= @theme['template_used']&.titleize || 'Custom' %></p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-600">Validation Status</p>
+              <% if @theme['validation_results']&.dig('is_valid') %>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  ✓ Valid
+                </span>
+              <% else %>
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  ⚠ Needs Review
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extracted Requirements -->
+        <% if @conversation && @conversation['extracted_info'].present? %>
+          <div class="bg-white rounded-xl shadow-sm border p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Extracted Requirements</h3>
+            <div class="space-y-3 text-sm">
+              <% extracted = @conversation['extracted_info'] %>
+              <% if extracted['business_type'] %>
+                <div>
+                  <span class="text-gray-600">Business:</span>
+                  <span class="font-medium text-gray-900"><%= extracted['business_type'] %></span>
+                </div>
+              <% end %>
+              <% if extracted['brand_personality'] %>
+                <div>
+                  <span class="text-gray-600">Personality:</span>
+                  <span class="font-medium text-gray-900"><%= extracted['brand_personality'] %></span>
+                </div>
+              <% end %>
+              <% if extracted['color_preferences']&.any? %>
+                <div>
+                  <span class="text-gray-600">Colors:</span>
+                  <span class="font-medium text-gray-900"><%= extracted['color_preferences'].join(', ') %></span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Refinement Form -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Refine Theme</h3>
+          <p class="text-sm text-gray-600 mb-4">Not quite right? Tell us what you'd like to change.</p>
+          
+          <%= form_with url: refine_genai_theme_path(@theme['theme_id']), 
+                        method: :post,
+                        data: { 
+                          action: "submit->genai-preview#submitRefinement"
+                        },
+                        class: "space-y-4" do |f| %>
+            <%= f.text_area :feedback, 
+                rows: 4,
+                placeholder: "e.g., Make the colors darker, use a different font, add more spacing...",
+                class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm",
+                data: { "genai-preview-target": "feedbackInput" } %>
+            
+            <%= f.submit "Regenerate Theme", 
+                class: "w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium",
+                data: { "genai-preview-target": "refineButton" } %>
+          <% end %>
+        </div>
+
+        <!-- Validation Issues (if any) -->
+        <% if @theme['validation_results'] && !@theme.dig('validation_results', 'is_valid') %>
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-yellow-900 mb-2">⚠ Validation Warnings</h3>
+            <ul class="text-sm text-yellow-800 space-y-1">
+              <% (@theme['validation_results']&.dig('issues') || []).each do |issue| %>
+                <li>• <%= issue %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>  <%# End of theme-details tab %>
+
+  <!-- Loading Modal -->
+  <div data-genai-preview-target="loadingModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2" data-genai-preview-target="loadingTitle">Processing...</h3>
+        <p class="text-sm text-gray-600" data-genai-preview-target="loadingMessage">Please wait...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab switching functionality
+  function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.add('hidden');
+    });
+    
+    // Remove active styles from all tabs
+    document.querySelectorAll('[id^="tab-"]').forEach(tab => {
+      tab.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600');
+      tab.classList.add('text-gray-600', 'hover:text-gray-900');
+    });
+    
+    // Show selected tab content
+    document.getElementById('content-' + tabName).classList.remove('hidden');
+    
+    // Add active styles to selected tab
+    const activeTab = document.getElementById('tab-' + tabName);
+    activeTab.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+    activeTab.classList.remove('text-gray-600', 'hover:text-gray-900');
+  }
+</script>
+
+<style>
+  /* Apply theme styles to preview */
+  .heading-1 {
+    font-family: '<%= @theme.dig('typography', 'heading', 'family') || 'Arial' %>';
+    font-size: <%= @theme.dig('typography', 'heading', 'size') || '2rem' %>;
+    font-weight: <%= @theme.dig('typography', 'heading', 'weight') || '700' %>;
+    color: <%= @theme.dig('color_palette', 'text') || '#000000' %>;
+  }
+  
+  .body-text {
+    font-family: '<%= @theme.dig('typography', 'body', 'family') || 'Arial' %>';
+    font-size: <%= @theme.dig('typography', 'body', 'size') || '1rem' %>;
+    color: <%= @theme.dig('color_palette', 'text') || '#000000' %>;
+  }
+</style>

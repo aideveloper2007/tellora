@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= content_for?(:title) ? yield(:title) : "#{platform_name}: describe your business, get an online store" %></title>
+  <meta name="description" content="Describe your business in one sentence, in any language. AI designs your online store, writes your first products and sets up checkout.">
+  <%= csrf_meta_tags %>
+  <link rel="icon" type="image/svg+xml" href="/brand/tellora-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+  <link rel="apple-touch-icon" href="/brand/tellora-app-icon-512.png">
+  <meta name="theme-color" content="#18163a">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #18163a;
+      --ink-soft: #2c2a57;
+      --paper: #ffffff;
+      --mist: #f1f2f7;
+      --line: #dadce8;
+      --muted: #5b5e78;
+      --marigold: #f2b100;
+      --danger: #b42318;
+
+      --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+
+      --step--1: 0.875rem;
+      --step-0: 1rem;
+      --step-1: 1.25rem;
+      --step-2: 1.6rem;
+      --step-3: 2.2rem;
+      --step-4: clamp(2.3rem, 1.5rem + 2.8vw, 3.7rem);
+
+      --page: 72rem;
+      --gutter: clamp(1rem, 4vw, 2.5rem);
+      --radius-s: 6px;
+      --radius-l: 18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--step-0);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.08; margin: 0; letter-spacing: -0.02em; }
+    p { margin: 0; }
+    a { color: inherit; }
+
+    :focus-visible { outline: 3px solid var(--marigold); outline-offset: 3px; border-radius: 4px; }
+
+    .wrap { max-width: var(--page); margin: 0 auto; padding: 0 var(--gutter); }
+
+    .skip { position: absolute; left: -999px; }
+    .skip:focus { left: var(--gutter); top: 0.75rem; background: var(--ink); color: var(--paper); padding: 0.5rem 0.9rem; z-index: 10; }
+
+    /* Header */
+    .site-header { border-bottom: 1px solid var(--line); }
+    .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.25rem; }
+    .brand { display: inline-flex; align-items: center; text-decoration: none; }
+    .brand img { display: block; height: 2.9rem; width: auto; }
+    .footer-brand { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .footer-brand img { width: 1.25rem; height: 1.25rem; border-radius: 4px; }
+    .site-nav { display: flex; align-items: center; gap: 1.75rem; }
+    .site-nav a { text-decoration: none; color: var(--muted); font-weight: 500; }
+    .site-nav a:hover { color: var(--ink); }
+
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      font: 600 var(--step-0)/1 var(--font-body);
+      padding: 0.95rem 1.4rem;
+      border-radius: 999px;
+      border: 2px solid var(--ink);
+      background: var(--ink); color: var(--paper);
+      text-decoration: none; cursor: pointer;
+      white-space: nowrap;
+    }
+    .button:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+    .button-quiet { background: transparent; color: var(--ink); padding: 0.6rem 1.1rem; }
+    .button-quiet:hover { background: var(--mist); border-color: var(--ink); }
+
+    @media (max-width: 760px) {
+      .site-nav a:not(.button) { display: none; }
+    }
+
+    /* Flash */
+    .flash { background: #fdecea; color: var(--danger); border: 1px solid #f4c7c3; padding: 0.75rem 1rem; border-radius: var(--radius-s); margin-bottom: 1.25rem; }
+
+    /* Footer */
+    .site-footer { border-top: 1px solid var(--line); padding: 2.5rem 0; color: var(--muted); font-size: var(--step--1); }
+    .site-footer .wrap { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: space-between; align-items: center; }
+    .site-footer nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .site-footer a { text-decoration: none; }
+    .site-footer a:hover { color: var(--ink); text-decoration: underline; }
+  </style>
+  <%= yield :head %>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="<%= platform_landing_path %>"><img src="/brand/tellora-logo.svg" alt="<%= platform_name %>" width="172" height="60"></a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="<%= platform_landing_path(anchor: 'how') %>">How it works</a>
+        <a href="<%= platform_landing_path(anchor: 'included') %>">What you get</a>
+        <a href="<%= platform_landing_path(anchor: 'questions') %>">Questions</a>
+        <a class="button button-quiet" href="<%= platform_landing_path(anchor: 'build') %>">Build a store</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <%= yield %>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p class="footer-brand"><img src="/brand/tellora-icon.svg" alt="" width="20" height="20"><span>&copy; <%= Time.current.year %> <%= platform_name %></span></p>
+      <nav aria-label="Footer">
+        <a href="<%= platform_landing_path(anchor: 'how') %>">How it works</a>
+        <a href="<%= platform_landing_path(anchor: 'included') %>">What you get</a>
+        <a href="<%= platform_landing_path(anchor: 'questions') %>">Questions</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

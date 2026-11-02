@@ -1,0 +1,34 @@
+<fieldset>
+  <legend><%= Spree.t(:payment_information) %></legend>
+  <div class="ccavenue-payment">
+    <p>You will be redirected to CCAvenue to complete your payment securely.</p>
+    <%= hidden_field_tag "payment_source[#{payment_method.id}][dummy]", "1" %>
+    <div class="form-buttons">
+      <button type="button" onclick="processPayment()" class="btn btn-primary btn-large">
+        Continue to CCAvenue
+      </button>
+    </div>
+  </div>
+  <script>
+    function processPayment() {
+      window.location.href = '<%= gateway_ccavenue_path(@order.number, payment_method.id) %>';
+    }
+  </script>
+</fieldset>
+
+<!-- Hide the default Spree pay button -->
+<style>
+  #checkout-payment-submit {
+    display: none !important;
+  }
+  
+  /* Alternative: Hide by class if needed */
+  .checkout-content-save-continue-button {
+    display: none !important;
+  }
+  
+  /* Hide the entire form section containing the default pay button */
+  form[data-hook="checkout_payment_form"] .form-buttons:not(.ccavenue-payment .form-buttons) {
+    display: none !important;
+  }
+</style>

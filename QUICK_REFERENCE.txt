@@ -1,0 +1,214 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   🤖 AI THEME DESIGNER - QUICK REFERENCE                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌─ SETUP COMMANDS ──────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Full Setup:                                                              │
+│  $ ./setup_genai_chatbot.sh                                               │
+│                                                                           │
+│  Configure API Key:                                                       │
+│  $ echo "OPENAI_API_KEY=sk-xxx" >> python_service/.env                    │
+│                                                                           │
+│  Start Python Service:                                                    │
+│  $ cd python_service && source venv/bin/activate && python main.py        │
+│                                                                           │
+│  Start Rails:                                                             │
+│  $ rails server                                                           │
+│                                                                           │
+│  Run Tests:                                                               │
+│  $ ./test_genai_system.sh                                                 │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ KEY URLS ────────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Chatbot Interface:        http://localhost:3000/theme_designer           │
+│  Python API:               http://localhost:8000                          │
+│  Python Health:            http://localhost:8000/health                   │
+│  Theme Preview:            http://localhost:3000/theme_designer/preview   │
+│  Registration Page:        http://localhost:3000/tenant_registrations/new │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ MAIN FILES TO EDIT ──────────────────────────────────────────────────────┐
+│                                                                           │
+│  Chat UI:                  app/javascript/controllers/chatbot_controller.js│
+│  Chat View:                app/views/theme_designer/index.html.erb        │
+│  Controller:               app/controllers/theme_designer_controller.rb   │
+│  Service:                  app/services/genai_theme_service.rb            │
+│                                                                           │
+│  Python Main:              python_service/main.py                         │
+│  LLM Service:              python_service/services/llm_service.py         │
+│  Theme Generator:          python_service/services/theme_generator.py     │
+│  Document Parser:          python_service/services/document_parser.py     │
+│                                                                           │
+│  Routes:                   config/routes.rb                               │
+│  Docker:                   docker-compose.yml                             │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ DOCUMENTATION FILES ─────────────────────────────────────────────────────┐
+│                                                                           │
+│  🚀 Quick Start (5 min):   QUICK_START.md                                 │
+│  📖 Full Documentation:    GENAI_CHATBOT_README.md                        │
+│  📘 Overview:              GENAI_README.md                                │
+│  🏗️ Architecture:          ARCHITECTURE.md                                │
+│  📋 Implementation:        IMPLEMENTATION_SUMMARY.md                      │
+│  📦 File List:             FILES_CREATED.md                               │
+│  🚢 Deployment:            DEPLOYMENT_CHECKLIST.md                        │
+│  📊 Summary:               PROJECT_SUMMARY.txt                            │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ API ENDPOINTS ───────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Rails Backend (Port 3000):                                               │
+│  • GET    /theme_designer                                                 │
+│  • POST   /theme_designer/chat                                            │
+│  • POST   /theme_designer/upload_prd                                      │
+│  • POST   /theme_designer/generate_theme                                  │
+│  • GET    /theme_designer/preview/:theme_id                               │
+│  • POST   /theme_designer/publish_theme                                   │
+│  • GET    /theme_designer/history                                         │
+│                                                                           │
+│  Python Service (Port 8000):                                              │
+│  • GET    /health                                                         │
+│  • POST   /api/chat                                                       │
+│  • POST   /api/parse-prd                                                  │
+│  • POST   /api/generate-theme                                             │
+│  • POST   /api/test-llm                                                   │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ DATABASE TABLES ─────────────────────────────────────────────────────────┐
+│                                                                           │
+│  • chat_conversations      (session management)                           │
+│  • chat_messages           (message history)                              │
+│  • theme_generations       (generated themes)                             │
+│  • tenant_themes           (active published themes)                      │
+│  • prd_documents           (uploaded documents)                           │
+│                                                                           │
+│  Run Migrations:                                                          │
+│  $ rails db:migrate                                                       │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ ENVIRONMENT VARIABLES ───────────────────────────────────────────────────┐
+│                                                                           │
+│  Required:                                                                │
+│  GENAI_SERVICE_URL=http://localhost:8000                                  │
+│  LLM_PROVIDER=openai                  (or anthropic)                      │
+│  OPENAI_API_KEY=sk-xxx                (if using OpenAI)                   │
+│  ANTHROPIC_API_KEY=xxx                (if using Anthropic)                │
+│                                                                           │
+│  Optional:                                                                │
+│  OPENAI_MODEL=gpt-4o                                                      │
+│  ANTHROPIC_MODEL=claude-3-5-sonnet-20241022                               │
+│  GENAI_RATE_LIMIT_PER_MINUTE=20                                           │
+│                                                                           │
+│  Files:                                                                   │
+│  • python_service/.env                                                    │
+│  • .env (main Rails env)                                                  │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ COMMON TASKS ────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Test LLM Connection:                                                     │
+│  $ curl -X POST http://localhost:8000/api/test-llm \                      │
+│    -H "Content-Type: application/json" \                                  │
+│    -d '{"message": "Hello"}'                                              │
+│                                                                           │
+│  Check Python Service Health:                                             │
+│  $ curl http://localhost:8000/health                                      │
+│                                                                           │
+│  View Logs:                                                               │
+│  $ docker-compose logs -f genai-service                                   │
+│                                                                           │
+│  Reset Database:                                                          │
+│  $ rails db:migrate:reset                                                 │
+│  $ rails db:migrate                                                       │
+│                                                                           │
+│  Restart Services:                                                        │
+│  $ docker-compose restart genai-service                                   │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING ─────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Python service won't start:                                              │
+│  → Check Python version (need 3.10+)                                      │
+│  → Reinstall: pip install -r requirements.txt                             │
+│  → Check .env file exists                                                 │
+│                                                                           │
+│  LLM API errors:                                                          │
+│  → Verify API key in .env                                                 │
+│  → Check API key validity                                                 │
+│  → Monitor rate limits                                                    │
+│                                                                           │
+│  Database errors:                                                         │
+│  → Run: rails db:migrate:status                                           │
+│  → Run: rails db:migrate                                                  │
+│                                                                           │
+│  Chat not responding:                                                     │
+│  → Check browser console for errors                                       │
+│  → Verify both servers are running                                        │
+│  → Test endpoints individually                                            │
+│                                                                           │
+│  Theme not applying:                                                      │
+│  → Check theme_config JSON is valid                                       │
+│  → Verify tenant_schema is correct                                        │
+│  → Clear browser cache                                                    │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ QUICK TEST PROMPTS ──────────────────────────────────────────────────────┐
+│                                                                           │
+│  Simple:                                                                  │
+│  "Create a modern blue theme for a tech store"                            │
+│                                                                           │
+│  Detailed:                                                                │
+│  "I want a luxury fashion store with black and gold colors, elegant      │
+│   serif fonts, and a minimalist design"                                   │
+│                                                                           │
+│  Modification:                                                            │
+│  "Make the primary color darker"                                          │
+│  "Change to a 4-column product grid"                                      │
+│  "Use rounded buttons instead of square"                                  │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ COST ESTIMATES ──────────────────────────────────────────────────────────┐
+│                                                                           │
+│  Per Theme:                                                               │
+│  • GPT-4: ~$0.03                                                          │
+│  • GPT-3.5: ~$0.01                                                        │
+│  • Claude: ~$0.02                                                         │
+│                                                                           │
+│  Monthly (100 stores × 5 themes):                                         │
+│  • 500 themes                                                             │
+│  • ~$15-$25/month                                                         │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+┌─ GETTING HELP ────────────────────────────────────────────────────────────┐
+│                                                                           │
+│  1. Check documentation files                                             │
+│  2. Review error logs                                                     │
+│  3. Test individual components                                            │
+│  4. Verify environment configuration                                      │
+│  5. Check GENAI_CHATBOT_README.md Troubleshooting section                 │
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                        🎉 READY TO GO! 🎉                                ║
+║                                                                          ║
+║  Run: ./setup_genai_chatbot.sh                                           ║
+║  Visit: http://localhost:3000/theme_designer                             ║
+║                                                                          ║
+║  Happy designing! 🎨✨                                                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Version 1.0 | January 2026

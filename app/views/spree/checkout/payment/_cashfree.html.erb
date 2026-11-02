@@ -1,0 +1,166 @@
+<div class="cashfree-payment-section">
+  <div class="payment-info">
+    <div class="secure-badge">
+      🔒 Secure Payment via Cashfree
+    </div>
+    <div class="accepted-cards">
+      Cards, UPI, Wallets & Net Banking accepted
+    </div>
+  </div>
+
+  <button id="cashfree-custom-button" type="button">
+    Pay ₹<%= number_with_precision(current_order.total, precision: 2) %> Securely
+  </button>
+
+  <input type="hidden" 
+         name="payment_source[<%= payment_method.id %>][cashfree_payment_id]" 
+         value="">
+  
+  <div id="cashfree-data" 
+       data-order-id="<%= current_order.id %>"
+       data-order-number="<%= current_order.number %>"
+       data-payment-method-id="<%= payment_method.id %>"
+       data-environment="<%= payment_method.preferences[:environment] %>"
+       style="display:none;">
+  </div>
+</div>
+
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+<script>
+(function() {
+  function init() {
+    const payBtn = document.getElementById("checkout-payment-submit");
+    const cashfreeBtn = document.getElementById("cashfree-custom-button");
+    const form = document.getElementById("checkout_form_payment");
+    const dataEl = document.getElementById("cashfree-data");
+    
+    if (!payBtn || !cashfreeBtn || !form || !dataEl) {
+      setTimeout(init, 100);
+      return;
+    }
+
+    payBtn.style.display = "none";
+    cashfreeBtn.style.display = "block";
+    
+    let processing = false;
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, true);
+
+    cashfreeBtn.onclick = function(e) {
+      e.preventDefault();
+      
+      if (processing) return;
+      processing = true;
+      
+      cashfreeBtn.textContent = "Creating payment session...";
+      cashfreeBtn.disabled = true;
+
+      const orderId = dataEl.dataset.orderId;
+      const orderNumber = dataEl.dataset.orderNumber;
+      const paymentMethodId = dataEl.dataset.paymentMethodId;
+      const environment = dataEl.dataset.environment;
+
+      // Call Rails to create Cashfree session
+      fetch('/cashfree/create_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ 
+          order_id: orderId,
+          payment_method_id: paymentMethodId
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.session_id && !data.session_id.startsWith('R')) {
+          cashfreeBtn.textContent = "Opening payment gateway...";
+          
+          const cashfree = Cashfree({
+            mode: environment === 'production' ? 'production' : 'sandbox'
+          });
+
+          const returnUrl = window.location.origin + '/cashfree/response?order_id=' + orderNumber + '&payment_method_id=' + paymentMethodId;
+
+          cashfree.checkout({
+            paymentSessionId: data.session_id,
+            returnUrl: returnUrl
+          });
+        } else {
+          alert('Failed to create payment session: ' + (data.error || 'Unknown error'));
+          cashfreeBtn.textContent = "Pay ₹<%= number_with_precision(current_order.total, precision: 2) %> Securely";
+          cashfreeBtn.disabled = false;
+          processing = false;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Payment initialization failed. Please try again.');
+        cashfreeBtn.textContent = "Pay ₹<%= number_with_precision(current_order.total, precision: 2) %> Securely";
+        cashfreeBtn.disabled = false;
+        processing = false;
+      });
+    };
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style>
+.cashfree-payment-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  background: #f9f9f9;
+}
+
+.payment-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.secure-badge {
+  color: #4CAF50;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.accepted-cards {
+  color: #666;
+  font-size: 14px;
+}
+
+#cashfree-custom-button {
+  background: #2196F3 !important;
+  color: white !important;
+  border: none !important;
+  padding: 15px 30px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+#cashfree-custom-button:hover {
+  background: #1976D2 !important;
+}
+
+#cashfree-custom-button:disabled {
+  background: #cccccc !important;
+  cursor: not-allowed !important;
+}
+</style>

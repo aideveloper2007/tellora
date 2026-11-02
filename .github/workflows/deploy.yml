@@ -1,0 +1,123 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  DEPLOY_DIR: /opt/saas-premium/saas-premium
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: app
+            image: ghcr.io/aideveloper2007/tellora
+            context: .
+          - name: genai
+            image: ghcr.io/aideveloper2007/tellora-genai
+            context: ./genai_theme_api
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.image }}
+          tags: |
+            type=sha,format=long,prefix=
+            type=raw,value=latest
+
+      - name: Build and push ${{ matrix.name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload docker-compose.yml to the server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: docker-compose.yml
+          target: ${{ env.DEPLOY_DIR }}
+
+      - name: Deploy on the server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ env.DEPLOY_DIR }}
+
+            # docker compose v2, or the older docker-compose
+            if docker compose version >/dev/null 2>&1; then DC="docker compose"; else DC="docker-compose"; fi
+
+            # This exact build (commit) is deployed; "latest" stays as a fallback
+            export IMAGE_TAG=${{ github.sha }}
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            echo "==> Pulling new images"
+            $DC pull app sidekiq genai-theme-api
+
+            echo "==> Database migrations (the old version keeps running if this fails)"
+            $DC up -d db redis
+            $DC run --rm app bin/rails db:migrate
+
+            echo "==> Starting the new version"
+            $DC up -d --remove-orphans
+
+            echo "==> Waiting for the app to be healthy"
+            for i in $(seq 1 30); do
+              STATUS=$(docker inspect --format '{{.State.Health.Status}}' $($DC ps -q app) 2>/dev/null || echo starting)
+              if [ "$STATUS" = "healthy" ]; then echo "App is healthy"; break; fi
+              if [ "$i" = "30" ]; then echo "App did not become healthy"; $DC logs --tail=80 app; exit 1; fi
+              sleep 5
+            done
+
+            # Remove only OUR old unused images (never other projects' containers or images)
+            docker image prune -af --filter "label=org.opencontainers.image.source=https://github.com/${{ github.repository }}" || true
+
+            $DC ps

@@ -1,0 +1,29 @@
+<% cache spree_base_cache_scope.call(product) do %>
+  <div class="st-accordion" data-controller="accordion">
+    <% short_description = product.property('short_description') %>
+    <% if short_description.present? %>
+      <div class="product-property py-4 border-b border-default">
+        <%= link_to '#property_details', class: 'text-sm uppercase tracking-widest inline-flex w-full justify-between !border-b-transparent', data: { action: 'accordion#toggle' } do %>
+          <%= Spree.t(:details) %>
+          <%= render 'spree/shared/icons/chevron_down' %>
+        <% end %>
+        <div class="text-sm st-accordion__content" data-accordion-id="property_details">
+          <div class="pt-4"><%= product.description %></div>
+        </div>
+      </div>
+    <% end %>
+
+    <% shipping_policy = current_store.customer_shipping_policy %>
+    <% if shipping_policy.present? %>
+      <div class="product-property py-4 border-b border-default">
+        <%= link_to "#property_shipping_policy", class: 'text-sm uppercase tracking-widest inline-flex w-full justify-between !border-b-transparent', data: { action: 'accordion#toggle' } do %>
+          <%= Spree.t(:shipping_policy) %>
+          <%= render 'spree/shared/icons/chevron_down' %>
+        <% end %>
+        <div class="text-sm st-accordion__content" data-accordion-id="property_shipping_policy">
+          <div class="pt-4"><%= shipping_policy %></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

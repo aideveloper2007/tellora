@@ -1,0 +1,23 @@
+<%# Hero: words on one side, a tall photo with a small note card on the other. locals: hero, image %>
+<section class="tl-hero" aria-labelledby="tl-hero-title">
+  <div class="tl-wrap tl-hero-grid">
+    <div class="tl-hero-text">
+      <% if hero['kicker'].present? %><p class="tl-kicker"><%= hero['kicker'] %></p><% end %>
+      <h2 class="tl-hero-title" id="tl-hero-title"><%= hero['title'] %><% if hero['emphasis'].present? %> <em><%= hero['emphasis'] %></em><% end %></h2>
+      <p class="tl-lede"><%= hero['lede'] %></p>
+      <div class="tl-actions">
+        <a class="tl-btn" href="<%= spree.products_path %>"><%= hero['primary_cta'] %></a>
+        <% if hero['secondary_cta'].present? %><a class="tl-btn tl-btn-line" href="#tl-story"><%= hero['secondary_cta'] %></a><% end %>
+      </div>
+    </div>
+    <div class="tl-hero-media">
+      <%= render 'storefront_sections/photo', image: image, width: 640, height: 800, alt: current_store.name, label: current_store.name, klass: 'tl-hero-photo', eager: true %>
+      <% if hero['note_title'].present? %>
+        <div class="tl-note">
+          <strong><%= hero['note_title'] %></strong>
+          <% if hero['note_text'].present? %><p><%= hero['note_text'] %></p><% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>

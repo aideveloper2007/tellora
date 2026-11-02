@@ -1,0 +1,10 @@
+<%# A photo slot. Shows a designed placeholder when there is no photo.
+    locals: image (ThemeImage or Spree::Image or nil), width, height, alt, label, klass, eager %>
+<% url = tl_image_url(local_assigns[:image], width: width, height: height) %>
+<div class="tl-photo <%= local_assigns[:klass] %><%= ' tl-photo-empty' unless url %>">
+  <% if url %>
+    <img src="<%= url %>" alt="<%= local_assigns[:alt] %>" width="<%= width %>" height="<%= height %>" loading="<%= local_assigns[:eager] ? 'eager' : 'lazy' %>" decoding="async">
+  <% elsif local_assigns[:label].present? %>
+    <span class="tl-photo-label"><%= local_assigns[:label] %></span>
+  <% end %>
+</div>

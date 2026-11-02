@@ -1,0 +1,109 @@
+x-rails-env: &rails-env
+  RAILS_ENV: production
+  DATABASE_URL: postgresql://spree:${DB_PASSWORD}@db:5432/spree_production
+  REDIS_URL: redis://redis:6379/1
+  SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+  RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+  RAILS_SERVE_STATIC_FILES: "true"
+  RAILS_LOG_TO_STDOUT: "true"
+  FORCE_SSL: "false"
+  GENAI_SERVICE_URL: http://genai-theme-api:8000
+  PLATFORM_NAME: ${PLATFORM_NAME:-Tellora}
+  TENANT_DOMAINS: ${TENANT_DOMAINS:-lvh.me}
+  # Local only: store links use http and port 3002 (leave unset on a real server)
+  STORE_URL_PROTOCOL: http
+  STORE_URL_PORT: "3002"
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        RUBY_VERSION: "3.2.4"
+    image: saas-premium-app:local
+    ports:
+      - "3002:3000"
+    environment: *rails-env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      genai-theme-api:
+        condition: service_started
+    volumes:
+      - app_storage:/rails/storage
+    networks: [app-network]
+
+  sidekiq:
+    image: saas-premium-app:local
+    command: bundle exec sidekiq
+    environment: *rails-env
+    depends_on:
+      app:
+        condition: service_started
+      redis:
+        condition: service_started
+    volumes:
+      - app_storage:/rails/storage
+    networks: [app-network]
+
+  genai-theme-api:
+    build:
+      context: ./genai_theme_api
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8000"
+    environment:
+      LLM_PROVIDER: claude
+      USE_REAL_LLM: "true"
+      CLAUDE_API_KEY: ${ANTHROPIC_API_KEY:-}
+      RAILS_API_URL: http://app:3000
+    networks: [app-network]
+
+  genai-service:
+    build:
+      context: ./python_service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5-5}
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: "8000"
+      DEBUG: "true"
+      RAILS_API_URL: http://app:3000
+    networks: [app-network]
+
+  db:
+    image: pgvector/pgvector:pg14
+    environment:
+      POSTGRES_DB: spree_production
+      POSTGRES_USER: spree
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spree -d spree_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [app-network]
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks: [app-network]
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_storage:
+
+networks:
+  app-network:

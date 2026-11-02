@@ -1,0 +1,18 @@
+<div class="upi-manual-payment-box">
+  <h3>Pay using UPI</h3>
+
+  <% if payment_method.qr_code.present? %>
+    <p>Scan the QR Code to pay:</p>
+    <%= image_tag main_app.url_for(payment_method.qr_code) %>
+
+  <% end %>
+
+  <% if payment_method.preferred_upi_id.present? %>
+    <p><strong>UPI ID:</strong> <%= payment_method.preferred_upi_id %></p>
+  <% end %>
+
+  <p>
+    After payment, please click “Pay”.  
+    The store admin will confirm the payment manually.
+  </p>
+</div>

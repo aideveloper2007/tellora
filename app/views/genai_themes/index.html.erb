@@ -1,0 +1,221 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-controller="quick-generate genai-theme-manager">
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">
+      <% if @onboarding %>Welcome! 🎨<% end %> AI Theme Designer
+    </h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+      <% if @onboarding %>
+        Let's create a beautiful theme for your new store!
+      <% else %>
+        Generate beautiful, customized themes for your store using AI.
+      <% end %>
+      Chat with our AI assistant or upload your brand requirements document.
+    </p>
+    
+    <% if @onboarding %>
+      <div class="mt-6">
+        <%= link_to '/', class: 'inline-flex items-center px-6 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500' do %>
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+          Skip for now & use default theme
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if current_genai_theme.present? && current_genai_theme.default? %>
+    <div class="mb-8 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg shadow-sm" data-genai-theme-manager-target="activeThemeCard">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <div class="flex items-center">
+            <svg class="h-6 w-6 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-blue-900">Active AI Theme</h3>
+          </div>
+          <p class="mt-2 text-blue-800">
+            <strong><%= current_genai_theme.name %></strong>
+          </p>
+          <p class="text-sm text-blue-700 mt-1">
+            Created <%= time_ago_in_words(current_genai_theme.created_at) %> ago
+          </p>
+        </div>
+        <button 
+          type="button"
+          data-action="click->genai-theme-manager#deactivateTheme"
+          data-theme-id="<%= current_genai_theme.id %>"
+          class="ml-4 px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+          Return to Default Theme
+        </button>
+      </div>
+    </div>
+  <% end %>
+
+<!-- API Status Banner (only show if error) -->
+<% if @api_status['status'] == 'error' %>
+  <div class="mb-8 bg-red-50 border-l-4 border-red-400 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm text-red-700">
+          <strong>GenAI API Error:</strong> <%= @api_status['status'] %>
+          <% if @api_status['message'] %>
+            - <%= @api_status['message'] %>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>
+  <!-- Options Cards -->
+  <div class="grid md:grid-cols-2 gap-8 mb-12">
+    <!-- Chat Option -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+      <div class="p-8">
+        <div class="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
+          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Chat with AI</h3>
+        <p class="text-gray-600 mb-6">
+          Have a conversation with our AI assistant. Tell us about your store, 
+          products, and style preferences. The AI will guide you through creating 
+          the perfect theme.
+        </p>
+        <ul class="space-y-2 mb-6">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Natural conversation flow</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">AI extracts your requirements</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Best for exploring options</span>
+          </li>
+        </ul>
+        <%= link_to chat_genai_themes_path(onboarding: params[:onboarding]), class: "block w-full bg-blue-600 text-white text-center py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors" do %>
+          Start Chat
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Quick Generate Option -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+      <div class="p-8">
+        <div class="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-6">
+          <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-4">Quick Generate</h3>
+        <p class="text-gray-600 mb-6">
+          Know what you want? Describe your store type, 
+          and generate a theme instantly - works for any business!
+        </p>
+        <ul class="space-y-2 mb-6">
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Fast and direct</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Works for any store type</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm text-gray-600">Best for clear requirements</span>
+          </li>
+        </ul>
+        <%= link_to "#", 
+          class: "block w-full bg-purple-600 text-white text-center py-3 px-6 rounded-lg font-semibold hover:bg-purple-700 transition-colors",
+          data: { action: "click->quick-generate#open" } do %>
+          Quick Generate
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="bg-gray-50 rounded-lg p-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">What You Get</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="text-center">
+        <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-4">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">Complete Color Palette</h3>
+        <p class="text-sm text-gray-600">Brand-aligned colors for your entire store</p>
+      </div>
+      <div class="text-center">
+        <div class="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-4">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">Professional Typography</h3>
+        <p class="text-sm text-gray-600">Font pairings that match your brand style</p>
+      </div>
+      <div class="text-center">
+        <div class="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-4">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-gray-900 mb-2">Ready-to-Use CSS</h3>
+        <p class="text-sm text-gray-600">Complete CSS code ready to apply</p>
+      </div>
+    </div>
+  </div>
+
+<!-- Quick Generate Modal -->
+<div data-quick-generate-target="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+    <h3 class="text-2xl font-bold mb-4">Quick Generate Theme</h3>
+    <p class="text-gray-600 mb-6">Describe your store and we'll generate a theme instantly</p>
+    
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Store Description</label>
+      <input 
+        type="text" 
+        data-quick-generate-target="storeType" 
+        placeholder="e.g., luxury jewelry, organic pet food, vintage books..."
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+      <p class="mt-2 text-xs text-gray-500">Describe your store in a few words - be specific!</p>
+    </div>
+    
+    <div class="flex gap-3">
+      <button data-action="click->quick-generate#close" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+        Cancel
+      </button>
+      <button data-action="click->quick-generate#generate" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        Generate
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+

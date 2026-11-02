@@ -1,0 +1,51 @@
+<%= content_for(:page_title) do %>
+  <%= Spree.t(:integrations) %>
+<% end %>
+
+<% content_for :page_actions do %>
+  <%= render_admin_partials(:integrations_actions_partials) rescue '' %>
+<% end %>
+
+<%= render_admin_partials(:integrations_header_partials) rescue '' %>
+
+<div class="row">
+  <div class="col-lg-8 offset-lg-2">
+    <div class="alert alert-info mb-4">
+      <%= Spree.t('admin.integrations.page_subtitle') %>
+    </div>
+    <!-- 🔹 Custom Shiprocket Integration Card -->
+    <div class="my-2 text-muted font-weight-light text-uppercase">
+      Shipping
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+      <div class="col mb-4">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <%= image_tag 'shiprocket.png', 
+                  alt: 'Shiprocket Logo', 
+                  class: 'img-fluid', 
+                  style: 'max-width: 120px;' %>
+            </div>
+            <h5 class="card-title">Shiprocket</h5>
+            <p class="card-text text-muted">
+              Manage Shiprocket integration settings and shipping automation.
+            </p>
+            <%= link_to 'Shiprocket', edit_admin_shiprocket_settings_path, class: "btn btn-primary mt-2" %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 🔹 End Custom Card -->
+    <% grouped_available_store_integrations.each do |group, integrations| %>
+      <% if group.present? %>
+        <div class="my-2 text-muted font-weight-light text-uppercase"><%= Spree.t(group) %></div>
+      <% end %>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <% integrations.each do |integration| %>
+          <%= render 'spree/admin/integrations/integration', integration_class: integration %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

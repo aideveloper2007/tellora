@@ -1,0 +1,8 @@
+<%= hidden_field_tag 'billing_cust_name',            bill_address.full_name %>
+<%= hidden_field_tag 'billing_cust_address',         bill_address.address1  %>
+<%= hidden_field_tag 'billing_cust_city',            bill_address.city %>
+<%= hidden_field_tag 'billing_cust_state',           (bill_address.state.try(:name) || bill_address.state_name) %>
+<%= hidden_field_tag 'billing_zip_code',             bill_address.zipcode %>
+<%= hidden_field_tag 'billing_cust_country',         bill_address.country.name %>
+<%= hidden_field_tag 'billing_cust_tel',             bill_address.phone %>
+<%= hidden_field_tag 'billing_cust_email',           order.email %>

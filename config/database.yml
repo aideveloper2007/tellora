@@ -1,0 +1,38 @@
+# Replace your config/database.yml with this:
+
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: saasapplication_development
+  username: amars
+  password: password
+  host: localhost
+  port: 5432  # Use port 5432 since that's where your PostgreSQL is running
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS') { 5 } %>
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: saasapplication_starter_test
+  username: amars
+  password: password
+  host: localhost
+  port: 5432  # Use port 5432
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS') { 5 } %>
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: saasapplication_production
+  username: amars
+  password: password
+  host: localhost
+  port: 5432  # Use port 5432
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS') { 5 } %>
+# For asset precompilation
+asset_precompile:
+  adapter: postgresql
+  host: localhost
+  database: dummy_db
+  username: dummy
+  password: dummy
