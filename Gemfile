@@ -86,7 +86,7 @@ gem "spree_i18n"
 gem "spree_stripe", '~> 1.2'
 gem "spree_google_analytics", "~> 1.0"
 gem "spree_klaviyo", "~> 1.0"
-gem "spree_paypal_checkout", "~> 0.5"
+gem "spree_paypal_checkout", "~> 0.7"
 
 # Custom Spree extensions
 gem 'spree_import_products', path: 'vendor/spree_import_products'
