@@ -54,7 +54,7 @@ group :test do
   gem 'factory_bot'
   gem 'factory_bot_rails'
   gem 'database_cleaner'
-  gem 'rspec-activemodel-mocks', '~> 1.0'
+  gem 'rspec-activemodel-mocks', '~> 1.3'
   gem 'rspec-rails', '~> 8.0'
   gem 'rspec-retry'
   gem 'rspec_junit_formatter'
