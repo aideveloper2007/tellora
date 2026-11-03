@@ -37,35 +37,27 @@ if worker_count.to_i > 0
     # Reconnect to database for each worker to avoid connection sharing
     if defined?(ActiveRecord)
       ActiveRecord::Base.establish_connection
-      
-      # Optimize database connection pool for imports
-      pool_config = ActiveRecord::Base.connection_pool.db_config
-      if pool_config.respond_to?(:configuration_hash)
-        config = pool_config.configuration_hash
-        # Increase statement timeout for large imports
-        ActiveRecord::Base.connection.execute("SET statement_timeout = '600s'") rescue nil
-      end
-      
+
+      # Increase statement timeout for large imports
+      ActiveRecord::Base.connection.execute("SET statement_timeout = '600s'") rescue nil
+
       Rails.logger.info "Worker #{Process.pid}: Database connection established with import optimizations"
     end
-    
+
     # Reset Apartment tenant cache for each worker
     if defined?(Apartment)
       Apartment::Tenant.reset
       Rails.logger.info "Worker #{Process.pid}: Apartment tenant cache reset"
     end
-    
-    # Reconnect Redis for session/cache management
-    if defined?(Redis)
-      Redis.current.disconnect!
-      Rails.logger.info "Worker #{Process.pid}: Redis reconnected"
-    end
-    
+
+    # Redis: nothing to do. Redis 5+ has no Redis.current; Sidekiq and the Rails
+    # cache open their own connections in each worker after the fork.
+
     # Clear any cached tenant connections
     if defined?(ActiveRecord) && ActiveRecord::Base.respond_to?(:clear_all_connections!)
       ActiveRecord::Base.clear_all_connections!
     end
-    
+
     # Set worker-specific memory optimization for imports
     GC.start
     GC.compact if GC.respond_to?(:compact)
@@ -85,7 +77,7 @@ if worker_count.to_i > 0
       ActiveRecord::Base.connection_pool.disconnect!
       Rails.logger.info "Master process: Database connections closed before fork"
     end
-    
+
     # Force garbage collection before forking
     GC.start
     GC.compact if GC.respond_to?(:compact)
@@ -95,19 +87,21 @@ end
 # Logging and monitoring
 if ENV["RAILS_ENV"] == "production"
   quiet false
-  
+
   # Log worker memory usage periodically
   Thread.new do
     loop do
       sleep 300  # Every 5 minutes
-      if defined?(Rails) && Rails.logger
+      if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
         memory_mb = `ps -o rss= -p #{Process.pid}`.to_i / 1024
         Rails.logger.info "Worker #{Process.pid}: Memory usage: #{memory_mb}MB"
       end
     end
   end if worker_count.to_i > 0
-  
-  Rails.logger.info "Puma configuration loaded: #{worker_count} workers, #{max_threads_count} max threads, optimized for imports"
+
+  if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+    Rails.logger.info "Puma configuration loaded: #{worker_count} workers, #{max_threads_count} max threads, optimized for imports"
+  end
 end
 
 # Worker restart strategy for memory management during heavy imports
