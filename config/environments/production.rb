@@ -14,7 +14,10 @@ Rails.application.configure do
   config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
   config.silence_healthcheck_path = "/up"
   config.active_support.report_deprecations = false
-  config.action_mailer.default_url_options = { host: 'zencommerce.xyz', protocol: 'https' }
+
+  # Links in emails (password reset, order confirmations) point to the platform domain
+  mailer_host = ENV.fetch("MAILER_HOST") { ENV.fetch("TENANT_DOMAINS", "localhost").split(",").first.strip }
+  config.action_mailer.default_url_options = { host: mailer_host, protocol: config.force_ssl ? "https" : "http" }
 
   if ENV['REDIS_CACHE_URL'].present?
     cache_servers = ENV['REDIS_CACHE_URL'].split(',')
@@ -35,7 +38,7 @@ Rails.application.configure do
     config.action_mailer.smtp_settings = {
       user_name: 'apikey',
       password: ENV['SENDGRID_API_KEY'],
-      domain: ENV.fetch('SENDGRID_DOMAIN', Rails.application.routes.default_url_options[:host]),
+      domain: ENV.fetch('SENDGRID_DOMAIN', mailer_host),
       address: 'smtp.sendgrid.net',
       port: 587,
       authentication: :plain,
