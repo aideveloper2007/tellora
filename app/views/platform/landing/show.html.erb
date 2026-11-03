@@ -104,12 +104,63 @@
   .section h2 { font-size: var(--step-3); font-weight: 700; max-width: 22ch; }
   .section-intro { margin-top: 0.9rem; color: var(--muted); font-size: var(--step-1); max-width: 40rem; line-height: 1.5; }
 
-  .steps { list-style: none; margin: 2.75rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem; counter-reset: step; }
-  @media (max-width: 860px) { .steps { grid-template-columns: 1fr; gap: 2rem; } }
-  .steps li { counter-increment: step; border-top: 2px solid var(--ink); padding-top: 1.1rem; }
-  .steps li::before { content: counter(step); font-family: var(--font-display); font-weight: 800; font-size: var(--step-3); line-height: 1; display: block; margin-bottom: 0.9rem; }
-  .steps h3 { font-size: var(--step-1); font-weight: 700; margin-bottom: 0.5rem; }
-  .steps p { color: var(--muted); max-width: 34ch; }
+  /* Journey: from one sentence to the customer's door */
+  .journey-phase { margin: 2.75rem 0 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: var(--step--1); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .journey-phase::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .journey { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; counter-reset: stage; }
+  .journey-sell { counter-reset: stage 4; }
+  @media (max-width: 1080px) { .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .journey { grid-template-columns: 1fr; } }
+  .stage { counter-increment: stage; display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden; }
+  .stage-art { position: relative; height: 8.5rem; background: var(--mist); border-bottom: 1px solid var(--line); display: grid; place-items: center; padding: 1rem; overflow: hidden; }
+  .stage-body { padding: 1.15rem 1.25rem 1.35rem; }
+  .stage h3 { display: flex; align-items: baseline; gap: 0.6rem; font-size: var(--step-1); font-weight: 700; line-height: 1.2; }
+  .stage h3::before { content: counter(stage); flex: none; display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: 0.9rem; font-weight: 800; transform: translateY(-0.1rem); }
+  .stage p { margin-top: 0.55rem !important; color: var(--muted); font-size: 0.97rem; line-height: 1.55; }
+
+  /* Small drawn scenes (decorative) */
+  .art-prompt { width: 100%; max-width: 15rem; background: var(--paper); border: 2px solid var(--ink); border-radius: 12px; padding: 0.65rem 0.75rem; font-size: 0.85rem; line-height: 1.35; box-shadow: 4px 4px 0 var(--ink); }
+  .art-prompt b { display: inline-block; width: 2px; height: 1em; background: var(--ink); vertical-align: -0.15em; margin-left: 2px; animation: caret 1s steps(1) infinite; }
+  @keyframes caret { 50% { opacity: 0; } }
+  .art-styles { display: flex; gap: 0.5rem; }
+  .art-styles span { width: 4.1rem; height: 5.2rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; padding: 0.45rem; font-family: Georgia, 'Times New Roman', serif; font-size: 1.35rem; line-height: 1; box-shadow: 0 6px 16px -10px rgba(24, 22, 58, 0.5); }
+  .art-styles span:nth-child(2) { transform: translateY(-0.4rem); }
+  .art-styles i { display: block; width: 100%; height: 0.4rem; border-radius: 99px; }
+  .art-products { display: grid; grid-template-columns: repeat(3, 4rem); gap: 0.5rem; }
+  .art-products span { background: var(--paper); border-radius: 8px; padding: 0.35rem; font-size: 0.68rem; font-weight: 600; box-shadow: 0 6px 16px -10px rgba(24, 22, 58, 0.5); }
+  .art-products i { display: block; aspect-ratio: 1; border-radius: 5px; margin-bottom: 0.3rem; }
+  .art-builder { position: relative; width: 100%; max-width: 15rem; height: 6.5rem; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-columns: 38% 1fr; overflow: hidden; }
+  .art-builder .chat { border-right: 1px solid var(--line); padding: 0.4rem; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.3rem; }
+  .art-builder .chat span { font-size: 0.6rem; line-height: 1.25; padding: 0.25rem 0.35rem; border-radius: 6px; background: var(--ink); color: var(--paper); align-self: flex-end; }
+  .art-builder .chat span:first-child { background: var(--mist); color: var(--ink); align-self: flex-start; }
+  .art-builder .site { padding: 0.4rem; display: grid; gap: 0.3rem; align-content: start; background: #efe6da; }
+  .art-builder .site i { display: block; height: 0.45rem; border-radius: 99px; background: #1f1510; opacity: 0.85; }
+  .art-builder .site i:nth-child(2) { width: 60%; opacity: 0.4; }
+  .art-builder .site b { display: block; height: 2.2rem; border-radius: 4px; background: #8e2a22; opacity: 0.85; }
+  .art-url { width: 100%; max-width: 15rem; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0.55rem 0.8rem; display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; box-shadow: 0 8px 20px -14px rgba(24, 22, 58, 0.6); }
+  .art-url svg { flex: none; }
+  .art-url em { font-style: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .art-live { position: absolute; top: 1.1rem; right: 1.1rem; background: #e3f4ea; color: #1f7a4d; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 999px; }
+  .art-pay { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; max-width: 15rem; }
+  .art-pay span { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0.35rem 0.7rem; font-size: 0.78rem; font-weight: 600; }
+  .art-pay span:first-child { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .art-order { width: 100%; max-width: 15rem; display: grid; gap: 0.4rem; }
+  .art-order .row { display: flex; align-items: center; justify-content: space-between; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.75rem; font-weight: 600; }
+  .art-order .track { display: flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; color: var(--muted); }
+  .art-order .track span { flex: 1; text-align: center; padding: 0.2rem 0; border-radius: 99px; background: var(--paper); border: 1px solid var(--line); }
+  .art-order .track span.on { background: var(--marigold); border-color: var(--marigold); color: var(--ink); font-weight: 700; }
+  .art-grow { width: 100%; max-width: 15rem; display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; align-items: end; }
+  .art-grow .serp { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 0.45rem 0.55rem; font-size: 0.62rem; line-height: 1.35; }
+  .art-grow .serp b { display: block; color: #1a0dab; font-size: 0.72rem; }
+  .art-grow .serp em { font-style: normal; color: #1f7a4d; }
+  .art-grow .bars { display: flex; align-items: flex-end; gap: 0.25rem; height: 4.5rem; }
+  .art-grow .bars i { display: block; width: 0.55rem; border-radius: 3px 3px 0 0; background: var(--ink); }
+  .art-grow .bars i:last-child { background: var(--marigold); }
+
+  .journey-end { margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; flex-wrap: wrap; background: var(--ink); color: var(--paper); border-radius: var(--radius-l); padding: 1.35rem 1.6rem; }
+  .journey-end p { font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); }
+  .journey-end .button { background: var(--marigold); border-color: var(--marigold); color: var(--ink); }
+  .journey-end .button:hover { background: #ffc629; border-color: #ffc629; }
 
   .included { margin: 2.75rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5rem; }
   @media (max-width: 760px) { .included { grid-template-columns: 1fr; } }
@@ -255,22 +306,114 @@
 
 <section class="section section-mist" id="how" aria-labelledby="how-title">
   <div class="wrap">
-    <h2 id="how-title">From one sentence to a working shop</h2>
-    <p class="section-intro">No templates to pick and no settings to learn. You describe the business; the store is built around it.</p>
-    <ol class="steps">
-      <li>
-        <h3>Describe</h3>
-        <p>Say what you sell and who buys it, in any language. If you already have a brand brief, upload it instead.</p>
+    <h2 id="how-title">From one sentence to your customer's door</h2>
+    <p class="section-intro">Everything between your idea and a delivered order happens in one place. Here is the whole journey.</p>
+
+    <p class="journey-phase">Build your store</p>
+    <ol class="journey">
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-prompt">Handmade silver jewellery from Jaipur<b></b></div>
+        </div>
+        <div class="stage-body">
+          <h3>Describe your business</h3>
+          <p>Write one sentence about what you sell and who buys it, in any language. That is all the setup there is.</p>
+        </div>
       </li>
-      <li>
-        <h3>Review</h3>
-        <p>See your store with its colours, fonts and starter products. Ask for changes in plain words, like "warmer colours" or "bigger photos".</p>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-styles">
+            <span style="background:#efe6da;color:#1f1510">Aa<i style="background:#8e2a22"></i></span>
+            <span style="background:#fbfaf8;color:#161514;font-style:italic">Aa<i style="background:#3e4436"></i></span>
+            <span style="background:#ffffff;color:#232120">Aa<i style="background:#a8834d"></i></span>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>AI designs your store</h3>
+          <p>It picks a designer style that suits your products, writes your home page in your language and finds photos to match.</p>
+        </div>
       </li>
-      <li>
-        <h3>Start selling</h3>
-        <p>Add your own products, connect payments and your domain, then share your link with customers.</p>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-products">
+            <span><i style="background:#d8c9b6"></i>₹1,450</span>
+            <span><i style="background:#cdb79e"></i>₹2,890</span>
+            <span><i style="background:#e6d9c7"></i>₹990</span>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>Your first products appear</h3>
+          <p>Starter products with names, descriptions, photos and prices in your currency, so the store looks complete from minute one.</p>
+        </div>
+      </li>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-builder">
+            <div class="chat"><span>Store ready</span><span>Warmer colours please</span></div>
+            <div class="site"><i></i><i></i><b></b></div>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>Preview and refine</h3>
+          <p>See your live store on desktop and mobile. Switch styles in one click or ask for changes in plain words.</p>
+        </div>
       </li>
     </ol>
+
+    <p class="journey-phase">Sell and deliver</p>
+    <ol class="journey journey-sell" start="5">
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <span class="art-live">Live</span>
+          <div class="art-url">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <span>yourname<em>.<%= preview_domain %></em></span>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>Publish in one click</h3>
+          <p>Go live on your own address with free SSL. Connect a domain you already own whenever you are ready.</p>
+        </div>
+      </li>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-pay"><span>UPI</span><span>Cards</span><span>Net banking</span><span>Wallets</span><span>Stripe</span><span>PayPal</span></div>
+        </div>
+        <div class="stage-body">
+          <h3>Customers pay their way</h3>
+          <p>UPI, cards, net banking and wallets through Razorpay, Cashfree and CCAvenue, plus Stripe and PayPal worldwide. No fee from us.</p>
+        </div>
+      </li>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-order">
+            <div class="row"><span>Order #1042</span><span>Paid</span></div>
+            <div class="track"><span class="on">Packed</span><span class="on">Shipped</span><span>Delivered</span></div>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>From order to doorstep</h3>
+          <p>Every order lands in one dashboard with PDF invoices and packing slips. Ship across India with Shiprocket at your own rates.</p>
+        </div>
+      </li>
+      <li class="stage">
+        <div class="stage-art" aria-hidden="true">
+          <div class="art-grow">
+            <div class="serp"><b>Silver jhumka earrings</b><em>yourname.<%= preview_domain %></em><br>Handmade in Jaipur…</div>
+            <div class="bars"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:90%"></i></div>
+          </div>
+        </div>
+        <div class="stage-body">
+          <h3>Grow your sales</h3>
+          <p>SEO for every product and page, Google Analytics, Klaviyo emails and a built-in blog bring new customers and bring them back.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="journey-end">
+      <p>From one sentence to your first delivery.</p>
+      <a class="button" href="#build" data-start-free>Build my store</a>
+    </div>
   </div>
 </section>
 
