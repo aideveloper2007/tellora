@@ -1,6 +1,8 @@
 class CreateSpreeCcavenueTransactions < ActiveRecord::Migration[8.0]
   def change
-    create_table :spree_ccavenue_transactions do |t|
+    # Store databases can already have this table (created from schema.rb),
+    # so only create it when it is missing.
+    create_table :spree_ccavenue_transactions, if_not_exists: true do |t|
       t.integer :order_id
       t.integer :payment_method_id
       t.string :transaction_number
