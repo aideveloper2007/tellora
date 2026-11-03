@@ -1,0 +1,161 @@
+# Tellora plans and pricing: the single place to change prices, limits and features.
+# The landing page reads this file now; real billing (step 2) will read it later.
+# After changing it: commit and push, the deploy picks it up.
+
+trial_months: 7          # free, with every feature (Pro limits)
+billing_months: 6        # after the trial, customers pay every 6 months
+contact_email: hello@tellora.store
+
+currencies:
+  INR: { symbol: "₹", label: "₹ INR" }
+  USD: { symbol: "$", label: "$ USD" }
+
+plans:
+  - key: starter
+    name: Starter
+    for: New sellers and home businesses
+    price: { INR: 2999, USD: 59 }
+    highlights:
+      - Up to 100 products
+      - Your store at yourname.tellora.store
+      - 1 staff account
+      - 1 home page theme change a year
+      - Every payment gateway, 0% fees
+
+  - key: growth
+    name: Growth
+    for: Growing brands
+    popular: true
+    price: { INR: 7999, USD: 149 }
+    highlights:
+      - Up to 2,000 products
+      - Connect your own domain
+      - 3 staff accounts
+      - 2 home page theme changes a year
+      - 3 languages and currencies
+
+  - key: pro
+    name: Pro
+    for: Established businesses
+    price: { INR: 17999, USD: 329 }
+    highlights:
+      - Unlimited products
+      - Your own domain
+      - 10 staff accounts
+      - 5 home page theme changes a year
+      - Unlimited languages and currencies
+      - Priority support
+
+  - key: enterprise
+    name: Enterprise
+    for: Large brands and agencies
+    contact: true
+    highlights:
+      - Everything in Pro
+      - Multiple domains
+      - Unlimited staff accounts
+      - 5 home page theme changes a year
+      - A dedicated account manager
+
+# Comparison table under the plan cards. One value per plan key; true = included.
+compare:
+  - label: Products
+    starter: "100"
+    growth: "2,000"
+    pro: Unlimited
+    enterprise: Unlimited
+  - label: Store address
+    starter: yourname.tellora.store
+    growth: + your own domain
+    pro: + your own domain
+    enterprise: Multiple domains
+  - label: Staff accounts
+    starter: "1"
+    growth: "3"
+    pro: "10"
+    enterprise: Unlimited
+  - label: Home page theme changes
+    starter: 1 a year
+    growth: 2 a year
+    pro: 5 a year
+    enterprise: 5 a year
+  - label: Languages and currencies
+    starter: "1"
+    growth: "3"
+    pro: Unlimited
+    enterprise: Unlimited
+  - label: All payment gateways
+    starter: true
+    growth: true
+    pro: true
+    enterprise: true
+  - label: SEO tools
+    starter: true
+    growth: true
+    pro: true
+    enterprise: true
+  - label: Discount codes and promotions
+    starter: true
+    growth: true
+    pro: true
+    enterprise: true
+  - label: Shipping with Shiprocket
+    starter: true
+    growth: true
+    pro: true
+    enterprise: true
+  - label: Free SSL and hosting
+    starter: true
+    growth: true
+    pro: true
+    enterprise: true
+  - label: Transaction fee
+    starter: 0%
+    growth: 0%
+    pro: 0%
+    enterprise: 0%
+  - label: Support
+    starter: Email
+    growth: Email and chat
+    pro: Priority
+    enterprise: Dedicated manager
+
+# "Included free in every plan" block
+included:
+  - title: Payments
+    items:
+      - Razorpay, Cashfree and CCAvenue for India
+      - UPI, cards, net banking and wallets
+      - Stripe and PayPal for international customers
+      - 0% Tellora fee on your sales
+  - title: SEO
+    items:
+      - SEO title and description for every product, category and page
+      - Clean, readable web addresses
+      - Product details Google can show in search results
+      - Fast, mobile-friendly pages with free SSL
+  - title: Selling
+    items:
+      - Product variants like size and colour
+      - Discount codes and promotions
+      - Customer accounts and wishlists
+      - Digital products and bulk product import
+  - title: Orders and shipping
+    items:
+      - Orders, stock and customers in one dashboard
+      - PDF invoices and packing slips
+      - Shipping zones, rates and taxes
+      - Shiprocket for sellers in India
+  - title: Marketing
+    items:
+      - Google Analytics
+      - Klaviyo email campaigns
+      - Newsletter sign-up on your store
+      - Built-in blog
+  - title: Design and AI
+    items:
+      - A store designed by AI from your description
+      - Designer style families, ready to switch
+      - Changes by chat, no code
+      - Starter products with text and photos
+

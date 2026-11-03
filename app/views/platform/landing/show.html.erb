@@ -135,6 +135,59 @@
   .faq details[open] summary::after { transform: rotate(45deg); }
   .faq details p { padding: 0 0 1.25rem; color: var(--muted); max-width: 60ch; }
 
+  /* Pricing */
+  .offer { margin-top: 1.75rem; display: inline-flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; align-items: center; background: var(--marigold); color: var(--ink); border-radius: 999px; padding: 0.6rem 1.2rem; font-weight: 600; }
+  .offer span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .offer span + span::before { content: ''; width: 0.35rem; height: 0.35rem; border-radius: 50%; background: var(--ink); opacity: 0.45; margin-right: 0.8rem; }
+  @media (max-width: 600px) { .offer { display: grid; gap: 0.3rem; border-radius: var(--radius-l); padding: 0.8rem 1.1rem; } .offer span + span::before { display: none; } }
+  .pricing-bar { margin-top: 2.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .pricing-note { color: var(--muted); font-size: var(--step--1); }
+  .currency { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); padding: 0.2rem; }
+  .currency button { font: 600 var(--step--1)/1 var(--font-body); border: 0; background: transparent; color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer; }
+  .currency button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  .plans { margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
+  @media (max-width: 1080px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .plans { grid-template-columns: 1fr; } }
+  .plan { position: relative; display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 1.5rem 1.35rem 1.35rem; }
+  .plan-popular { border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
+  .plan-badge { position: absolute; top: -0.8rem; left: 1.2rem; background: var(--marigold); color: var(--ink); font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 999px; }
+  .plan h3 { font-size: var(--step-2); font-weight: 800; }
+  .plan-for { color: var(--muted); font-size: var(--step--1); margin-top: 0.25rem !important; min-height: 3.2em; }
+  @media (max-width: 600px) { .plan-for { min-height: 0; } }
+  .plan-trial { margin-top: 1.1rem !important; font-weight: 700; }
+  .plan-price { margin-top: 0.35rem !important; font-family: var(--font-display); font-weight: 800; font-size: var(--step-3); line-height: 1; letter-spacing: -0.02em; }
+  .plan-price small { font-family: var(--font-body); font-size: var(--step--1); font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .plan-monthly { color: var(--muted); font-size: var(--step--1); margin-top: 0.35rem !important; }
+  .plan-contact { margin-top: 0.35rem !important; font-family: var(--font-display); font-weight: 800; font-size: var(--step-2); line-height: 1.1; }
+  .plan ul { list-style: none; margin: 1.25rem 0 1.5rem; padding: 1.1rem 0 0; border-top: 1px solid var(--line); display: grid; gap: 0.55rem; flex: 1; }
+  .plan li { display: flex; gap: 0.55rem; align-items: flex-start; font-size: 0.95rem; line-height: 1.4; }
+  .plan li::before { content: ''; flex: none; width: 0.95rem; height: 0.55rem; margin-top: 0.3rem; border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(-45deg) translateY(-2px); }
+  .plan .button { width: 100%; }
+  .plan:not(.plan-popular) .button { background: transparent; color: var(--ink); }
+  .plan:not(.plan-popular) .button:hover { background: var(--mist); }
+
+  .compare-wrap { margin-top: 3rem; overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); }
+  .compare { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 0.95rem; }
+  .compare caption { text-align: left; padding: 1.1rem 1.25rem 0.4rem; font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); }
+  .compare th, .compare td { padding: 0.8rem 1.25rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .compare thead th { font-family: var(--font-display); font-size: var(--step-0); }
+  .compare tbody th { font-weight: 500; color: var(--muted); }
+  .compare tbody tr:last-child th, .compare tbody tr:last-child td { border-bottom: 0; }
+  .compare .yes { display: inline-block; width: 1rem; height: 0.55rem; border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(-45deg); }
+
+  .free-all { margin-top: 3.5rem; }
+  .free-all h3 { font-size: var(--step-2); font-weight: 800; }
+  .free-all > p { margin-top: 0.5rem !important; color: var(--muted); }
+  .free-grid { margin-top: 1.75rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  @media (max-width: 960px) { .free-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .free-grid { grid-template-columns: 1fr; } }
+  .free-grid section { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 1.25rem 1.35rem; }
+  .free-grid h4 { margin: 0 0 0.7rem; font-family: var(--font-display); font-size: var(--step-1); }
+  .free-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+  .free-grid li { position: relative; padding-left: 1.1rem; color: var(--muted); font-size: 0.95rem; line-height: 1.45; }
+  .free-grid li::before { content: ''; position: absolute; left: 0; top: 0.55rem; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--marigold); }
+
   .closing { text-align: center; }
   .closing h2 { margin: 0 auto; }
   .closing .section-intro { margin-left: auto; margin-right: auto; }
@@ -237,7 +290,103 @@
   </div>
 </section>
 
-<section class="section section-mist" aria-labelledby="anywhere-title">
+<% plans = TelloraPlans.plans %>
+<% currency_keys = TelloraPlans.currencies.keys %>
+<section class="section section-mist" id="pricing" aria-labelledby="pricing-title">
+  <div class="wrap">
+    <h2 id="pricing-title"><%= TelloraPlans.trial_months %> months free. Every feature.</h2>
+    <p class="section-intro">Build your store and sell for <%= TelloraPlans.trial_months %> months without paying anything, with every feature switched on. After that, choose the plan that fits and pay every <%= TelloraPlans.billing_months %> months.</p>
+    <p class="offer"><span><%= TelloraPlans.trial_months %> months free</span><span>No card needed</span><span>0% fees on your sales</span></p>
+
+    <div class="pricing-bar">
+      <p class="pricing-note">Prices are for <%= TelloraPlans.billing_months %> months, billed once every <%= TelloraPlans.billing_months %> months after your free period.</p>
+      <% if currency_keys.size > 1 %>
+        <div class="currency" role="group" aria-label="Currency">
+          <% currency_keys.each_with_index do |code, i| %>
+            <button type="button" data-currency="<%= code %>" aria-pressed="<%= i.zero? %>"><%= TelloraPlans.currencies.dig(code, 'label') || code %></button>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="plans">
+      <% plans.each do |plan| %>
+        <article class="plan<%= ' plan-popular' if plan['popular'] %>" aria-labelledby="plan-<%= plan['key'] %>">
+          <% if plan['popular'] %><span class="plan-badge">Most popular</span><% end %>
+          <h3 id="plan-<%= plan['key'] %>"><%= plan['name'] %></h3>
+          <p class="plan-for"><%= plan['for'] %></p>
+          <% if plan['contact'] %>
+            <p class="plan-trial">&nbsp;</p>
+            <p class="plan-contact">Let's talk</p>
+            <p class="plan-monthly">Custom price for your business</p>
+          <% else %>
+            <p class="plan-trial">Free for <%= TelloraPlans.trial_months %> months, then</p>
+            <% currency_keys.each_with_index do |code, i| %>
+              <div data-price="<%= code %>"<%= ' hidden' unless i.zero? %>>
+                <p class="plan-price"><%= TelloraPlans.price_label(plan, code) %> <small>/ <%= TelloraPlans.billing_months %> months</small></p>
+                <p class="plan-monthly">About <%= TelloraPlans.monthly_label(plan, code) %> a month</p>
+              </div>
+            <% end %>
+          <% end %>
+          <ul>
+            <% Array(plan['highlights']).each do |item| %>
+              <li><%= item %></li>
+            <% end %>
+          </ul>
+          <% if plan['contact'] %>
+            <a class="button" href="mailto:<%= TelloraPlans.contact_email %>?subject=<%= ERB::Util.url_encode("#{platform_name} Enterprise") %>">Contact us</a>
+          <% else %>
+            <a class="button" href="#build" data-start-free>Start free</a>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+
+    <div class="compare-wrap" role="region" aria-labelledby="compare-caption" tabindex="0">
+      <table class="compare">
+        <caption id="compare-caption">Compare plans</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="sr-only" style="position:absolute;left:-999px">Feature</span></th>
+            <% plans.each do |plan| %><th scope="col"><%= plan['name'] %></th><% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% TelloraPlans.compare.each do |row| %>
+            <tr>
+              <th scope="row"><%= row['label'] %></th>
+              <% plans.each do |plan| %>
+                <% value = row[plan['key']] %>
+                <td>
+                  <% if value == true %><span class="yes" role="img" aria-label="Included"></span>
+                  <% elsif value == false || value.nil? %><span aria-label="Not included">–</span>
+                  <% else %><%= value %><% end %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="free-all">
+      <h3>Included free in every plan</h3>
+      <p>No add-ons to buy and no extra charges for the basics.</p>
+      <div class="free-grid">
+        <% TelloraPlans.included.each do |group| %>
+          <section aria-label="<%= group['title'] %>">
+            <h4><%= group['title'] %></h4>
+            <ul>
+              <% Array(group['items']).each do |item| %><li><%= item %></li><% end %>
+            </ul>
+          </section>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="anywhere-title">
   <div class="wrap anywhere">
     <div>
       <h2 id="anywhere-title">Built for selling wherever you are</h2>
@@ -257,10 +406,22 @@
   </div>
 </section>
 
-<section class="section" id="questions" aria-labelledby="questions-title">
+<section class="section section-mist" id="questions" aria-labelledby="questions-title">
   <div class="wrap">
     <h2 id="questions-title">Questions</h2>
     <div class="faq">
+      <details>
+        <summary>Is it really free for <%= TelloraPlans.trial_months %> months?</summary>
+        <p>Yes. You get every feature for <%= TelloraPlans.trial_months %> months without paying and without adding a card. Before the free period ends, we remind you to choose a plan. If you don't, your store pauses; nothing is deleted, and choosing a plan brings it back.</p>
+      </details>
+      <details>
+        <summary>How does billing work after the free period?</summary>
+        <p>You pay once every <%= TelloraPlans.billing_months %> months for the plan you choose. You can move to a bigger or smaller plan whenever you need to, and there is no fee on your sales on any plan.</p>
+      </details>
+      <details>
+        <summary>What counts as a home page theme change?</summary>
+        <p>A new AI design for your home page, or switching to a different style family. Changing your text, photos, products, logo and colours is free and unlimited on every plan.</p>
+      </details>
       <details>
         <summary>Do I need design or coding skills?</summary>
         <p>No. You describe your business in your own words and the store is built for you. Later changes work the same way: you ask, and the AI makes them.</p>
@@ -289,7 +450,7 @@
   </div>
 </section>
 
-<section class="section section-mist closing" aria-labelledby="closing-title">
+<section class="section closing" aria-labelledby="closing-title">
   <div class="wrap">
     <h2 id="closing-title">Your store is one sentence away</h2>
     <p class="section-intro">Describe what you sell. You can change everything afterwards.</p>
@@ -394,6 +555,33 @@
       });
       li.appendChild(btn);
       chipsEl.appendChild(li);
+    });
+
+    // Pricing: show prices in the visitor's currency (rupees in India), switchable
+    (function () {
+      var buttons = document.querySelectorAll('.currency [data-currency]');
+      if (!buttons.length) return;
+      function show(code) {
+        document.querySelectorAll('[data-price]').forEach(function (el) { el.hidden = el.getAttribute('data-price') !== code; });
+        buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-currency') === code ? 'true' : 'false'); });
+        try { localStorage.setItem('tellora-currency', code); } catch (e) {}
+      }
+      var saved = null;
+      try { saved = localStorage.getItem('tellora-currency'); } catch (e) {}
+      var zone = '';
+      try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+      var india = zone === 'Asia/Kolkata' || zone === 'Asia/Calcutta';
+      var first = buttons[0].getAttribute('data-currency');
+      var pick = saved || (india ? 'INR' : 'USD');
+      if (!document.querySelector('.currency [data-currency="' + pick + '"]')) pick = first;
+      show(pick);
+      buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-currency')); }); });
+    })();
+
+    document.querySelectorAll('[data-start-free]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        setTimeout(function () { promptEl.focus({ preventScroll: true }); }, reduceMotion ? 0 : 450);
+      });
     });
 
     document.getElementById('closing-cta').addEventListener('click', function () {
