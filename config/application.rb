@@ -2,6 +2,7 @@ require_relative "boot"
 require "rails/all"
 require_relative '../app/middleware/custom_domain_tenant_elevator'
 require_relative '../app/middleware/store_publish_gate'
+require_relative '../app/middleware/custom_domain_redirect'
 
 Bundler.require(*Rails.groups)
 
@@ -72,6 +73,9 @@ module SpreeStarter
 
     # New stores stay private ("Opening soon") until the owner presses Publish in the builder
     config.middleware.insert_after CustomDomainTenantElevator, StorePublishGate
+
+    # Stores with a connected custom domain: send visitors from the Tellora address to it
+    config.middleware.insert_after StorePublishGate, CustomDomainRedirect
     
     if Rails.env.development?
       config.active_storage.resolve_model_to_route = :rails_storage_proxy

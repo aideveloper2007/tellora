@@ -5,7 +5,8 @@ Apartment.configure do |config|
   # Shared across all tenants, always in the public schema:
   #   Spree::Store - store records (TenantResolver looks stores up there)
   #   StoreBuild   - "Build my store" requests from the platform landing page
-  config.excluded_models = %w[Spree::Store StoreBuild]
+  #   StoreDomain  - custom domains connected by store owners
+  config.excluded_models = %w[Spree::Store StoreBuild StoreDomain]
 
   # All store schemas, used by Apartment for tenant migrations
   config.tenant_names = lambda do

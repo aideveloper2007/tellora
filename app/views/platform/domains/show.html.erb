@@ -1,0 +1,381 @@
+<%
+  platform = (defined?(platform_name) && platform_name) || ENV.fetch('PLATFORM_NAME', 'Tellora')
+  report = @domain&.dns_report || {}
+  checks = report['records'] || {}
+  status_labels = {
+    'pending'  => ['Waiting for DNS', 'wait'],
+    'issuing'  => ['Securing with SSL', 'work'],
+    'active'   => ['Connected', 'ok'],
+    'failed'   => ['SSL not issued yet', 'bad'],
+    'removing' => ['Disconnecting', 'wait']
+  }
+  step_index = case @domain&.status
+               when 'pending', 'failed' then 1
+               when 'issuing' then 2
+               when 'active' then 4
+               else 0
+               end
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Domain | <%= @build.store_name %></title>
+  <%= csrf_meta_tags %>
+  <link rel="icon" type="image/svg+xml" href="/brand/tellora-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #18163a; --ink-soft: #2c2a57; --paper: #ffffff; --mist: #f1f2f7; --line: #dadce8;
+      --muted: #5b5e78; --marigold: #f2b100; --ok: #1f7a4d; --ok-bg: #e3f4ea; --bad: #b42318; --bad-bg: #fdecea;
+      --work: #8a5a00; --work-bg: #fff4d6;
+      --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+      --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--mist); line-height: 1.55; }
+    h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02em; line-height: 1.15; }
+    p { margin: 0; }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--marigold); outline-offset: 2px; border-radius: 4px; }
+
+    .topbar { display: flex; align-items: center; gap: 0.9rem; padding: 0.6rem 1rem; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .topbar img { width: 1.9rem; height: 1.9rem; border-radius: 6px; }
+    .topbar .store { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+    .topbar .crumb { color: var(--muted); }
+    .topbar .spacer { flex: 1; }
+    .back { color: var(--muted); font-weight: 500; text-decoration: none; }
+    .back:hover { color: var(--ink); text-decoration: underline; }
+
+    main { max-width: 58rem; margin: 0 auto; padding: 2.25rem 1.25rem 4rem; }
+    .page-head h1 { font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.3rem); font-weight: 800; }
+    .page-head p { margin-top: 0.5rem; color: var(--muted); max-width: 44rem; }
+    .page-head code { font-family: var(--mono); font-size: 0.9em; background: var(--paper); border: 1px solid var(--line); padding: 0.05rem 0.35rem; border-radius: 5px; }
+
+    .flash { margin-top: 1.25rem; padding: 0.8rem 1rem; border-radius: 10px; font-weight: 500; }
+    .flash-notice { background: var(--ok-bg); color: var(--ok); }
+    .flash-alert { background: var(--bad-bg); color: var(--bad); }
+    .flash-info { background: var(--paper); border: 1px solid var(--line); color: var(--ink); }
+
+    .card { margin-top: 1.25rem; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 1.5rem; }
+    .card h2 { font-size: 1.2rem; font-weight: 700; }
+    .card-sub { color: var(--muted); margin-top: 0.3rem !important; font-size: 0.95rem; }
+
+    /* Connect form */
+    .field { margin-top: 1.25rem; }
+    .field label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+    .domain-input { display: flex; align-items: center; border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--paper); }
+    .domain-input:focus-within { border-color: var(--marigold); }
+    .domain-input span { padding: 0 0 0 0.9rem; color: var(--muted); font-family: var(--mono); }
+    .domain-input input { flex: 1; min-width: 0; border: 0; outline: none; padding: 0.85rem 0.9rem 0.85rem 0.15rem; font: 500 1.05rem var(--mono); color: var(--ink); background: transparent; }
+    .choice { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; margin-top: 0.5rem; }
+    @media (max-width: 620px) { .choice { grid-template-columns: 1fr; } }
+    .choice label { display: flex; gap: 0.6rem; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 0.75rem 0.85rem; cursor: pointer; font-weight: 500; margin: 0; }
+    .choice label:has(input:checked) { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+    .choice input { margin-top: 0.25rem; accent-color: var(--ink); }
+    .choice small { display: block; color: var(--muted); font-weight: 400; }
+    .choice code { font-family: var(--mono); font-size: 0.9em; }
+
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font: 600 0.95rem/1 var(--font-body); padding: 0.8rem 1.25rem; border-radius: 999px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .button:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+    .button-quiet { background: transparent; color: var(--ink); }
+    .button-quiet:hover { background: var(--mist); color: var(--ink); }
+    .button-danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+    .button-danger:hover { background: var(--bad-bg); border-color: var(--bad); }
+    .actions { margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+
+    .facts { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+    @media (max-width: 720px) { .facts { grid-template-columns: 1fr; } }
+    .facts div { border-top: 2px solid var(--ink); padding-top: 0.7rem; }
+    .facts strong { display: block; }
+    .facts span { color: var(--muted); font-size: 0.92rem; }
+
+    /* Status */
+    .status-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+    .domain-name { font-family: var(--mono); font-size: clamp(1.15rem, 1rem + 0.8vw, 1.45rem); font-weight: 600; word-break: break-all; }
+    .badge { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 999px; }
+    .badge::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
+    .badge-wait { background: var(--mist); color: var(--muted); }
+    .badge-work { background: var(--work-bg); color: var(--work); }
+    .badge-work::before { animation: pulse 1.2s ease-in-out infinite; }
+    .badge-ok { background: var(--ok-bg); color: var(--ok); }
+    .badge-bad { background: var(--bad-bg); color: var(--bad); }
+    @keyframes pulse { 50% { opacity: 0.3; } }
+
+    .steps { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; counter-reset: s; }
+    @media (max-width: 620px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .steps li { counter-increment: s; border-top: 3px solid var(--line); padding-top: 0.55rem; font-size: 0.88rem; color: var(--muted); font-weight: 500; }
+    .steps li::before { content: counter(s) '. '; font-weight: 700; }
+    .steps li.done { border-color: var(--ok); color: var(--ink); }
+    .steps li.current { border-color: var(--marigold); color: var(--ink); font-weight: 700; }
+
+    .live { margin-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: var(--ok-bg); border-radius: 12px; padding: 0.9rem 1.1rem; color: var(--ok); font-weight: 600; }
+    .live a { color: var(--ok); }
+    .problem { margin-top: 1.25rem; background: var(--bad-bg); color: var(--bad); border-radius: 12px; padding: 0.9rem 1.1rem; font-size: 0.95rem; }
+
+    /* Records */
+    .records { width: 100%; border-collapse: collapse; margin-top: 1.1rem; font-size: 0.95rem; }
+    .records th { text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; padding: 0 0.75rem 0.55rem; border-bottom: 1px solid var(--line); }
+    .records td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .records tr:last-child td { border-bottom: 0; }
+    .type { display: inline-block; font: 700 0.78rem var(--mono); background: var(--ink); color: var(--paper); padding: 0.2rem 0.5rem; border-radius: 6px; }
+    .copy { display: inline-flex; align-items: center; gap: 0.4rem; max-width: 100%; font: 500 0.92rem var(--mono); background: var(--mist); border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.55rem; cursor: pointer; color: var(--ink); text-align: left; word-break: break-all; }
+    .copy:hover { border-color: var(--ink); }
+    .copy svg { flex: none; opacity: 0.6; }
+    .copy.copied { border-color: var(--ok); color: var(--ok); }
+    .purpose { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+    .check { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; font-size: 0.88rem; white-space: nowrap; }
+    .check-ok { color: var(--ok); }
+    .check-no { color: var(--muted); }
+    .hint { display: block; color: var(--bad); font-size: 0.84rem; margin-top: 0.3rem; max-width: 16rem; white-space: normal; }
+    @media (max-width: 720px) {
+      .records thead { display: none; }
+      .records, .records tbody, .records tr, .records td { display: block; width: 100%; }
+      .records tr { border-bottom: 1px solid var(--line); padding: 0.6rem 0; }
+      .records td { border: 0; padding: 0.3rem 0; }
+      .records td::before { content: attr(data-label); display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; margin-bottom: 0.2rem; }
+    }
+    .checked-at { color: var(--muted); font-size: 0.88rem; }
+
+    /* Guides */
+    .guides details { border-top: 1px solid var(--line); }
+    .guides details:first-of-type { border-top: 0; }
+    .guides summary { cursor: pointer; list-style: none; padding: 0.85rem 2rem 0.85rem 0; font-weight: 600; position: relative; }
+    .guides summary::-webkit-details-marker { display: none; }
+    .guides summary::after { content: '+'; position: absolute; right: 0.25rem; top: 0.6rem; font-family: var(--font-display); font-size: 1.4rem; line-height: 1; }
+    .guides details[open] summary::after { content: '–'; }
+    .guides ol { margin: 0 0 1rem; padding-left: 1.2rem; color: var(--muted); display: grid; gap: 0.3rem; font-size: 0.95rem; }
+    .guides strong { color: var(--ink); }
+
+    .danger { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .danger p { color: var(--muted); font-size: 0.95rem; max-width: 34rem; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img src="/brand/tellora-icon.svg" alt="<%= platform %>">
+    <span class="store"><%= @build.store_name %></span>
+    <span class="crumb">/ Domain</span>
+    <span class="spacer"></span>
+    <a class="back" href="/tellora/builder">Back to builder</a>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Connect your own domain</h1>
+      <p>Use a domain you already own, like <code>mybrand.com</code>. Your store keeps working on <code><%= @store_host %></code> while you set it up, and SSL is included free.</p>
+    </div>
+
+    <% if flash[:notice] %><p class="flash flash-notice" role="status"><%= flash[:notice] %></p><% end %>
+    <% if flash[:info] %><p class="flash flash-info" role="status"><%= flash[:info] %></p><% end %>
+    <% if flash[:alert] %><p class="flash flash-alert" role="alert"><%= flash[:alert] %></p><% end %>
+
+    <% if @domain.nil? %>
+      <section class="card" aria-labelledby="connect-title">
+        <h2 id="connect-title">Your domain</h2>
+        <p class="card-sub">Enter it without https:// or www. A subdomain like shop.mybrand.com also works.</p>
+
+        <%= form_with url: platform_domain_path, method: :post, data: { turbo: false } do %>
+          <div class="field">
+            <label for="domain">Domain name</label>
+            <div class="domain-input">
+              <span aria-hidden="true">https://</span>
+              <input id="domain" name="domain" type="text" inputmode="url" autocomplete="off" autocapitalize="none" spellcheck="false"
+                     placeholder="mybrand.com" required maxlength="253" value="<%= params[:domain] %>">
+            </div>
+          </div>
+
+          <fieldset class="field" style="border:0;padding:0;margin-left:0;margin-right:0">
+            <legend style="font-weight:600;margin-bottom:0.4rem">Where should visitors land?</legend>
+            <div class="choice">
+              <label><input type="radio" name="primary" value="www" checked><span>With www <small><code>www.mybrand.com</code>, recommended</small></span></label>
+              <label><input type="radio" name="primary" value="apex"><span>Without www <small><code>mybrand.com</code></small></span></label>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" class="button">Connect domain</button>
+          </div>
+        <% end %>
+
+        <div class="facts">
+          <div><strong>Free SSL</strong><span>Every connected domain gets a free, auto-renewing certificate.</span></div>
+          <div><strong>About 10 to 60 minutes</strong><span>Most DNS changes appear within an hour. We check automatically.</span></div>
+          <div><strong>No downtime</strong><span>Your store stays online on its current address the whole time.</span></div>
+        </div>
+      </section>
+    <% else %>
+      <% label, tone = status_labels.fetch(@domain.status, ['Unknown', 'wait']) %>
+      <section class="card" aria-labelledby="status-title">
+        <div class="status-head">
+          <div>
+            <h2 id="status-title" class="domain-name"><%= @domain.primary_host %></h2>
+            <% if @domain.apex? %><p class="card-sub"><%= @domain.host == @domain.primary_host ? "www.#{@domain.host}" : @domain.host %> redirects here</p><% end %>
+          </div>
+          <span class="badge badge-<%= tone %>" id="status-badge"><%= label %></span>
+        </div>
+
+        <ol class="steps" aria-label="Progress">
+          <% ['Domain added', 'DNS records found', 'SSL certificate', 'Live'].each_with_index do |step, i| %>
+            <li class="<%= i < step_index ? 'done' : (i == step_index ? 'current' : '') %>"><%= step %></li>
+          <% end %>
+        </ol>
+
+        <% if @domain.active? %>
+          <div class="live">
+            <span>Your store is live at https://<%= @domain.primary_host %></span>
+            <a href="https://<%= @domain.primary_host %>" target="_blank" rel="noopener">Open store</a>
+          </div>
+        <% elsif @domain.issuing? %>
+          <p class="card-sub" style="margin-top:1rem">Your DNS records are correct. We are getting your free SSL certificate; this usually takes a few minutes.</p>
+        <% elsif @domain.failed? %>
+          <div class="problem">We could not issue the SSL certificate yet<%= ": #{@domain.error.to_s.truncate(180)}" if @domain.error.present? %>. Check the records below are still correct, then press Check again.</div>
+        <% end %>
+      </section>
+
+      <% unless @domain.active? %>
+        <section class="card" aria-labelledby="records-title">
+          <h2 id="records-title">Add these records at your domain provider</h2>
+          <p class="card-sub">Open the DNS settings of <strong><%= StoreDomain.registrable_domain(@domain.host) %></strong> where you bought it, add each record, and save. Remove any other A record for the same name.</p>
+
+          <table class="records">
+            <thead><tr><th>Type</th><th>Name</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody>
+              <% @records.each do |record| %>
+                <% check = checks[record[:key]] %>
+                <tr>
+                  <td data-label="Type"><span class="type"><%= record[:type] %></span></td>
+                  <td data-label="Name"><button type="button" class="copy" data-copy="<%= record[:name] %>" aria-label="Copy name <%= record[:name] %>"><%= record[:name] %><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></td>
+                  <td data-label="Value"><button type="button" class="copy" data-copy="<%= record[:value] %>" aria-label="Copy value"><%= record[:value] %><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><span class="purpose"><%= record[:purpose] %></span></td>
+                  <td data-label="Status">
+                    <% if check.nil? %>
+                      <span class="check check-no">Not checked yet</span>
+                    <% elsif check['ok'] %>
+                      <span class="check check-ok">&#10003; Found</span>
+                    <% else %>
+                      <span class="check check-no">Not found</span>
+                      <% if check['hint'].present? %><span class="hint"><%= check['hint'] %></span><% end %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+
+          <div class="actions">
+            <% if @domain.pending? || @domain.failed? %>
+              <%= button_to (@domain.failed? ? 'Check again' : 'Check now'), platform_domain_check_path, method: :post, class: 'button', form: { data: { turbo: false } } %>
+            <% end %>
+            <span class="checked-at" id="checked-at">
+              <% if @domain.last_checked_at %>Last checked <%= time_ago_in_words(@domain.last_checked_at) %> ago. <% end %>We check automatically every 10 minutes.
+            </span>
+          </div>
+        </section>
+
+        <section class="card guides" aria-labelledby="guides-title">
+          <h2 id="guides-title">Step-by-step for your provider</h2>
+          <p class="card-sub" style="margin-bottom:0.5rem">Use the Name and Value from the table above. Leave TTL as the default.</p>
+          <details>
+            <summary>GoDaddy</summary>
+            <ol>
+              <li>Sign in and open <strong>My Products → Domains</strong>, then click your domain.</li>
+              <li>Open <strong>DNS</strong> (DNS Records) and click <strong>Add New Record</strong>.</li>
+              <li>Add each record from the table. If an <strong>A</strong> record with Name <strong>@</strong> already exists (often "Parked"), edit it instead of adding a second one.</li>
+              <li>Click <strong>Save</strong>. Back here, press <strong>Check now</strong>.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Hostinger</summary>
+            <ol>
+              <li>Open <strong>Domains</strong>, choose your domain, then <strong>DNS / Nameservers</strong>.</li>
+              <li>Under <strong>Manage DNS records</strong>, pick the Type, fill in Name and Points to (Value).</li>
+              <li>Delete any older A record for <strong>@</strong> or a CNAME for <strong>www</strong> that points elsewhere.</li>
+              <li>Click <strong>Add Record</strong> for each one.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Namecheap</summary>
+            <ol>
+              <li>Open <strong>Domain List → Manage</strong>, then the <strong>Advanced DNS</strong> tab.</li>
+              <li>Click <strong>Add New Record</strong>. Use <strong>Host</strong> for Name and <strong>Value</strong> for Value.</li>
+              <li>Remove the default "parking page" records for @ and www.</li>
+              <li>Click the green tick to save each record.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Cloudflare</summary>
+            <ol>
+              <li>Open your domain, then <strong>DNS → Records → Add record</strong>.</li>
+              <li>Add each record. For A and CNAME records, set Proxy status to <strong>DNS only (grey cloud)</strong>, otherwise SSL cannot be issued.</li>
+              <li>Click <strong>Save</strong>.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Another provider</summary>
+            <ol>
+              <li>Find the page called DNS, DNS Zone, DNS Records or Advanced DNS.</li>
+              <li>Add each record with the Type, Name (sometimes called Host) and Value shown above.</li>
+              <li>If the provider adds your domain to the name automatically, enter only the part shown in our Name column.</li>
+            </ol>
+          </details>
+        </section>
+      <% end %>
+
+      <section class="card" aria-labelledby="danger-title">
+        <div class="danger">
+          <div>
+            <h2 id="danger-title">Disconnect this domain</h2>
+            <p>Your store goes back to <%= @store_host %>. You can connect this or another domain again later.</p>
+          </div>
+          <%= button_to 'Disconnect', platform_domain_path, method: :delete, class: 'button button-danger',
+                form: { data: { turbo: false }, onsubmit: "return confirm('Disconnect #{j @domain.primary_host} from your store?')" } %>
+        </div>
+      </section>
+    <% end %>
+  </main>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-copy]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var text = button.getAttribute('data-copy');
+          function done() {
+            button.classList.add('copied');
+            setTimeout(function () { button.classList.remove('copied'); }, 1500);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {});
+          } else {
+            var area = document.createElement('textarea');
+            area.value = text; document.body.appendChild(area); area.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            area.remove();
+          }
+        });
+      });
+
+      // While waiting for DNS or SSL, refresh when the status changes
+      var current = <%= raw((@domain&.status || 'none').to_json) %>;
+      if (current !== 'pending' && current !== 'issuing') return;
+      setInterval(function () {
+        fetch('/tellora/domain', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            if (!data) return;
+            var changed = data.status !== current;
+            var checked = data.report && data.report.checked_at;
+            if (changed || (checked && checked !== window.__lastChecked && window.__lastChecked)) location.reload();
+            window.__lastChecked = checked;
+          })
+          .catch(function () {});
+      }, 20000);
+    })();
+  </script>
+</body>
+</html>

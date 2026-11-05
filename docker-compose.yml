@@ -13,6 +13,9 @@ x-rails-env: &rails-env
   GENAI_SERVICE_URL: http://genai-theme-api:8000
   PLATFORM_NAME: ${PLATFORM_NAME:-Tellora}
   TENANT_DOMAINS: ${TENANT_DOMAINS}
+  # Custom domains: the server's public IPv4 (shown to owners as the A record) and the agent's secret
+  TELLORA_SERVER_IP: ${TELLORA_SERVER_IP:-}
+  TLS_AGENT_TOKEN: ${TLS_AGENT_TOKEN:-}
 
 x-logging: &logging
   driver: json-file
@@ -106,6 +109,21 @@ services:
 
   nginx:
     image: nginx:alpine
+    # Runs nginx, and reloads it (after "nginx -t") whenever the certbot agent
+    # touches sites/custom/.reload, so new custom domains go live without downtime.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        (last=""; while :; do
+          sleep 20
+          cur=$$(stat -c %Y /etc/nginx/conf.d/sites/custom/.reload 2>/dev/null)
+          if [ -n "$$cur" ] && [ "$$cur" != "$$last" ]; then
+            last="$$cur"
+            nginx -t && nginx -s reload
+          fi
+        done) &
+        exec nginx -g 'daemon off;'
     ports:
       - "80:80"
       - "443:443"
@@ -114,6 +132,26 @@ services:
       - /opt/nginx/conf:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    logging: *logging
+    networks: [app-network]
+
+  # Free SSL for store owners' custom domains (deploy/certbot_agent.py)
+  certbot-agent:
+    image: certbot/certbot:latest
+    entrypoint: ["python3", "/agent/certbot_agent.py"]
+    environment:
+      APP_URL: http://app:3000
+      TLS_AGENT_TOKEN: ${TLS_AGENT_TOKEN:-}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-}
+      NGINX_CUSTOM_DIR: /nginx-custom
+    volumes:
+      - ./deploy/certbot_agent.py:/agent/certbot_agent.py:ro
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+      - /opt/nginx/conf/sites/custom:/nginx-custom
     depends_on:
       - app
     restart: unless-stopped

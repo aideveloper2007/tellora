@@ -6,7 +6,8 @@
 #
 #   localhost / <platform domain> / www.<platform domain> -> 'public' (platform / landing page)
 #   shop.<platform domain>                                -> schema of the store whose subdomain is 'shop'
-#   www.customshop.com / customshop.com                   -> schema of the store whose url is exactly that domain
+#   www.customshop.com / customshop.com                   -> schema of the store that connected that domain
+#                                                            (StoreDomain, or a store whose url is exactly that domain)
 #   anything unknown                                      -> 'public'
 #
 # Platform domains come ONLY from ENV TENANT_DOMAINS (comma separated), e.g. "mydomain.com".
@@ -117,7 +118,11 @@ class TenantResolver
       Spree::Store.where(code: sub).pick(:code)
     end
 
+    # Connected custom domains first (StoreDomain, public schema), then a store whose url is that domain
     def code_for_custom_domain(host)
+      tenant = StoreDomain.tenant_for_host(host) if defined?(StoreDomain) && StoreDomain.table_exists?
+      return tenant if tenant
+
       Spree::Store.where(url: url_variants(host)).where.not(code: [nil, '']).order(:id).pick(:code)
     end
 

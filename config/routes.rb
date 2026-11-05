@@ -1,4 +1,4 @@
-# config/routes.rb
+ # config/routes.rb
 require 'sidekiq/web'
 Rails.application.routes.draw do
   # Platform landing page: only on the main domain (and localhost), never on store subdomains.
@@ -22,6 +22,18 @@ Rails.application.routes.draw do
   get  '/tellora/builder/refine/:theme_id', to: 'platform/builder#refine_status', as: :platform_builder_refine_status
   post '/tellora/builder/publish',          to: 'platform/builder#publish',       as: :platform_builder_publish
   post '/tellora/builder/style',            to: 'platform/builder#style',         as: :platform_builder_style
+
+  # Custom domain screen (store owner), on the store's own address
+  get    '/tellora/domain',                 to: 'platform/domains#show',          as: :platform_domain
+  post   '/tellora/domain',                 to: 'platform/domains#create'
+  post   '/tellora/domain/check',           to: 'platform/domains#check',         as: :platform_domain_check
+  delete '/tellora/domain',                 to: 'platform/domains#destroy'
+
+  # Private API for the certbot agent container (SSL for custom domains), token protected
+  get  '/internal/tls/queue',               to: 'internal/tls#queue'
+  post '/internal/tls/issued',              to: 'internal/tls#issued'
+  post '/internal/tls/failed',              to: 'internal/tls#failed'
+  post '/internal/tls/removed',             to: 'internal/tls#removed'
 
   # Handle old URL redirects ONLY for magnafieldndt.com
   get '/t/products/*path', to: redirect { |params, request|

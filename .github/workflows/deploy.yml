@@ -69,14 +69,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload docker-compose.yml to the server
+      - name: Upload docker-compose.yml and the certbot agent to the server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: docker-compose.yml
+          source: docker-compose.yml,deploy/certbot_agent.py
           target: ${{ env.DEPLOY_DIR }}
 
       - name: Deploy on the server
@@ -97,10 +97,13 @@ jobs:
             # This exact build (commit) is deployed; "latest" stays as a fallback
             export IMAGE_TAG=${{ github.sha }}
 
+            # Folder the certbot agent writes custom-domain nginx configs into
+            mkdir -p /opt/nginx/conf/sites/custom
+
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             echo "==> Pulling new images"
-            $DC pull app sidekiq genai-theme-api
+            $DC pull app sidekiq genai-theme-api certbot-agent
 
             echo "==> Database migrations (the old version keeps running if this fails)"
             $DC up -d db redis
