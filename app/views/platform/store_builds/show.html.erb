@@ -25,6 +25,8 @@
   .result[hidden] { display: none; }
   .result .errors { background: #fdecea; color: var(--danger); border: 1px solid #f4c7c3; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1rem; }
   .result form { display: inline; }
+  .result-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .result-note { margin-top: 1rem; color: var(--muted); }
 </style>
 <% end %>
 
@@ -41,7 +43,11 @@
     </ol>
 
     <div class="result" id="result-done" hidden>
-      <a class="button" href="<%= platform_store_build_open_path(@build.token) %>">Open my store</a>
+      <div class="result-actions">
+        <a class="button" href="<%= platform_store_build_open_path(@build.token) %>">Open my store</a>
+        <a class="button button-quiet" href="<%= platform_store_build_open_path(@build.token, next: 'domain') %>">Connect your own domain</a>
+      </div>
+      <p class="result-note">Your store is ready at <strong><%= @build.store_url.to_s.sub(%r{\Ahttps?://}, '') %></strong>. You can connect a domain you own, like mybrand.com, now or later from <strong>Admin → Domain</strong>.</p>
     </div>
 
     <div class="result" id="result-failed" hidden>
@@ -80,4 +86,3 @@
     poll();
   })();
 </script>
-

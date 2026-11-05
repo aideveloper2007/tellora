@@ -29,6 +29,9 @@ Rails.application.routes.draw do
   post   '/tellora/domain/check',           to: 'platform/domains#check',         as: :platform_domain_check
   delete '/tellora/domain',                 to: 'platform/domains#destroy'
 
+  # Spree's own Settings -> Domains screen has no DNS check or SSL: send owners to ours instead
+  get '/admin/custom_domains(/*rest)',      to: redirect('/tellora/domain')
+
   # Private API for the certbot agent container (SSL for custom domains), token protected
   get  '/internal/tls/queue',               to: 'internal/tls#queue'
   post '/internal/tls/issued',              to: 'internal/tls#issued'

@@ -1,0 +1,30 @@
+<%# Tellora: domain card on the admin dashboard. Only for Tellora-built stores. %>
+<% if can?(:manage, current_store) && StoreBuild.for_tenant(Apartment::Tenant.current) %>
+  <%
+    tellora_domain = StoreDomain.where(tenant_code: Apartment::Tenant.current).where.not(status: 'removing').order(:id).last
+    tellora_address = current_store.url.to_s.sub(%r{\Ahttps?://}, '').split('/').first.to_s.split(':').first
+    tellora_status = {
+      'pending' => ['Waiting for DNS records', 'badge-warning'],
+      'issuing' => ['Securing with SSL', 'badge-info'],
+      'active'  => ['Connected', 'badge-success'],
+      'failed'  => ['Needs attention', 'badge-danger']
+    }[tellora_domain&.status]
+  %>
+  <div class="card mb-4">
+    <div class="card-body p-3">
+      <h6 class="mb-2 d-flex align-items-center gap-2"><%= icon('world-www') %> Domain</h6>
+      <% if tellora_domain&.active? %>
+        <p class="mb-1 font-weight-bold text-break"><%= tellora_domain.primary_host %></p>
+        <p class="mb-3"><span class="badge <%= tellora_status.last %>"><%= tellora_status.first %></span></p>
+        <a href="/tellora/domain" class="btn btn-light w-100">Manage domain</a>
+      <% elsif tellora_domain %>
+        <p class="mb-1 font-weight-bold text-break"><%= tellora_domain.primary_host %></p>
+        <p class="mb-3"><span class="badge <%= tellora_status&.last %>"><%= tellora_status&.first %></span></p>
+        <a href="/tellora/domain" class="btn btn-primary w-100">Finish connecting</a>
+      <% else %>
+        <p class="mb-3 text-muted">Your store is on <strong class="text-dark text-break"><%= tellora_address %></strong>. Use your own domain, like mybrand.com, with free SSL.</p>
+        <a href="/tellora/domain" class="btn btn-primary w-100">Connect your own domain</a>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,4 @@
+<%# Tellora: "Domain" in the admin left menu (connect your own domain). Only for Tellora-built stores. %>
+<% if can?(:manage, current_store) && StoreBuild.for_tenant(Apartment::Tenant.current) %>
+  <%= nav_item('Domain', '/tellora/domain', icon: 'world-www', active: false) %>
+<% end %>

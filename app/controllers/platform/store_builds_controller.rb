@@ -50,11 +50,13 @@ module Platform
     end
 
     # GET /builds/:token/open  -> one-time sign-in link into the new store
+    # ?next=domain opens the Domain screen instead of the builder
     def open
       return redirect_to(platform_store_build_path(@build.token)) unless @build.status == 'done'
 
       token = StoreHandoff.issue(@build)
-      redirect_to "#{@build.store_url}/tellora/welcome?token=#{CGI.escape(token)}", allow_other_host: true
+      next_part = params[:next] == 'domain' ? '&next=domain' : ''
+      redirect_to "#{@build.store_url}/tellora/welcome?token=#{CGI.escape(token)}#{next_part}", allow_other_host: true
     end
 
     private
