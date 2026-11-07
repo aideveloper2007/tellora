@@ -10,6 +10,8 @@
 # Stored in the theme's preferences:
 #   'style_family' => 'warm_artisan'
 #   'page_plan'    => { 'hero' => {...}, 'promises' => [...], ... }
+#   'brand'        => { 'accent' => '#8e2a22', 'display' => {...}, 'body' => {...} }
+#                     (only for stores moved from another platform: their own colour and fonts)
 # Photos are ThemeImage records with sections plan_hero, plan_story, plan_banner.
 class PagePlan
   REQUEST_TIMEOUT = 150 # seconds
@@ -26,11 +28,16 @@ class PagePlan
   class << self
     # Build and save the plan for a freshly applied theme. Never raises: a store
     # always ends up with a complete plan and its family installed.
-    def apply!(theme:, store:, description:, previous_theme: nil)
+    #
+    # imported: what Tellora read from the owner's existing store ("Move my store"):
+    #   { 'plan' => {...}, 'images' => {...}, 'brand' => {...} }
+    def apply!(theme:, store:, description:, previous_theme: nil, imported: nil)
       if reuse_from(previous_theme, theme)
-        StyleFamily.install!(store, family_of(theme))
+        StyleFamily.install!(store, family_of(theme), brand: brand_of(theme))
         return read(theme)
       end
+
+      return apply_imported!(theme, store, imported) if imported.is_a?(Hash) && imported['plan'].is_a?(Hash)
 
       raw = begin
         request(store_name: store.name, description: description, currency: store.default_currency)
@@ -58,13 +65,19 @@ class PagePlan
       StyleFamily.known?(key) ? key.to_s : nil
     end
 
-    # Switch a store to another style family. Words, products and photos stay the same.
+    # The store's own colour and fonts (moved stores only), or {}
+    def brand_of(theme)
+      StyleFamily.clean_brand(preference(theme, 'brand'))
+    end
+
+    # Switch a store to another style family. Words, products, photos and brand stay the same.
     def switch_family!(theme:, store:, family:)
       raise ArgumentError, "Unknown style: #{family}" unless StyleFamily.known?(family)
 
       plan = preference(theme, 'page_plan')
-      save(theme, family.to_s, plan.is_a?(Hash) ? plan : normalize({}, store_name: store.name))
-      StyleFamily.install!(store, family.to_s)
+      brand = brand_of(theme)
+      save(theme, family.to_s, plan.is_a?(Hash) ? plan : normalize({}, store_name: store.name), brand)
+      StyleFamily.install!(store, family.to_s, brand: brand)
     end
 
     # Photo for a section: ThemeImage or nil
@@ -197,6 +210,25 @@ class PagePlan
 
     private
 
+    # "Move my store": the plan written from the owner's own site, their photos,
+    # and their colour and fonts on top of the chosen family
+    def apply_imported!(theme, store, imported)
+      raw = imported['plan'].deep_stringify_keys
+      plan = normalize(raw, store_name: store.name)
+      family = StyleFamily.resolve(raw['family'])
+      brand = StyleFamily.clean_brand(imported['brand'])
+      save(theme, family, plan, brand)
+      attach_images(theme, imported['images'])
+      StyleFamily.install!(store, family, brand: brand)
+      plan
+    rescue StandardError => e
+      Rails.logger.warn("[PagePlan] imported plan failed (#{e.class}: #{e.message}), using defaults")
+      plan = normalize({}, store_name: store.name)
+      save(theme, StyleFamily::DEFAULT, plan)
+      StyleFamily.install!(store, StyleFamily::DEFAULT)
+      plan
+    end
+
     # When the builder applies a refined design, keep the plan and photos of the
     # design it replaces (words and photos only change when asked).
     def reuse_from(previous_theme, theme)
@@ -206,7 +238,7 @@ class PagePlan
       stored = preference(previous_theme, 'page_plan')
       return false unless family && stored.is_a?(Hash)
 
-      save(theme, family, stored)
+      save(theme, family, stored, brand_of(previous_theme))
       IMAGE_SLOTS.each do |slot|
         old = image(previous_theme, slot)
         next unless old&.image&.attached?
@@ -227,10 +259,12 @@ class PagePlan
 
     # Theme preferences are stored as YAML that only accepts plain Ruby types,
     # so the plan is converted to plain strings, arrays and hashes first.
-    def save(theme, family, plan)
+    def save(theme, family, plan, brand = {})
       prefs = (theme.preferences || {}).to_h
-      prefs = prefs.reject { |k, _| %w[style_family page_plan].include?(k.to_s) }
-      theme.update_column(:preferences, prefs.merge('style_family' => family.to_s.dup, 'page_plan' => plain(plan)))
+      prefs = prefs.reject { |k, _| %w[style_family page_plan brand].include?(k.to_s) }
+      values = { 'style_family' => family.to_s.dup, 'page_plan' => plain(plan) }
+      values['brand'] = plain(brand) if brand.present?
+      theme.update_column(:preferences, prefs.merge(values))
     end
 
     def plain(value)

@@ -22,6 +22,7 @@ module Platform
       end
 
       session[:store_prompt] = prompt[0, PROMPT_MAX]
+      session.delete(:store_import) # a new description starts a new store, not a move
       redirect_to platform_signup_path
     end
   end

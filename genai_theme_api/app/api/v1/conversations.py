@@ -18,6 +18,7 @@ from app.schemas import (
 )
 from app.services.mock_llm import get_mock_llm
 from app.services.claude_llm import get_llm_service, get_claude_llm
+from app.services import site_importer
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -343,3 +344,58 @@ async def page_plan(request: PagePlanRequest):
                 }
             }
         )
+
+
+class SiteImportRequest(BaseModel):
+    """Request body for moving an existing store to Tellora."""
+    url: str = Field(..., min_length=4, max_length=500)
+    store_name: str = Field("", max_length=200)
+    currency: str = "USD"
+    families: list[PagePlanFamily] = Field(default_factory=list)
+
+
+@router.post(
+    "/site-import",
+    summary="Read an existing store and plan its new home page",
+    description="Reads the brand of a store the owner is moving to Tellora (logo, colours, fonts, words, photos) "
+                "and writes the home page plan with the store's own words. Never copies theme code."
+)
+async def site_import(request: SiteImportRequest):
+    """The Rails app has already checked that the owner controls this domain."""
+    try:
+        site = await site_importer.read_site(request.url)
+    except site_importer.ImportError_ as e:
+        logger.info(f"Site import refused for {request.url}: {e}")
+        raise HTTPException(status_code=422, detail={"error": {"code": "SITE_IMPORT_FAILED", "message": str(e)}})
+    except Exception as e:
+        logger.error(f"Site import crashed for {request.url}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail={"error": {"code": "SITE_IMPORT_ERROR", "message": "We could not read the store"}})
+
+    store_name = request.store_name or site["brand"]["site_name"] or "our shop"
+    summary = site_importer.summary_for_plan(site, store_name)
+
+    try:
+        llm = get_claude_llm()
+        result = await llm.generate_page_plan(
+            store_name=store_name,
+            description=summary,
+            currency=request.currency,
+            families=[family.model_dump() for family in request.families]
+        )
+    except Exception as e:
+        logger.error(f"Page plan for imported store failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail={"error": {"code": "PAGE_PLAN_ERROR", "message": "We could not write the new home page"}})
+
+    # The store's own photos come first; stock photos only fill the gaps
+    images = dict(result.get("images") or {})
+    own = [u for u in site["photos"] if u.startswith("https://")]
+    for slot, url in zip(("hero", "story", "banner"), own):
+        images[slot] = {"url": url, "user": site["brand"]["site_name"], "page_url": site["brand"]["source_url"], "query": "own photo"}
+
+    description = site["brand"]["description"] or " ".join(site["words"]["headings"][:3])
+    return {
+        "brand": site["brand"],
+        "plan": result.get("plan") or {},
+        "images": images,
+        "description": (description or store_name)[:480],
+    }

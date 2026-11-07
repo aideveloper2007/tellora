@@ -108,8 +108,11 @@
     .site-nav { display: flex; gap: 1.75rem; }
     .site-nav a { text-decoration: none; color: var(--muted-dark); font-weight: 500; font-size: 0.92rem; }
     .site-nav a:hover { color: #fff; }
-    .header-cta { margin-left: auto; }
+    .header-cta { margin-left: auto; display: flex; align-items: center; gap: 1.1rem; }
     .header-cta .button { padding: 0.7rem 1.1rem; font-size: 0.88rem; }
+    .header-link { color: var(--text-dark); text-decoration: none; font-weight: 600; font-size: 0.88rem; }
+    .header-link:hover { color: var(--ember-2); }
+    @media (max-width: 480px) { .header-link { display: none; } }
     @media (max-width: 900px) { .site-nav { display: none; } }
 
     /* Flash */
@@ -139,6 +142,7 @@
         <a href="<%= platform_landing_path(anchor: 'questions') %>">FAQ</a>
       </nav>
       <div class="header-cta">
+        <a class="header-link" href="<%= platform_import_path %>">Move your store</a>
         <a class="button" href="<%= platform_landing_path(anchor: 'build') %>">Build my store</a>
       </div>
     </div>
@@ -155,6 +159,7 @@
         <a href="<%= platform_landing_path(anchor: 'how') %>">How it works</a>
         <a href="<%= platform_landing_path(anchor: 'features') %>">Features</a>
         <a href="<%= platform_landing_path(anchor: 'pricing') %>">Pricing</a>
+        <a href="<%= platform_import_path %>">Move your store</a>
         <a href="<%= platform_landing_path(anchor: 'questions') %>">FAQ</a>
         <a href="mailto:<%= TelloraPlans.contact_email %>"><%= TelloraPlans.contact_email %></a>
       </nav>

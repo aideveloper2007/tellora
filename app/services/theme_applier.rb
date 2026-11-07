@@ -6,11 +6,15 @@
 # Besides the theme itself, every applied theme gets a home page plan and a
 # designer-made style family (see PagePlan and StyleFamily). When a design is
 # refined in the builder, the plan and photos of the previous design are kept.
+#
+# imported: for "Move my store" builds, what Tellora read from the owner's
+# existing store (their words, photos, colour and fonts). See PagePlan.apply!.
 class ThemeApplier
-  def initialize(store:, store_name:, prompt:)
+  def initialize(store:, store_name:, prompt:, imported: nil)
     @store = store
     @store_name = store_name
     @prompt = prompt
+    @imported = imported
   end
 
   def apply!(theme_data)
@@ -26,7 +30,7 @@ class ThemeApplier
     end
 
     # Words, photos and style family for the home page (never raises)
-    PagePlan.apply!(theme: theme, store: @store, description: @prompt, previous_theme: previous)
+    PagePlan.apply!(theme: theme, store: @store, description: @prompt, previous_theme: previous, imported: @imported)
 
     theme.update!(ready: true)
     @store.themes.where(default: true).where.not(id: theme.id).update_all(default: false)

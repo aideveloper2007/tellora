@@ -16,9 +16,16 @@ module Platform
       @build = StoreBuild.new(build_params.merge(prompt: session[:store_prompt], ip: request.remote_ip))
       @build.store_url = store_url_for(@build.subdomain.to_s.downcase.strip)
 
+      # "Move my store": only a domain whose ownership was proven by DNS in this session
+      if (import = Platform::ImportsController.verified(session))
+        @build.source_url = import['url']
+        @build.source_verified_at = import['verified_at']
+      end
+
       if @build.save
         session[:store_build_token] = @build.token
         session.delete(:store_prompt)
+        session.delete(:store_import)
         StoreBuildJob.perform_async(@build.id)
         redirect_to platform_store_build_path(@build.token)
       else

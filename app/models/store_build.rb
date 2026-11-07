@@ -10,6 +10,8 @@ class StoreBuild < ApplicationRecord
     ['products', 'Adding starter products']
   ].freeze
   STEP_KEYS = STEPS.map(&:first).freeze
+  # Extra step for "Move my store" builds, right after the store is created
+  IMPORT_STEP = ['import', 'Reading your current store'].freeze
 
   STATUSES = %w[queued running done failed].freeze
   CURRENCIES = %w[USD EUR GBP INR AUD CAD SGD AED JPY BRL MXN ZAR NGN KES IDR].freeze
@@ -69,19 +71,45 @@ class StoreBuild < ApplicationRecord
     user.respond_to?(:has_spree_role?) ? user.has_spree_role?('admin') : user.spree_roles.exists?(name: 'admin')
   end
 
+  # ---- moving an existing store ---------------------------------------------
+
+  # True when the owner is moving an existing store to Tellora
+  def import?
+    source_url.present?
+  end
+
+  def source_host
+    URI.parse(source_url.to_s).host.to_s.sub(/\Awww\./, '')
+  rescue URI::InvalidURIError
+    ''
+  end
+
   # ---- status helpers -------------------------------------------------------
+
+  def steps
+    import? ? [STEPS.first, IMPORT_STEP, *STEPS.drop(1)] : STEPS
+  end
+
+  def step_keys
+    steps.map(&:first)
+  end
 
   def reached?(step)
     return false if completed_step.blank?
 
-    STEP_KEYS.index(completed_step) >= STEP_KEYS.index(step)
+    keys = step_keys
+    return false unless keys.index(step) && keys.index(completed_step)
+
+    keys.index(completed_step) >= keys.index(step)
   end
 
   def current_step
     return nil if status == 'done'
-    return STEP_KEYS.first if completed_step.blank?
 
-    STEP_KEYS[STEP_KEYS.index(completed_step) + 1]
+    keys = step_keys
+    return keys.first if completed_step.blank?
+
+    keys[keys.index(completed_step).to_i + 1]
   end
 
   def complete_step!(step)
@@ -101,7 +129,7 @@ class StoreBuild < ApplicationRecord
   end
 
   def steps_for_display
-    STEPS.map do |key, label|
+    steps.map do |key, label|
       state =
         if reached?(key) then 'done'
         elsif key == current_step && status == 'failed' then 'failed'

@@ -3,6 +3,7 @@
 # Builds a complete store for a StoreBuild, step by step:
 #
 #   store    -> store record (public schema), its own tenant schema, Spree seed data, admin user
+#   import   -> only for "Move my store": read the owner's existing store (SiteImport)
 #   theme    -> AI theme generated from the owner's description (GenAI Theme API)
 #   apply    -> theme saved in the store, images attached, set as the active theme
 #   products -> AI starter products (SampleProductsGenerator)
@@ -20,6 +21,7 @@ class StoreProvisioner
     @build.mark_running!
 
     create_store   unless @build.reached?('store')
+    import_site    if @build.import? && !@build.reached?('import')
     generate_theme unless @build.reached?('theme')
     apply_theme    unless @build.reached?('apply')
     add_products   unless @build.reached?('products')
@@ -87,6 +89,15 @@ class StoreProvisioner
     user
   end
 
+  # ---- step 1b: read the existing store ("Move my store") -----------------------
+
+  def import_site
+    data = SiteImport.read(@build)
+    description = data['description'].to_s.squish.truncate(480).presence || @build.prompt
+    @build.update!(brand: data, prompt: description)
+    @build.complete_step!('import')
+  end
+
   # ---- step 2: AI theme --------------------------------------------------------
 
   def generate_theme
@@ -127,8 +138,11 @@ class StoreProvisioner
       store = Spree::Store.find(@build.store_id)
       # Only skip when a finished design is already live (a failed earlier try can leave an unused theme behind)
       unless store.themes.where(type: 'Spree::Themes::GenAi', default: true).exists?
-        ThemeApplier.new(store: store, store_name: @build.store_name, prompt: @build.prompt).apply!(status['theme_data'])
+        imported = @build.import? ? @build.brand : nil
+        ThemeApplier.new(store: store, store_name: @build.store_name, prompt: @build.prompt, imported: imported)
+                    .apply!(status['theme_data'])
       end
+      SiteImport.attach_logo(store, @build.brand.dig('brand', 'logo_url')) if @build.import? && @build.brand.is_a?(Hash)
     end
 
     @build.complete_step!('apply')
@@ -157,7 +171,7 @@ class StoreProvisioner
 
   # Message shown to the store owner: what failed, without internal details
   def friendly_error(error)
-    step = StoreBuild::STEPS.to_h[@build.current_step] || 'Building your store'
+    step = @build.steps.to_h[@build.current_step] || 'Building your store'
     detail =
       case error
       when ActiveRecord::RecordInvalid then error.record.errors.full_messages.to_sentence
