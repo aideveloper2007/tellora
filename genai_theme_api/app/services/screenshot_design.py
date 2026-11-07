@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from PIL import Image, ImageChops, ImageOps, ImageStat
 
-from app.services.claude_llm import get_claude_llm, _response_text
+from app.services.claude_llm import get_claude_llm
 
 logger = logging.getLogger(__name__)
 
@@ -165,16 +165,41 @@ def _cut_images(original: Image.Image, slices: List[Dict[str, Any]], entries: Li
 # Claude
 # ---------------------------------------------------------------------------
 
+def _field(item: Any, name: str) -> Any:
+    """Read a field from an SDK object or a plain dict (newer API events can arrive as dicts)."""
+    if isinstance(item, dict):
+        return item.get(name)
+    return getattr(item, name, None)
+
+
 def _ask(content: List[Dict[str, Any]]) -> str:
-    """One Claude call with streaming (long answers), primary model then fallbacks."""
+    """One Claude call, streamed (long answers), primary model then fallbacks.
+
+    Reads the raw event stream and keeps only the text, so it works whatever
+    SDK version is installed.
+    """
     llm = get_claude_llm()
     last_error = None
     for model in [llm.model] + [m for m in llm.fallback_models if m != llm.model]:
         try:
-            with llm.client.messages.stream(model=model, max_tokens=MAX_TOKENS,
-                                            messages=[{"role": "user", "content": content}]) as stream:
-                message = stream.get_final_message()
-            return _response_text(message)
+            stream = llm.client.messages.create(model=model, max_tokens=MAX_TOKENS, stream=True,
+                                                messages=[{"role": "user", "content": content}])
+            parts: List[str] = []
+            stop_reason = None
+            for event in stream:
+                kind = _field(event, "type")
+                if kind == "content_block_delta":
+                    delta = _field(event, "delta")
+                    if _field(delta, "type") == "text_delta":
+                        parts.append(_field(delta, "text") or "")
+                elif kind == "message_delta":
+                    stop_reason = _field(_field(event, "delta"), "stop_reason") or stop_reason
+            text = "".join(parts)
+            if stop_reason == "max_tokens":
+                logger.warning("[screenshot-design] answer was cut at the token limit")
+            if not text.strip():
+                raise RuntimeError("Claude returned an empty answer")
+            return text
         except Exception as e:  # noqa: BLE001
             last_error = e
             if "404" in str(e) or "not_found" in str(e):
