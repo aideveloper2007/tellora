@@ -13,11 +13,9 @@ Rails.application.routes.draw do
     post '/builds/:token/retry',  to: 'platform/store_builds#try_again',  as: :platform_store_build_retry
     get  '/builds/:token/open',   to: 'platform/store_builds#open',       as: :platform_store_build_open
 
-    # "Move my store": existing store address -> DNS ownership check -> account
+    # "Move my store": existing store address -> account -> store built from their brand
     get  '/move',                 to: 'platform/imports#new',             as: :platform_import
     post '/move',                 to: 'platform/imports#create'
-    get  '/move/verify',          to: 'platform/imports#verify',          as: :platform_import_verify
-    post '/move/verify',          to: 'platform/imports#check'
   end
 
   # On each STORE's own address (never the platform domain):

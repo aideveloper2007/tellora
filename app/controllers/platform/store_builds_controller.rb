@@ -16,10 +16,9 @@ module Platform
       @build = StoreBuild.new(build_params.merge(prompt: session[:store_prompt], ip: request.remote_ip))
       @build.store_url = store_url_for(@build.subdomain.to_s.downcase.strip)
 
-      # "Move my store": only a domain whose ownership was proven by DNS in this session
-      if (import = Platform::ImportsController.verified(session))
+      # "Move my store": read the brand of the store they are moving from
+      if (import = Platform::ImportsController.pending(session))
         @build.source_url = import['url']
-        @build.source_verified_at = import['verified_at']
       end
 
       if @build.save

@@ -5,9 +5,8 @@ require 'open-uri'
 # "Move my store": reads the owner's existing online store through the GenAI
 # Theme API (POST /api/v1/site-import) and brings its brand into Tellora.
 #
-# The owner's control of the domain is checked by DNS (ImportOwnership) BEFORE
-# a build with a source_url is created, so we only ever read stores whose owner
-# asked us to.
+# The new store opens on its Tellora subdomain. The owner connects their own
+# domain later, from the Domain screen (which checks DNS).
 #
 #   SiteImport.read(build)              # => { 'brand' => {...}, 'plan' => {...}, 'images' => {...}, 'description' => '...' }
 #   SiteImport.attach_logo(store, url)  # their logo becomes the store logo (inside the store's tenant)
