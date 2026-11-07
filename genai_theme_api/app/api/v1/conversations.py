@@ -19,6 +19,7 @@ from app.schemas import (
 from app.services.mock_llm import get_mock_llm
 from app.services.claude_llm import get_llm_service, get_claude_llm
 from app.services import site_importer
+from app.services import screenshot_design
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -361,7 +362,7 @@ class SiteImportRequest(BaseModel):
                 "and writes the home page plan with the store's own words. Never copies theme code."
 )
 async def site_import(request: SiteImportRequest):
-    """The Rails app has already checked that the owner controls this domain."""
+    """Read the store the owner is moving from and write its new home page plan."""
     try:
         site = await site_importer.read_site(request.url)
     except site_importer.ImportError_ as e:
@@ -399,3 +400,45 @@ async def site_import(request: SiteImportRequest):
         "images": images,
         "description": (description or store_name)[:480],
     }
+
+
+SCREENSHOT_MAX_BYTES = 20 * 1024 * 1024
+SCREENSHOT_TYPES = ("image/png", "image/jpeg", "image/webp")
+
+
+async def _screenshot_bytes(upload: Optional[UploadFile], label: str) -> Optional[bytes]:
+    if upload is None:
+        return None
+    data = await upload.read()
+    if not data:
+        return None
+    if len(data) > SCREENSHOT_MAX_BYTES:
+        raise HTTPException(status_code=422, detail={"error": {"code": "SCREENSHOT_TOO_LARGE", "message": f"The {label} screenshot is larger than 20 MB"}})
+    if not (data[:8] == b"\x89PNG\r\n\x1a\n" or data[:3] == b"\xff\xd8\xff" or (data[:4] == b"RIFF" and data[8:12] == b"WEBP")):
+        raise HTTPException(status_code=422, detail={"error": {"code": "SCREENSHOT_TYPE", "message": f"The {label} screenshot must be a PNG, JPG or WEBP image"}})
+    return data
+
+
+@router.post(
+    "/screenshot-design",
+    summary="Rebuild a store home page from screenshots",
+    description="Takes a full-page desktop screenshot (and optionally a mobile one) of a store's home page and returns "
+                "HTML/CSS that matches it, checked by rendering and comparing in a real browser."
+)
+async def screenshot_design_endpoint(
+    desktop: UploadFile = File(..., description="Full-page desktop screenshot of the home page"),
+    mobile: Optional[UploadFile] = File(None, description="Full-page phone screenshot of the home page (optional)"),
+    store_name: str = Form("", max_length=200),
+):
+    desktop_bytes = await _screenshot_bytes(desktop, "desktop")
+    if not desktop_bytes:
+        raise HTTPException(status_code=422, detail={"error": {"code": "SCREENSHOT_MISSING", "message": "The desktop screenshot is missing"}})
+    mobile_bytes = await _screenshot_bytes(mobile, "mobile")
+
+    try:
+        return await screenshot_design.build_design(desktop_bytes, mobile_bytes, store_name or "the store")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Screenshot design failed for {store_name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail={"error": {"code": "SCREENSHOT_DESIGN_ERROR", "message": "We could not rebuild the design from the screenshot"}})

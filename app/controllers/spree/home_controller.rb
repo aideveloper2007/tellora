@@ -2,7 +2,9 @@
 
 # Override Spree's HomeController to add GenAI theme support.
 #
-# Three cases:
+# Four cases:
+#   0. Design rebuilt from the owner's screenshots ("Move my store", MirrorDesign):
+#      their own home page, with the product grid filled with this store's products.
 #   1. GenAI theme with a style family (all Tellora stores): designer-made sections
 #      from the page plan, inside Spree's own layout (header, newsletter, footer).
 #   2. Older GenAI theme without a family: the previous GenAI home page, unchanged.
@@ -15,9 +17,13 @@ module Spree
     before_action :ensure_theme_images_table, if: -> { using_genai_theme? }
 
     FAMILY_PRODUCT_LIMIT = 8
+    MIRROR_PRODUCT_LIMIT = 24
 
     def index
-      if using_genai_theme? && (family = PagePlan.family_of(current_genai_theme))
+      if using_genai_theme? && (mirror = MirrorDesign.for(current_genai_theme))
+        @mirror_html = MirrorDesign.render_main(mirror, mirror_products(MIRROR_PRODUCT_LIMIT))
+        render 'spree/home/index_mirror'
+      elsif using_genai_theme? && (family = PagePlan.family_of(current_genai_theme))
         @style_family = family
         @page_plan = PagePlan.read(current_genai_theme)
         @plan_images = PagePlan::IMAGE_SLOTS.index_with { |slot| PagePlan.image(current_genai_theme, slot) }
@@ -36,6 +42,34 @@ module Spree
     end
 
     private
+
+    # Products for a rebuilt design's product grid, as plain values for its card template
+    def mirror_products(limit)
+      helpers = view_context
+      home_products(limit).map do |product|
+        {
+          name: product.name,
+          price: helpers.tl_price(product),
+          compare_price: mirror_compare_price(product),
+          image: (product.default_image ? helpers.tl_image_url(product.default_image, width: 800, height: 800) : ''),
+          url: spree.product_path(product)
+        }
+      end
+    rescue StandardError => e
+      Rails.logger.error("[Home] products for the rebuilt design failed: #{e.class} - #{e.message}")
+      []
+    end
+
+    # "Was" price when the product is on sale, otherwise ''
+    def mirror_compare_price(product)
+      price = product.price_in(current_currency)
+      return '' unless price.respond_to?(:compare_at_amount) && price.compare_at_amount.present? && price.amount.present?
+      return '' unless price.compare_at_amount > price.amount
+
+      price.respond_to?(:display_compare_at_price) ? price.display_compare_at_price.to_s : ''
+    rescue StandardError
+      ''
+    end
 
     # Newest active products of this store that have a price in the current currency
     def home_products(limit)

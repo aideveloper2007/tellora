@@ -12,6 +12,7 @@
 class StoreProvisioner
   THEME_TIMEOUT = 5 * 60 # seconds
   THEME_POLL_EVERY = 3   # seconds
+  STORE_TYPE_MAX = 190   # the sample-products API accepts at most 200 characters
 
   def initialize(build)
     @build = build
@@ -151,9 +152,10 @@ class StoreProvisioner
   # ---- step 4: starter products ------------------------------------------------
 
   def add_products
+    store_type = @build.prompt.to_s.squish.truncate(STORE_TYPE_MAX, separator: ' ')
     Apartment::Tenant.switch(@build.tenant_code) do
       store = Spree::Store.find(@build.store_id)
-      SampleProductsGenerator.new(store: store, store_type: @build.prompt).call
+      SampleProductsGenerator.new(store: store, store_type: store_type).call
     end
     @build.complete_step!('products')
   end
