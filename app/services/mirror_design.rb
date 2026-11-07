@@ -93,6 +93,7 @@ class MirrorDesign
 
         content_type = %w[image/png image/jpeg].include?(image['content_type']) ? image['content_type'] : 'image/jpeg'
         record = theme.theme_images.find_or_initialize_by(section: "mirror_#{id}")
+        record.source_url = "screenshot:#{id}" # ThemeImage requires a source; this one is the owner's screenshot
         record.source_attribution = 'From the store owner\'s screenshot'
         record.save!
         record.image.attach(io: StringIO.new(Base64.decode64(image['data'].to_s)),
