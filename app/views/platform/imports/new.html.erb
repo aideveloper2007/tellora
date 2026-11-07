@@ -2,8 +2,8 @@
 <% content_for :head do %>
 <style>
   .move { padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem); }
-  .move .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
-  @media (max-width: 860px) { .move .wrap { grid-template-columns: 1fr; } }
+  .move .wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+  @media (max-width: 900px) { .move .wrap { grid-template-columns: 1fr; } }
   .move-steps { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 0; list-style: none; font-size: .8rem; font-weight: 600; }
   .move-steps li { padding: .35rem .75rem; border-radius: 999px; background: var(--mist); color: var(--muted); }
   .move-steps li[aria-current] { background: var(--ink); color: #fff; }
@@ -12,17 +12,25 @@
   .brings { margin: 1.75rem 0 0; padding: 0; list-style: none; display: grid; gap: .7rem; }
   .brings li { display: flex; gap: .7rem; align-items: flex-start; line-height: 1.45; }
   .brings li::before { content: ''; flex: none; margin-top: .45rem; width: .5rem; height: .5rem; border-radius: 50%; background: var(--ember); }
-  .platforms { margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: .45rem; }
-  .platforms span { font-size: .8rem; font-weight: 600; padding: .4rem .75rem; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
-  .note { margin-top: 1.5rem; font-size: .9rem; color: var(--muted); line-height: 1.55; }
+  .howto { margin-top: 1.75rem; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 1.1rem 1.25rem; }
+  .howto h2 { font-size: 1.05rem; font-weight: 700; }
+  .howto ol { margin: .6rem 0 0; padding-left: 1.2rem; display: grid; gap: .4rem; color: var(--muted); font-size: .92rem; line-height: 1.5; }
+  .howto kbd { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; background: var(--mist); border-radius: 5px; padding: .05rem .35rem; color: var(--ink); }
 
   .form-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius-l); padding: clamp(1.25rem, 3vw, 2rem); box-shadow: 0 30px 60px -35px rgba(0,0,0,.25); }
   .form-card h2 { font-size: 1.35rem; font-weight: 700; }
   .form-card p.small { margin-top: .4rem; color: var(--muted); font-size: .92rem; }
-  .field { margin: 1.25rem 0; }
-  .field label { display: block; font-weight: 600; margin-bottom: .4rem; }
-  .field input { width: 100%; font: 400 1.05rem/1.4 var(--font-body); color: var(--ink); padding: .85rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
-  .field input:focus { outline: 3px solid rgba(255,90,31,.35); outline-offset: 1px; border-color: var(--ember); }
+  .drop { margin-top: 1.25rem; position: relative; display: grid; place-items: center; text-align: center; min-height: 11rem; border: 2px dashed var(--line); border-radius: 16px; background: var(--paper); padding: 1rem; cursor: pointer; transition: border-color .2s, background .2s; overflow: hidden; }
+  .drop:hover, .drop.over { border-color: var(--ember); background: #fff7f3; }
+  .drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop strong { display: block; font-size: 1rem; }
+  .drop span { display: block; margin-top: .3rem; color: var(--muted); font-size: .85rem; }
+  .drop img { max-height: 14rem; max-width: 100%; border-radius: 8px; box-shadow: 0 10px 30px -15px rgba(0,0,0,.4); }
+  .drop.filled { border-style: solid; border-color: var(--ember); }
+  .drop .file-name { margin-top: .6rem; font-size: .8rem; color: var(--ink); font-weight: 600; word-break: break-all; }
+  .optional { font-weight: 500; color: var(--muted); font-size: .85rem; }
+  .rights { margin: 1.25rem 0; display: flex; gap: .65rem; align-items: flex-start; font-size: .92rem; line-height: 1.45; }
+  .rights input { margin-top: .2rem; width: 1.1rem; height: 1.1rem; accent-color: var(--ember); flex: none; }
   .form-card .button { width: 100%; }
 </style>
 <% end %>
@@ -31,42 +39,82 @@
   <div class="wrap">
     <div>
       <ol class="move-steps" aria-label="Steps">
-        <li aria-current="step">1. Your store</li>
+        <li aria-current="step">1. Your screenshots</li>
         <li>2. Your account</li>
-        <li>3. Your new store, live</li>
+        <li>3. Your store, rebuilt</li>
       </ol>
       <h1 id="move-title">Move your store to <%= platform_name %></h1>
-      <p class="move-lede">Already selling online? Tellora reads your current store and rebuilds it on a premium Tellora design, with your brand.</p>
+      <p class="move-lede">Upload a screenshot of your current home page. Tellora rebuilds the same design, then checks it against your screenshot in a real browser and corrects it until it matches.</p>
 
       <ul class="brings">
-        <li>Your logo, brand colour and fonts</li>
-        <li>Your headlines, story and wording, in your language</li>
-        <li>Your own photos on the home page</li>
-        <li>Your new store opens on its own Tellora address right away. Take as long as you need</li>
-        <li>When you're happy, connect your own domain and your customers won't notice the move</li>
+        <li>Same layout, colours, fonts, texts and photos as your current site</li>
+        <li>Your products in your product grid</li>
+        <li>Opens on its own Tellora address right away. Take as long as you need</li>
+        <li>When you're happy, connect your own domain from Admin → Domain</li>
       </ul>
 
-      <div class="platforms" aria-label="Works with">
-        <span>Shopify</span><span>WooCommerce</span><span>Shoper</span><span>Wix</span><span>Squarespace</span><span>BigCommerce</span><span>Any website</span>
+      <div class="howto">
+        <h2>How to take a full-page screenshot</h2>
+        <ol>
+          <li>Open your store's home page in Google Chrome on a computer.</li>
+          <li>Press <kbd>F12</kbd>, then <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> (Mac: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>).</li>
+          <li>Type <kbd>full size screenshot</kbd> and press Enter. Chrome saves the whole page as one image.</li>
+          <li>For the phone version: press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd> first, choose a phone, then repeat step 3.</li>
+        </ol>
       </div>
-
-      <p class="note">We rebuild your look; we don't copy your old theme's code. Your current store keeps working until you switch your domain.</p>
     </div>
 
     <div class="form-card">
-      <h2>Where is your store now?</h2>
-      <p class="small">The address your customers use, like mybrand.com or mybrand.myshopify.com.</p>
+      <h2>Your home page screenshots</h2>
+      <p class="small">PNG, JPG or WEBP, up to 20 MB each. The whole page, top to bottom.</p>
 
       <% if flash[:alert] %><p class="flash" role="alert" style="margin-top:1rem"><%= flash[:alert] %></p><% end %>
 
-      <%= form_with url: platform_import_path, method: :post, data: { turbo: false } do %>
-        <div class="field">
-          <label for="address">Store web address</label>
-          <input id="address" name="address" type="text" inputmode="url" autocapitalize="none" spellcheck="false"
-                 required maxlength="200" placeholder="mybrand.com" value="<%= @address %>">
-        </div>
+      <%= form_with url: platform_import_path, method: :post, multipart: true, data: { turbo: false } do %>
+        <label class="drop" data-drop>
+          <input type="file" name="desktop" accept="image/png,image/jpeg,image/webp" required aria-label="Desktop screenshot">
+          <div data-drop-body>
+            <strong>Desktop screenshot</strong>
+            <span>Drop the image here or click to choose it</span>
+          </div>
+        </label>
+
+        <label class="drop" data-drop>
+          <input type="file" name="mobile" accept="image/png,image/jpeg,image/webp" aria-label="Phone screenshot (optional)">
+          <div data-drop-body>
+            <strong>Phone screenshot <span class="optional">(optional, recommended)</span></strong>
+            <span>Makes your store look right on phones too</span>
+          </div>
+        </label>
+
+        <label class="rights">
+          <input type="checkbox" name="rights" value="1" required>
+          <span>This is my store's design, or I have the right to use it.</span>
+        </label>
+
         <button type="submit" class="button">Continue →</button>
       <% end %>
     </div>
   </div>
 </section>
+
+<script>
+  document.querySelectorAll('[data-drop]').forEach(function (zone) {
+    var input = zone.querySelector('input[type=file]');
+    var body = zone.querySelector('[data-drop-body]');
+    function show(file) {
+      if (!file) return;
+      var url = URL.createObjectURL(file);
+      body.innerHTML = '';
+      var img = document.createElement('img');
+      img.src = url; img.alt = '';
+      var name = document.createElement('div');
+      name.className = 'file-name'; name.textContent = file.name;
+      body.appendChild(img); body.appendChild(name);
+      zone.classList.add('filled');
+    }
+    input.addEventListener('change', function () { show(input.files[0]); });
+    ['dragenter', 'dragover'].forEach(function (e) { zone.addEventListener(e, function () { zone.classList.add('over'); }); });
+    ['dragleave', 'drop'].forEach(function (e) { zone.addEventListener(e, function () { zone.classList.remove('over'); }); });
+  });
+</script>
