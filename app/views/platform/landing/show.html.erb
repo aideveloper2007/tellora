@@ -1,445 +1,410 @@
 <% preview_domain = TenantResolver.platform_domains.first || request.host %>
+<% plans = TelloraPlans.plans %>
+<% currency_keys = TelloraPlans.currencies.keys %>
 <% content_for :head do %>
 <style>
-  /* Hero */
-  .hero { padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(3rem, 7vw, 6rem); }
-  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
-  @media (max-width: 960px) { .hero .wrap { grid-template-columns: 1fr; } }
+  /* ---------- Hero ---------- */
+  .hero { position: relative; overflow: hidden; background: var(--ink); color: var(--text-dark); padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(3.5rem, 7vw, 5.5rem); }
+  .hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(var(--line-dark) 1px, transparent 1px), linear-gradient(90deg, var(--line-dark) 1px, transparent 1px); background-size: 56px 56px; -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 40%, #000 20%, transparent 75%); mask-image: radial-gradient(ellipse 70% 60% at 70% 40%, #000 20%, transparent 75%); opacity: 0.55; }
+  .glow { position: absolute; width: 46rem; height: 46rem; right: -10rem; top: -8rem; background: radial-gradient(circle, rgba(255,90,31,.38), rgba(255,138,61,.12) 40%, transparent 68%); filter: blur(10px); pointer-events: none; animation: breathe 7s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.08); opacity: .8; } }
+  .hero > .wrap { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: .55rem; padding: .4rem .8rem .4rem .45rem; border-radius: 999px; border: 1px solid var(--line-dark); background: rgba(255,255,255,.04); font-size: .82rem; color: var(--muted-dark); }
+  .eyebrow b { background: rgba(255,90,31,.16); color: var(--ember-2); font-weight: 600; padding: .2rem .55rem; border-radius: 999px; font-size: .75rem; }
+  .hero h1 { margin-top: 1.4rem; font-size: clamp(2.5rem, 5vw, 4.25rem); line-height: 1; font-weight: 800; }
+  .hero h1 em { font-style: normal; background: linear-gradient(120deg, var(--ember) 10%, var(--ember-2) 60%, #ffc27a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { margin-top: 1.4rem; font-size: clamp(1.05rem, 1.6vw, 1.2rem); line-height: 1.55; color: var(--muted-dark); max-width: 33rem; }
 
-  .hero h1 { font-size: var(--step-4); font-weight: 800; letter-spacing: -0.035em; max-width: 15ch; }
-  .hero-lede { margin-top: 1.25rem; font-size: var(--step-1); color: var(--muted); max-width: 34rem; line-height: 1.5; }
+  .prompt { margin-top: 2rem; background: var(--ink-2); border: 1px solid var(--line-dark); border-radius: 20px; padding: .6rem; box-shadow: 0 30px 60px -30px rgba(0,0,0,.8); transition: border-color .2s, box-shadow .2s; }
+  .prompt:focus-within { border-color: rgba(255,90,31,.55); box-shadow: 0 0 0 4px rgba(255,90,31,.12), 0 30px 60px -30px rgba(0,0,0,.8); }
+  .prompt label { position: absolute; left: -9999px; }
+  .prompt textarea { width: 100%; min-height: 5.2rem; resize: none; background: transparent; border: 0; outline: 0; color: var(--text-dark); font: 400 1.05rem/1.5 var(--font-body); padding: .7rem .8rem 0; }
+  .prompt textarea::placeholder { color: #6e6c7a; }
+  .prompt-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .3rem .2rem .2rem .8rem; }
+  .prompt-row span { font-size: .8rem; color: #6e6c7a; }
+  .hero .flash { margin: 1.5rem 0 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+  .chip { border: 1px solid var(--line-dark); background: transparent; color: var(--muted-dark); font: 500 .82rem var(--font-body); padding: .5rem .8rem; border-radius: 999px; cursor: pointer; transition: all .15s; }
+  .chip:hover, .chip[aria-pressed="true"] { color: #fff; border-color: rgba(255,255,255,.3); }
 
-  .build { margin-top: 2rem; }
-  .build label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
-  .prompt-box {
-    border: 2px solid var(--ink);
-    border-radius: var(--radius-l);
-    background: var(--paper);
-    padding: 0.35rem;
-    box-shadow: 6px 6px 0 var(--ink);
-  }
-  .prompt-box:focus-within { box-shadow: 6px 6px 0 var(--marigold); }
-  .prompt-box textarea {
-    display: block; width: 100%; resize: vertical; min-height: 6.5rem;
-    border: 0; outline: none; background: transparent;
-    font: 400 var(--step-1)/1.45 var(--font-body); color: var(--ink);
-    padding: 0.85rem 0.95rem 0.5rem;
-  }
-  .prompt-box textarea::placeholder { color: #8d90a8; }
-  .prompt-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.4rem 0.4rem 0.4rem 0.95rem; }
-  .prompt-hint { font-size: var(--step--1); color: var(--muted); }
-  @media (max-width: 520px) {
-    .prompt-actions { flex-direction: column; align-items: stretch; padding: 0.4rem; }
-    .prompt-hint { padding: 0 0.55rem; }
-  }
+  /* ---------- Store machine ---------- */
+  .machine { position: relative; padding-top: 4.6rem; }
+  .browser { position: relative; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 50px 100px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.08), 0 0 80px -20px rgba(255,90,31,.35); }
+  .bbar { display: flex; align-items: center; gap: .8rem; padding: .7rem .9rem; background: #f1efec; border-bottom: 1px solid #e4e0da; }
+  .dots { display: flex; gap: .35rem; } .dots span { width: .65rem; height: .65rem; border-radius: 50%; background: #d5d0c8; }
+  .url { flex: 1; min-width: 0; display: flex; align-items: center; gap: .45rem; background: #fff; border-radius: 8px; padding: .38rem .7rem; font-size: .78rem; color: #55524d; }
+  .url span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .url .lock { flex: none; width: .7rem; height: .7rem; border-radius: 2px; background: var(--live); opacity: 0; transition: opacity .3s; }
+  .url.secure .lock { opacity: 1; }
+  .live-badge { font: 700 .68rem var(--font-body); letter-spacing: .06em; color: #fff; background: var(--live); padding: .3rem .55rem; border-radius: 999px; opacity: 0; transform: scale(.6); transition: all .35s cubic-bezier(.2,1.6,.4,1); }
+  .live-badge.on { opacity: 1; transform: scale(1); }
 
-  .examples { margin-top: 1.25rem; }
-  .examples p { font-size: var(--step--1); color: var(--muted); margin-bottom: 0.6rem; }
-  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
-  .chip {
-    font: 500 var(--step--1)/1 var(--font-body);
-    padding: 0.55rem 0.85rem; border-radius: 999px;
-    border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
-  }
-  .chip:hover { border-color: var(--ink); }
-  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .store { --s-bg: #f4ede3; --s-ink: #2a1a12; --s-accent: #9c3b1f; --s-font: Georgia, serif; --s-hero: linear-gradient(120deg,#5a3220,#b87445 60%,#e6b886); --s-p1: linear-gradient(150deg,#c98b5b,#6b3a22); --s-p2: linear-gradient(150deg,#e2c3a0,#a06a43); --s-p3: linear-gradient(150deg,#7e5639,#3a2216);
+    background: var(--s-bg); color: var(--s-ink); height: 25.5rem; padding: 1rem 1.2rem; display: grid; grid-template-rows: auto auto 1fr; gap: .9rem; transition: background .5s, color .5s; }
+  .s-head { display: flex; align-items: center; justify-content: space-between; }
+  .s-logo { font: 500 1.15rem var(--s-font); letter-spacing: -.01em; }
+  .s-nav { display: flex; gap: .9rem; font-size: .7rem; opacity: .7; }
+  .s-hero { position: relative; border-radius: 10px; height: 9.5rem; background: var(--s-hero); overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 1rem; color: #fff; }
+  .s-hero::after { content: ''; position: absolute; right: -2rem; top: -2rem; width: 10rem; height: 10rem; border-radius: 50%; background: rgba(255,255,255,.14); }
+  .s-hero h4 { position: relative; z-index: 1; font: 500 1.35rem/1.1 var(--s-font); letter-spacing: 0; max-width: 17rem; }
+  .s-hero span { position: relative; z-index: 1; margin-top: .6rem; align-self: flex-start; font-size: .66rem; font-weight: 600; background: #fff; color: var(--s-accent); padding: .38rem .7rem; border-radius: 999px; }
+  .s-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7rem; }
+  .s-card { display: flex; flex-direction: column; gap: .35rem; }
+  .s-img { border-radius: 8px; flex: 1; min-height: 5.5rem; position: relative; overflow: hidden; }
+  .s-img::after { content: ''; position: absolute; left: 50%; top: 52%; width: 42%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 30% 30% 40% 40%; background: rgba(255,255,255,.22); box-shadow: inset 0 -8px 16px rgba(0,0,0,.12); }
+  .s-card:nth-child(1) .s-img { background: var(--s-p1); } .s-card:nth-child(2) .s-img { background: var(--s-p2); } .s-card:nth-child(3) .s-img { background: var(--s-p3); }
+  .s-name { font-size: .68rem; font-weight: 600; }
+  .s-price { font-size: .66rem; color: var(--s-accent); font-weight: 700; }
+  .machine .store [data-step] { opacity: 0; transform: translateY(10px) scale(.98); filter: blur(4px); transition: opacity .5s ease, transform .5s ease, filter .5s ease; }
+  .machine .store [data-step].in { opacity: 1; transform: none; filter: none; }
+  .scan { position: absolute; left: 0; right: 0; height: 2px; top: 3rem; background: linear-gradient(90deg, transparent, var(--ember), transparent); box-shadow: 0 0 16px var(--ember); opacity: 0; }
+  .scan.run { animation: scan 2.4s ease-in-out; }
+  @keyframes scan { 0% { top: 3rem; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-  /* Live store preview: the one bold element on the page */
-  .preview-frame { position: relative; }
-  .preview {
-    --p-bg: #f6f3ee; --p-ink: #2b2a28; --p-accent: #3a4a6b; --p-band: #e7e1d8; --p-font: Georgia, serif;
-    border-radius: var(--radius-l);
-    border: 1px solid var(--line);
-    overflow: hidden;
-    background: var(--p-bg); color: var(--p-ink);
-    box-shadow: 0 30px 60px -30px rgba(24, 22, 58, 0.35);
-    transition: background-color 0.45s ease, color 0.45s ease;
-  }
-  .preview-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.85rem; background: var(--paper); border-bottom: 1px solid var(--line); }
-  .preview-bar .dots { display: flex; gap: 0.35rem; }
-  .preview-bar .dots span { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--line); }
-  .preview-url { flex: 1; font-size: 0.8rem; color: var(--muted); background: var(--mist); border-radius: 999px; padding: 0.3rem 0.8rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .log { z-index: 3; position: absolute; left: -3rem; bottom: -3.2rem; width: 17rem; background: rgba(20,20,27,.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid var(--line-dark); border-radius: 14px; padding: .9rem 1rem; color: var(--text-dark); box-shadow: 0 30px 60px -20px rgba(0,0,0,.8); font-size: .8rem; }
+  .log-top { display: flex; justify-content: space-between; color: var(--muted-dark); font-size: .72rem; margin-bottom: .55rem; }
+  .log-top b { color: var(--ember-2); font-variant-numeric: tabular-nums; }
+  .log ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .38rem; }
+  .log li { display: flex; align-items: center; gap: .55rem; color: #6e6c7a; transition: color .3s; }
+  .log li::before { content: ''; width: .85rem; height: .85rem; border-radius: 50%; border: 1.5px solid #3a3a46; flex: none; transition: all .3s; }
+  .log li.active { color: #fff; } .log li.active::before { border-color: var(--ember); border-top-color: transparent; animation: spin .8s linear infinite; }
+  .log li.done { color: var(--text-dark); } .log li.done::before { background: var(--live); border-color: var(--live); box-shadow: inset 0 0 0 2.5px var(--ink-2); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .typing { z-index: 3; position: absolute; left: -1rem; top: 0; max-width: 18rem; background: var(--ink-2); border: 1px solid rgba(255,90,31,.4); color: var(--text-dark); border-radius: 12px 12px 12px 4px; padding: .65rem .85rem; font-size: .8rem; line-height: 1.4; box-shadow: 0 20px 40px -15px rgba(0,0,0,.8); }
+  .typing small { display: block; color: var(--ember-2); font-weight: 600; font-size: .68rem; margin-bottom: .2rem; letter-spacing: .04em; text-transform: uppercase; }
+  .caret { display: inline-block; width: 2px; height: 1em; background: var(--ember); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
 
-  .p-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; }
-  .p-name { font-family: var(--p-font); font-weight: 700; font-size: 1.15rem; }
-  .p-nav { display: flex; gap: 0.9rem; font-size: 0.78rem; opacity: 0.75; }
-  .p-band { background: var(--p-band); padding: 1.6rem 1.25rem 1.8rem; transition: background-color 0.45s ease; }
-  .p-tagline { font-family: var(--p-font); font-size: clamp(1.3rem, 1rem + 1.4vw, 1.9rem); line-height: 1.15; max-width: 20ch; }
-  .p-cta { display: inline-block; margin-top: 0.9rem; font-size: 0.78rem; font-weight: 600; padding: 0.5rem 0.9rem; border-radius: 999px; background: var(--p-accent); color: var(--p-bg); }
-  .p-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; padding: 1.1rem 1.25rem 1.4rem; }
-  @media (max-width: 520px) { .p-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .p-item { font-size: 0.75rem; line-height: 1.3; }
-  .p-art { aspect-ratio: 1; border-radius: 10px; background: var(--p-band); display: grid; place-items: center; margin-bottom: 0.45rem; transition: background-color 0.45s ease; }
-  .p-art i { display: block; width: 46%; height: 46%; background: var(--p-accent); transition: background-color 0.45s ease; }
-  .shape-circle { border-radius: 50%; }
-  .shape-arch { border-radius: 999px 999px 4px 4px; height: 58% !important; }
-  .shape-leaf { border-radius: 0 70% 0 70%; }
-  .shape-pill { border-radius: 999px; width: 30% !important; height: 62% !important; }
-  .shape-diamond { transform: rotate(45deg); border-radius: 4px; width: 38% !important; height: 38% !important; }
-  .p-price { font-weight: 600; margin-top: 0.15rem; }
+  /* ---------- Proof strip ---------- */
+  .proof { background: var(--ink); border-top: 1px solid var(--line-dark); color: var(--muted-dark); }
+  .proof .wrap { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .proof div { padding: 1.4rem 1rem; border-left: 1px solid var(--line-dark); text-align: center; font-size: .85rem; }
+  .proof div:first-child { border-left: 0; }
+  .proof strong { display: block; color: #fff; font: 700 1.35rem var(--font-display); margin-bottom: .2rem; letter-spacing: -.02em; }
 
-  .p-item, .p-tagline, .p-name { transition: opacity 0.3s ease, transform 0.3s ease; }
-  .preview.is-building .p-item, .preview.is-building .p-tagline, .preview.is-building .p-name { opacity: 0; transform: translateY(6px); }
+  /* ---------- Sections ---------- */
+  .section { padding: clamp(4.5rem, 9vw, 7.5rem) 0; background: var(--paper); }
+  .section-dark { background: var(--ink); color: var(--text-dark); }
+  .section-sand { background: var(--mist); }
+  .kicker { font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ember); }
+  .section h2 { margin-top: .8rem; font-size: clamp(2.1rem, 4.4vw, 3.4rem); line-height: 1.02; font-weight: 800; max-width: 46rem; }
+  .intro { margin-top: 1.1rem; font-size: 1.12rem; line-height: 1.6; color: var(--muted); max-width: 40rem; }
+  .section-dark .intro { color: var(--muted-dark); }
 
-  .build-status {
-    position: absolute; right: 1rem; top: 4.4rem;
-    background: var(--paper); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 12px;
-    padding: 0.7rem 0.9rem; font-size: 0.8rem; min-width: 13.5rem;
-    box-shadow: 0 12px 30px -16px rgba(24, 22, 58, 0.45);
-    opacity: 0; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease;
-    pointer-events: none;
-  }
-  .build-status.is-visible { opacity: 1; transform: none; }
-  .build-status ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
-  .build-status li { display: flex; gap: 0.5rem; align-items: center; color: var(--muted); }
-  .build-status li::before { content: ''; width: 0.7rem; height: 0.7rem; border-radius: 50%; border: 2px solid var(--line); flex: none; }
-  .build-status li.done { color: var(--ink); }
-  .build-status li.done::before { background: var(--marigold); border-color: var(--marigold); }
-  .preview-caption { margin-top: 0.9rem; font-size: var(--step--1); color: var(--muted); }
+  /* pipeline */
+  .pipe { margin: 3.5rem 0 0; padding: 0; position: relative; display: grid; grid-template-columns: repeat(8, 1fr); gap: .8rem; }
+  .pipe::before { content: ''; position: absolute; top: 1.7rem; left: 4%; right: 4%; height: 2px; background: var(--line); }
+  .pipe::after { content: ''; position: absolute; top: 1.7rem; left: 4%; height: 2px; width: 0; background: linear-gradient(90deg, var(--ember), var(--ember-2)); box-shadow: 0 0 12px rgba(255,90,31,.6); transition: width 2.6s cubic-bezier(.6,0,.2,1); }
+  .pipe.go::after { width: 92%; }
+  .pipe li { list-style: none; position: relative; text-align: center; }
+  .pipe .node { position: relative; z-index: 1; margin: 0 auto; width: 3.4rem; height: 3.4rem; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: grid; place-items: center; box-shadow: 0 8px 20px -12px rgba(0,0,0,.25); transition: all .4s; }
+  .pipe .node svg { width: 1.35rem; height: 1.35rem; stroke: var(--ink); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke .4s; }
+  .pipe.go li .node { border-color: rgba(255,90,31,.5); background: #fff4ee; }
+  .pipe.go li .node svg { stroke: var(--ember); }
+  .pipe li:nth-child(2) .node { transition-delay: .3s } .pipe li:nth-child(3) .node { transition-delay: .6s } .pipe li:nth-child(4) .node { transition-delay: .9s }
+  .pipe li:nth-child(5) .node { transition-delay: 1.2s } .pipe li:nth-child(6) .node { transition-delay: 1.5s } .pipe li:nth-child(7) .node { transition-delay: 1.8s } .pipe li:nth-child(8) .node { transition-delay: 2.1s }
+  .pipe li:last-child .node, .pipe.go li:last-child .node { background: var(--ink); border-color: var(--ink); }
+  .pipe li:last-child .node svg, .pipe.go li:last-child .node svg { stroke: var(--live); }
+  .pipe h3 { margin-top: 1rem; font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
+  .pipe p { margin-top: .35rem; font-size: .84rem; line-height: 1.45; color: var(--muted); }
 
-  /* Sections */
-  .section { padding: clamp(3.5rem, 8vw, 6.5rem) 0; }
-  .section-mist { background: var(--mist); }
-  .section h2 { font-size: var(--step-3); font-weight: 700; max-width: 22ch; }
-  .section-intro { margin-top: 0.9rem; color: var(--muted); font-size: var(--step-1); max-width: 40rem; line-height: 1.5; }
+  /* designs */
+  .tabs { margin-top: 2.5rem; display: inline-flex; gap: .35rem; padding: .35rem; background: var(--ink-2); border: 1px solid var(--line-dark); border-radius: 999px; }
+  .tab { border: 0; cursor: pointer; background: transparent; color: var(--muted-dark); font: 600 .9rem var(--font-body); padding: .7rem 1.2rem; border-radius: 999px; transition: all .2s; }
+  .tab[aria-selected="true"] { background: #fff; color: var(--ink); }
+  .show { margin-top: 2rem; display: grid; grid-template-columns: 1.6fr 1fr; gap: 2rem; align-items: center; }
+  .show .store { height: 27rem; }
+  .show-copy h3 { font-size: 2rem; font-weight: 800; }
+  .show-copy p { margin-top: 1rem; color: var(--muted-dark); line-height: 1.6; font-size: 1.02rem; }
+  .show-copy ul { margin: 1.4rem 0 0; padding: 0; list-style: none; display: grid; gap: .6rem; }
+  .show-copy li { display: flex; gap: .6rem; align-items: center; color: var(--text-dark); font-size: .95rem; }
+  .show-copy li::before { content: ''; width: .45rem; height: .45rem; border-radius: 50%; background: var(--ember); box-shadow: 0 0 10px var(--ember); }
+  .swatches { display: flex; gap: .45rem; margin-top: 1.5rem; } .swatches span { width: 2.1rem; height: 2.1rem; border-radius: 10px; border: 1px solid var(--line-dark); }
 
-  /* Journey: from one sentence to the customer's door */
-  .journey-phase { margin: 2.75rem 0 1rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: var(--step--1); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-  .journey-phase::after { content: ''; flex: 1; height: 1px; background: var(--line); }
-  .journey { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; counter-reset: stage; }
-  .journey-sell { counter-reset: stage 4; }
-  @media (max-width: 1080px) { .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 600px) { .journey { grid-template-columns: 1fr; } }
-  .stage { counter-increment: stage; display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); overflow: hidden; }
-  .stage-art { position: relative; height: 8.5rem; background: var(--mist); border-bottom: 1px solid var(--line); display: grid; place-items: center; padding: 1rem; overflow: hidden; }
-  .stage-body { padding: 1.15rem 1.25rem 1.35rem; }
-  .stage h3 { display: flex; align-items: baseline; gap: 0.6rem; font-size: var(--step-1); font-weight: 700; line-height: 1.2; }
-  .stage h3::before { content: counter(stage); flex: none; display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: 0.9rem; font-weight: 800; transform: translateY(-0.1rem); }
-  .stage p { margin-top: 0.55rem !important; color: var(--muted); font-size: 0.97rem; line-height: 1.55; }
+  /* features */
+  .bento { margin-top: 3.2rem; display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; }
+  .cell { background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 1.7rem; position: relative; overflow: hidden; transition: transform .25s, box-shadow .25s; }
+  .cell:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -28px rgba(0,0,0,.25); }
+  .cell h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.015em; }
+  .cell p { margin-top: .55rem; color: var(--muted); line-height: 1.55; font-size: .95rem; }
+  .ico { width: 2.6rem; height: 2.6rem; border-radius: 12px; background: #fff1ea; display: grid; place-items: center; margin-bottom: 1.2rem; }
+  .ico svg { width: 1.25rem; height: 1.25rem; stroke: var(--ember); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .c-wide { grid-column: span 3; } .c-third { grid-column: span 2; }
+  .c-dark { background: var(--ink); border-color: var(--ink); color: var(--text-dark); }
+  .c-dark p { color: var(--muted-dark); } .c-dark .ico { background: rgba(255,90,31,.15); }
+  .pills { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.2rem; }
+  .pills span { font-size: .78rem; font-weight: 600; padding: .45rem .75rem; border-radius: 999px; background: var(--mist); color: var(--ink); }
+  .chat { margin-top: 1.2rem; display: grid; gap: .5rem; }
+  .chat div { font-size: .82rem; padding: .6rem .8rem; border-radius: 12px; max-width: 85%; }
+  .chat .me { justify-self: end; background: linear-gradient(135deg, var(--ember), var(--ember-2)); color: #fff; border-bottom-right-radius: 4px; }
+  .chat .ai { background: rgba(255,255,255,.07); color: var(--text-dark); border-bottom-left-radius: 4px; }
+  .domain { margin-top: 1.2rem; display: flex; align-items: center; gap: .6rem; font-size: .85rem; flex-wrap: wrap; }
+  .domain code { font-family: var(--font-body); background: var(--mist); padding: .45rem .7rem; border-radius: 8px; }
+  .domain .arrow { color: var(--ember); font-weight: 700; }
+  .domain .ok { color: #148a4e; font-weight: 600; }
 
-  /* Small drawn scenes (decorative) */
-  .art-prompt { width: 100%; max-width: 15rem; background: var(--paper); border: 2px solid var(--ink); border-radius: 12px; padding: 0.65rem 0.75rem; font-size: 0.85rem; line-height: 1.35; box-shadow: 4px 4px 0 var(--ink); }
-  .art-prompt b { display: inline-block; width: 2px; height: 1em; background: var(--ink); vertical-align: -0.15em; margin-left: 2px; animation: caret 1s steps(1) infinite; }
-  @keyframes caret { 50% { opacity: 0; } }
-  .art-styles { display: flex; gap: 0.5rem; }
-  .art-styles span { width: 4.1rem; height: 5.2rem; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; padding: 0.45rem; font-family: Georgia, 'Times New Roman', serif; font-size: 1.35rem; line-height: 1; box-shadow: 0 6px 16px -10px rgba(24, 22, 58, 0.5); }
-  .art-styles span:nth-child(2) { transform: translateY(-0.4rem); }
-  .art-styles i { display: block; width: 100%; height: 0.4rem; border-radius: 99px; }
-  .art-products { display: grid; grid-template-columns: repeat(3, 4rem); gap: 0.5rem; }
-  .art-products span { background: var(--paper); border-radius: 8px; padding: 0.35rem; font-size: 0.68rem; font-weight: 600; box-shadow: 0 6px 16px -10px rgba(24, 22, 58, 0.5); }
-  .art-products i { display: block; aspect-ratio: 1; border-radius: 5px; margin-bottom: 0.3rem; }
-  .art-builder { position: relative; width: 100%; max-width: 15rem; height: 6.5rem; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: grid; grid-template-columns: 38% 1fr; overflow: hidden; }
-  .art-builder .chat { border-right: 1px solid var(--line); padding: 0.4rem; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.3rem; }
-  .art-builder .chat span { font-size: 0.6rem; line-height: 1.25; padding: 0.25rem 0.35rem; border-radius: 6px; background: var(--ink); color: var(--paper); align-self: flex-end; }
-  .art-builder .chat span:first-child { background: var(--mist); color: var(--ink); align-self: flex-start; }
-  .art-builder .site { padding: 0.4rem; display: grid; gap: 0.3rem; align-content: start; background: #efe6da; }
-  .art-builder .site i { display: block; height: 0.45rem; border-radius: 99px; background: #1f1510; opacity: 0.85; }
-  .art-builder .site i:nth-child(2) { width: 60%; opacity: 0.4; }
-  .art-builder .site b { display: block; height: 2.2rem; border-radius: 4px; background: #8e2a22; opacity: 0.85; }
-  .art-url { width: 100%; max-width: 15rem; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0.55rem 0.8rem; display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; box-shadow: 0 8px 20px -14px rgba(24, 22, 58, 0.6); }
-  .art-url svg { flex: none; }
-  .art-url em { font-style: normal; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .art-live { position: absolute; top: 1.1rem; right: 1.1rem; background: #e3f4ea; color: #1f7a4d; font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 999px; }
-  .art-pay { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; max-width: 15rem; }
-  .art-pay span { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 0.35rem 0.7rem; font-size: 0.78rem; font-weight: 600; }
-  .art-pay span:first-child { background: var(--ink); border-color: var(--ink); color: var(--paper); }
-  .art-order { width: 100%; max-width: 15rem; display: grid; gap: 0.4rem; }
-  .art-order .row { display: flex; align-items: center; justify-content: space-between; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.75rem; font-weight: 600; }
-  .art-order .track { display: flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; color: var(--muted); }
-  .art-order .track span { flex: 1; text-align: center; padding: 0.2rem 0; border-radius: 99px; background: var(--paper); border: 1px solid var(--line); }
-  .art-order .track span.on { background: var(--marigold); border-color: var(--marigold); color: var(--ink); font-weight: 700; }
-  .art-grow { width: 100%; max-width: 15rem; display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; align-items: end; }
-  .art-grow .serp { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 0.45rem 0.55rem; font-size: 0.62rem; line-height: 1.35; }
-  .art-grow .serp b { display: block; color: #1a0dab; font-size: 0.72rem; }
-  .art-grow .serp em { font-style: normal; color: #1f7a4d; }
-  .art-grow .bars { display: flex; align-items: flex-end; gap: 0.25rem; height: 4.5rem; }
-  .art-grow .bars i { display: block; width: 0.55rem; border-radius: 3px 3px 0 0; background: var(--ink); }
-  .art-grow .bars i:last-child { background: var(--marigold); }
+  /* pricing */
+  .trial { margin-top: 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; background: var(--ink); color: var(--text-dark); border-radius: 22px; padding: 1.6rem 1.9rem; position: relative; overflow: hidden; }
+  .trial::after { content: ''; position: absolute; right: -6rem; top: -6rem; width: 18rem; height: 18rem; background: radial-gradient(circle, rgba(255,90,31,.45), transparent 65%); }
+  .trial > * { position: relative; z-index: 1; }
+  .trial strong { font: 800 1.6rem var(--font-display); letter-spacing: -.02em; }
+  .trial p { color: var(--muted-dark); margin-top: .3rem; }
+  .pricing-bar { margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .pricing-note { color: var(--muted); font-size: .9rem; }
+  .currency { display: inline-flex; gap: .25rem; padding: .3rem; background: #fff; border: 1px solid var(--line); border-radius: 999px; }
+  .currency button { border: 0; cursor: pointer; background: transparent; font: 600 .85rem var(--font-body); padding: .5rem .9rem; border-radius: 999px; color: var(--muted); }
+  .currency button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .plans { margin-top: 1.4rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .plan { background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 1.7rem; display: flex; flex-direction: column; position: relative; }
+  .plan-popular { border: 2px solid var(--ember); box-shadow: 0 30px 60px -30px rgba(255,90,31,.45); }
+  .plan-badge { position: absolute; top: -.8rem; left: 1.5rem; background: linear-gradient(135deg, var(--ember), var(--ember-2)); color: #fff; font-size: .72rem; font-weight: 700; padding: .32rem .7rem; border-radius: 999px; }
+  .plan h3 { font-size: 1.3rem; font-weight: 700; }
+  .plan-for { color: var(--muted); font-size: .88rem; margin-top: .3rem; }
+  .plan-trial { margin-top: 1.2rem; font-size: .8rem; color: var(--ember); font-weight: 600; }
+  .plan-price, .plan-contact { margin-top: .2rem; font: 800 2.1rem var(--font-display); letter-spacing: -.03em; }
+  .plan-price small { font: 500 .85rem var(--font-body); color: var(--muted); letter-spacing: 0; }
+  .plan-monthly { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+  .plan ul { list-style: none; padding: 0; margin: 1.3rem 0 1.6rem; display: grid; gap: .6rem; font-size: .9rem; flex: 1; align-content: start; }
+  .plan li { display: flex; gap: .55rem; line-height: 1.4; } .plan li::before { content: '✓'; color: var(--ember); font-weight: 700; }
 
-  .journey-end { margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; flex-wrap: wrap; background: var(--ink); color: var(--paper); border-radius: var(--radius-l); padding: 1.35rem 1.6rem; }
-  .journey-end p { font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); }
-  .journey-end .button { background: var(--marigold); border-color: var(--marigold); color: var(--ink); }
-  .journey-end .button:hover { background: #ffc629; border-color: #ffc629; }
-
-  .included { margin: 2.75rem 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 3.5rem; }
-  @media (max-width: 760px) { .included { grid-template-columns: 1fr; } }
-  .included div { padding: 1.25rem 0; border-bottom: 1px solid var(--line); }
-  .included dt { font-weight: 600; font-size: var(--step-1); }
-  .included dd { margin: 0.3rem 0 0; color: var(--muted); max-width: 44ch; }
-
-  .anywhere { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
-  @media (max-width: 860px) { .anywhere { grid-template-columns: 1fr; } }
-  .languages { font-family: var(--font-display); font-weight: 700; font-size: var(--step-2); line-height: 1.35; color: var(--ink); }
-  .languages span { display: inline-block; margin-right: 0.9rem; }
-  .languages span:nth-child(3n+2) { color: var(--muted); }
-  .facts { list-style: none; margin: 1.75rem 0 0; padding: 0; display: grid; gap: 1rem; }
-  .facts li { padding-left: 1.1rem; border-left: 3px solid var(--marigold); }
-  .facts strong { display: block; }
-  .facts span { color: var(--muted); }
-
-  .faq { margin-top: 2.25rem; max-width: 46rem; }
-  .faq details { border-bottom: 1px solid var(--line); }
-  .faq summary { cursor: pointer; list-style: none; padding: 1.15rem 2rem 1.15rem 0; font-weight: 600; font-size: var(--step-1); position: relative; }
-  .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: '+'; position: absolute; right: 0.25rem; top: 1rem; font-family: var(--font-display); font-size: 1.6rem; line-height: 1; transition: transform 0.2s ease; }
-  .faq details[open] summary::after { transform: rotate(45deg); }
-  .faq details p { padding: 0 0 1.25rem; color: var(--muted); max-width: 60ch; }
-
-  /* Pricing */
-  .offer { margin-top: 1.75rem; display: inline-flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; align-items: center; background: var(--marigold); color: var(--ink); border-radius: 999px; padding: 0.6rem 1.2rem; font-weight: 600; }
-  .offer span { display: inline-flex; align-items: center; gap: 0.45rem; }
-  .offer span + span::before { content: ''; width: 0.35rem; height: 0.35rem; border-radius: 50%; background: var(--ink); opacity: 0.45; margin-right: 0.8rem; }
-  @media (max-width: 600px) { .offer { display: grid; gap: 0.3rem; border-radius: var(--radius-l); padding: 0.8rem 1.1rem; } .offer span + span::before { display: none; } }
-  .pricing-bar { margin-top: 2.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-  .pricing-note { color: var(--muted); font-size: var(--step--1); }
-  .currency { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); padding: 0.2rem; }
-  .currency button { font: 600 var(--step--1)/1 var(--font-body); border: 0; background: transparent; color: var(--muted); padding: 0.5rem 0.9rem; border-radius: 999px; cursor: pointer; }
-  .currency button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-
-  .plans { margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
-  @media (max-width: 1080px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 600px) { .plans { grid-template-columns: 1fr; } }
-  .plan { position: relative; display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 1.5rem 1.35rem 1.35rem; }
-  .plan-popular { border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
-  .plan-badge { position: absolute; top: -0.8rem; left: 1.2rem; background: var(--marigold); color: var(--ink); font-size: 0.78rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 999px; }
-  .plan h3 { font-size: var(--step-2); font-weight: 800; }
-  .plan-for { color: var(--muted); font-size: var(--step--1); margin-top: 0.25rem !important; min-height: 3.2em; }
-  @media (max-width: 600px) { .plan-for { min-height: 0; } }
-  .plan-trial { margin-top: 1.1rem !important; font-weight: 700; }
-  .plan-price { margin-top: 0.35rem !important; font-family: var(--font-display); font-weight: 800; font-size: var(--step-3); line-height: 1; letter-spacing: -0.02em; }
-  .plan-price small { font-family: var(--font-body); font-size: var(--step--1); font-weight: 500; color: var(--muted); letter-spacing: 0; }
-  .plan-monthly { color: var(--muted); font-size: var(--step--1); margin-top: 0.35rem !important; }
-  .plan-contact { margin-top: 0.35rem !important; font-family: var(--font-display); font-weight: 800; font-size: var(--step-2); line-height: 1.1; }
-  .plan ul { list-style: none; margin: 1.25rem 0 1.5rem; padding: 1.1rem 0 0; border-top: 1px solid var(--line); display: grid; gap: 0.55rem; flex: 1; }
-  .plan li { display: flex; gap: 0.55rem; align-items: flex-start; font-size: 0.95rem; line-height: 1.4; }
-  .plan li::before { content: ''; flex: none; width: 0.95rem; height: 0.55rem; margin-top: 0.3rem; border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(-45deg) translateY(-2px); }
-  .plan .button { width: 100%; }
-  .plan:not(.plan-popular) .button { background: transparent; color: var(--ink); }
-  .plan:not(.plan-popular) .button:hover { background: var(--mist); }
-
-  .compare-wrap { margin-top: 3rem; overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); }
-  .compare { width: 100%; min-width: 46rem; border-collapse: collapse; font-size: 0.95rem; }
-  .compare caption { text-align: left; padding: 1.1rem 1.25rem 0.4rem; font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); }
-  .compare th, .compare td { padding: 0.8rem 1.25rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-  .compare thead th { font-family: var(--font-display); font-size: var(--step-0); }
+  .compare-wrap { margin-top: 3rem; overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 22px; }
+  .compare { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 40rem; }
+  .compare caption { text-align: left; padding: 1.4rem 1.5rem .4rem; font: 700 1.25rem var(--font-display); letter-spacing: -.015em; }
+  .compare th, .compare td { padding: .85rem 1.5rem; text-align: left; border-bottom: 1px solid var(--line); }
+  .compare thead th { font-weight: 700; color: var(--ink); }
   .compare tbody th { font-weight: 500; color: var(--muted); }
-  .compare tbody tr:last-child th, .compare tbody tr:last-child td { border-bottom: 0; }
-  .compare .yes { display: inline-block; width: 1rem; height: 0.55rem; border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(-45deg); }
+  .compare tr:last-child th, .compare tr:last-child td { border-bottom: 0; }
+  .compare .yes { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--ember); position: relative; }
+  .compare .yes::after { content: ''; position: absolute; left: .38rem; top: .2rem; width: .3rem; height: .55rem; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 
-  .free-all { margin-top: 3.5rem; }
-  .free-all h3 { font-size: var(--step-2); font-weight: 800; }
-  .free-all > p { margin-top: 0.5rem !important; color: var(--muted); }
-  .free-grid { margin-top: 1.75rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-  @media (max-width: 960px) { .free-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 600px) { .free-grid { grid-template-columns: 1fr; } }
-  .free-grid section { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 1.25rem 1.35rem; }
-  .free-grid h4 { margin: 0 0 0.7rem; font-family: var(--font-display); font-size: var(--step-1); }
-  .free-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
-  .free-grid li { position: relative; padding-left: 1.1rem; color: var(--muted); font-size: 0.95rem; line-height: 1.45; }
-  .free-grid li::before { content: ''; position: absolute; left: 0; top: 0.55rem; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--marigold); }
+  .free-all { margin-top: 3rem; }
+  .free-all h3 { font-size: 1.6rem; font-weight: 800; }
+  .free-all > p { margin-top: .4rem; color: var(--muted); }
+  .free-grid { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+  .free-grid section { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 1.3rem 1.4rem; }
+  .free-grid h4 { font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
+  .free-grid ul { list-style: none; padding: 0; margin: .8rem 0 0; display: grid; gap: .5rem; font-size: .88rem; color: var(--muted); }
+  .free-grid li { position: relative; padding-left: 1rem; line-height: 1.45; }
+  .free-grid li::before { content: ''; position: absolute; left: 0; top: .5rem; width: .4rem; height: .4rem; border-radius: 50%; background: var(--ember); }
 
-  .closing { text-align: center; }
-  .closing h2 { margin: 0 auto; }
-  .closing .section-intro { margin-left: auto; margin-right: auto; }
-  .closing .button { margin-top: 2rem; }
+  /* faq */
+  .faq { margin-top: 2.5rem; display: grid; gap: .7rem; max-width: 52rem; }
+  .faq details { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 1.15rem 1.4rem; }
+  .faq summary { cursor: pointer; font-weight: 600; font-size: 1.02rem; list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--ember); font-size: 1.3rem; line-height: 1; transition: transform .2s; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { margin-top: .8rem; color: var(--muted); line-height: 1.6; }
+
+  /* closing */
+  .closing { position: relative; overflow: hidden; text-align: center; }
+  .closing .glow { left: 50%; right: auto; top: 30%; margin-left: -23rem; }
+  .closing .wrap { position: relative; }
+  .closing h2 { margin-left: auto; margin-right: auto; }
+  .closing .intro { margin-left: auto; margin-right: auto; }
+  .closing .button { margin-top: 2.2rem; padding: 1.1rem 1.7rem; font-size: 1rem; }
+
+  /* reveal on scroll */
+  .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+  .js .reveal.seen { opacity: 1; transform: none; }
+
+  @media (max-width: 1000px) {
+    .hero > .wrap, .show { grid-template-columns: 1fr; }
+    .machine { margin: 1.5rem 1.5rem 2.5rem; }
+    .pipe { grid-template-columns: repeat(4, 1fr); row-gap: 2rem; } .pipe::before, .pipe::after { display: none; }
+    .plans { grid-template-columns: repeat(2, 1fr); }
+    .c-wide, .c-third { grid-column: span 3; }
+  }
+  @media (max-width: 640px) {
+    .proof .wrap { grid-template-columns: repeat(2, 1fr); } .proof div:nth-child(odd) { border-left: 0; } .proof div:last-child { grid-column: span 2; }
+    .pipe { grid-template-columns: repeat(2, 1fr); }
+    .plans { grid-template-columns: 1fr; }
+    .bento { grid-template-columns: 1fr; } .c-wide, .c-third { grid-column: auto; }
+    .machine { margin: 1.5rem .2rem 3.5rem; }
+    .log { left: .5rem; bottom: -3rem; width: 14.5rem; } .typing { left: .3rem; }
+    .s-grid { grid-template-columns: repeat(2, 1fr); } .s-card:nth-child(3) { display: none; }
+    .tabs { display: flex; flex-wrap: wrap; border-radius: 18px; }
+    .prompt-row { flex-direction: column; align-items: stretch; } .prompt-row .button { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .js .reveal { opacity: 1; transform: none; } }
 </style>
 <% end %>
 
-<section class="hero" aria-labelledby="hero-title">
+<!-- ============ HERO ============ -->
+<section class="hero" id="build" aria-labelledby="hero-title">
+  <div class="glow" aria-hidden="true"></div>
   <div class="wrap">
     <div>
-      <h1 id="hero-title">Tell us what you sell. Get a store ready to sell it.</h1>
-      <p class="hero-lede">Write one sentence about your business, in your own language. AI designs the store, writes your first products and sets up checkout.</p>
+      <span class="eyebrow"><b>New</b> AI that builds complete online stores</span>
+      <h1 id="hero-title">Describe it.<br><em>Tellora builds&nbsp;it.</em></h1>
+      <p class="lede">One sentence in, a live store out. Tellora writes, designs, stocks and launches your online store in about a minute, with payments, SSL and your own domain ready.</p>
 
-      <div class="build" id="build">
-        <% if flash[:alert] %><p class="flash" role="alert"><%= flash[:alert] %></p><% end %>
+      <% if flash[:alert] %><p class="flash" role="alert"><%= flash[:alert] %></p><% end %>
 
-        <%= form_with url: platform_start_path, method: :post, id: 'build-form', data: { turbo: false } do %>
-          <label for="prompt">What does your business sell?</label>
-          <div class="prompt-box">
-            <textarea id="prompt" name="prompt" maxlength="500" required
-                      placeholder="Handmade leather bags from Florence, for people who travel light"><%= @prompt %></textarea>
-            <div class="prompt-actions">
-              <span class="prompt-hint">Any language. Change anything later by chatting.</span>
-              <button type="submit" class="button">Build my store</button>
-            </div>
-          </div>
-        <% end %>
-
-        <div class="examples">
-          <p id="examples-label">Or start from an example and watch the preview change:</p>
-          <ul class="chips" aria-labelledby="examples-label" id="chips"></ul>
+      <%= form_with url: platform_start_path, method: :post, id: 'build-form', class: 'prompt', data: { turbo: false } do %>
+        <label for="prompt">What does your business sell?</label>
+        <textarea id="prompt" name="prompt" maxlength="500" required
+                  placeholder="Handmade leather bags from Florence, for people who travel light"><%= @prompt %></textarea>
+        <div class="prompt-row">
+          <span>Any language · Change anything later by chatting</span>
+          <button type="submit" class="button">Build my store →</button>
         </div>
-      </div>
+      <% end %>
+      <ul class="chips" id="chips" aria-label="Example businesses"></ul>
     </div>
 
-    <div class="preview-frame">
-      <div class="preview" id="preview" role="img" aria-label="Example store preview">
-        <div class="preview-bar" aria-hidden="true">
+    <div class="machine" role="img" aria-label="Animation: Tellora building an example store">
+      <div class="typing" aria-hidden="true"><small>You type</small><span id="type-text"></span><span class="caret"></span></div>
+      <div class="browser" aria-hidden="true">
+        <div class="bbar">
           <div class="dots"><span></span><span></span><span></span></div>
-          <div class="preview-url" id="p-url"></div>
+          <div class="url" id="m-url"><i class="lock"></i><span id="m-host">building…</span></div>
+          <span class="live-badge" id="m-live">● LIVE</span>
         </div>
-        <div class="p-header">
-          <span class="p-name" id="p-name"></span>
-          <span class="p-nav" aria-hidden="true"><span>Shop</span><span>About</span><span>Cart</span></span>
+        <div class="store" id="m-store">
+          <div class="s-head" data-step="1"><span class="s-logo" id="m-logo"></span><span class="s-nav"><span>Shop</span><span>Story</span><span>Cart (0)</span></span></div>
+          <div class="s-hero" data-step="2"><h4 id="m-tag"></h4><span>Shop the collection</span></div>
+          <div class="s-grid" id="m-grid"></div>
         </div>
-        <div class="p-band">
-          <p class="p-tagline" id="p-tagline"></p>
-          <span class="p-cta" id="p-cta">Shop now</span>
-        </div>
-        <div class="p-grid" id="p-grid"></div>
+        <div class="scan" id="m-scan"></div>
       </div>
-
-      <div class="build-status" id="build-status" aria-live="polite">
-        <ol>
-          <li>Reading your description</li>
-          <li>Choosing colours and type</li>
-          <li>Writing products and prices</li>
-          <li>Store ready</li>
+      <div class="log" aria-hidden="true">
+        <div class="log-top"><span>Tellora is building</span><b id="m-time">0.0s</b></div>
+        <ol id="m-log">
+          <li>Writing your brand story</li>
+          <li>Designing the storefront</li>
+          <li>Adding products and prices</li>
+          <li>Finding product photos</li>
+          <li>Turning on payments and SSL</li>
         </ol>
       </div>
-      <p class="preview-caption">Example preview. Your real store is designed from your own description.</p>
     </div>
   </div>
 </section>
 
-<section class="section section-mist" id="how" aria-labelledby="how-title">
+<section class="proof" aria-label="Tellora at a glance">
   <div class="wrap">
-    <h2 id="how-title">From one sentence to your customer's door</h2>
-    <p class="section-intro">Everything between your idea and a delivered order happens in one place. Here is the whole journey.</p>
+    <div><strong>~60 sec</strong>idea to live store</div>
+    <div><strong><%= TelloraPlans.trial_months %> months</strong>free, every feature</div>
+    <div><strong>0%</strong>fees on your sales</div>
+    <div><strong>Free SSL</strong>on your own domain</div>
+    <div><strong>Any language</strong>sell anywhere</div>
+  </div>
+</section>
 
-    <p class="journey-phase">Build your store</p>
-    <ol class="journey">
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-prompt">Handmade silver jewellery from Jaipur<b></b></div>
-        </div>
-        <div class="stage-body">
-          <h3>Describe your business</h3>
-          <p>Write one sentence about what you sell and who buys it, in any language. That is all the setup there is.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-styles">
-            <span style="background:#efe6da;color:#1f1510">Aa<i style="background:#8e2a22"></i></span>
-            <span style="background:#fbfaf8;color:#161514;font-style:italic">Aa<i style="background:#3e4436"></i></span>
-            <span style="background:#ffffff;color:#232120">Aa<i style="background:#a8834d"></i></span>
-          </div>
-        </div>
-        <div class="stage-body">
-          <h3>AI designs your store</h3>
-          <p>It picks a designer style that suits your products, writes your home page in your language and finds photos to match.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-products">
-            <span><i style="background:#d8c9b6"></i>₹1,450</span>
-            <span><i style="background:#cdb79e"></i>₹2,890</span>
-            <span><i style="background:#e6d9c7"></i>₹990</span>
-          </div>
-        </div>
-        <div class="stage-body">
-          <h3>Your first products appear</h3>
-          <p>Starter products with names, descriptions, photos and prices in your currency, so the store looks complete from minute one.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-builder">
-            <div class="chat"><span>Store ready</span><span>Warmer colours please</span></div>
-            <div class="site"><i></i><i></i><b></b></div>
-          </div>
-        </div>
-        <div class="stage-body">
-          <h3>Preview and refine</h3>
-          <p>See your live store on desktop and mobile. Switch styles in one click or ask for changes in plain words.</p>
-        </div>
-      </li>
+<!-- ============ HOW IT WORKS ============ -->
+<section class="section" id="how" aria-labelledby="how-title">
+  <div class="wrap">
+    <p class="kicker reveal">How it works</p>
+    <h2 class="reveal" id="how-title">One sentence starts the machine. A live store comes out the other end.</h2>
+    <p class="intro reveal">Every step between an idea and a customer's order runs in one place, automatically. You only write the first line.</p>
+    <ol class="pipe" id="pipe">
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13 7l4 4"/></svg></div><h3>Describe</h3><p>One sentence about what you sell.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 10h14M5 15h9"/></svg></div><h3>Copy</h3><p>Brand story, headlines and product text.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 000 16"/></svg></div><h3>Design</h3><p>A premium style that fits your brand.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div><h3>Products</h3><p>Starter catalogue with prices.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg></div><h3>Photos</h3><p>Matching images for every section.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg></div><h3>Payments</h3><p>Indian and global gateways, 0% fees.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></div><h3>Domain</h3><p>Your own domain with free SSL.</p></li>
+      <li><div class="node"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg></div><h3>Live</h3><p>Open for orders, on any device.</p></li>
     </ol>
+  </div>
+</section>
 
-    <p class="journey-phase">Sell and deliver</p>
-    <ol class="journey journey-sell" start="5">
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <span class="art-live">Live</span>
-          <div class="art-url">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            <span>yourname<em>.<%= preview_domain %></em></span>
-          </div>
+<!-- ============ DESIGNS ============ -->
+<section class="section section-dark" id="designs" aria-labelledby="designs-title">
+  <div class="wrap">
+    <p class="kicker reveal">Designs</p>
+    <h2 class="reveal" id="designs-title">Designed like a top agency would. Switched in one click.</h2>
+    <p class="intro reveal">Every store starts from a hand-crafted design family. Tellora fills it with your own words, products and photos, and you can switch the whole look any time.</p>
+    <div class="tabs" role="tablist" id="tabs" aria-label="Design families"></div>
+    <div class="show">
+      <div class="browser" aria-hidden="true">
+        <div class="bbar"><div class="dots"><span></span><span></span><span></span></div><div class="url secure"><i class="lock"></i><span id="sh-host"></span></div></div>
+        <div class="store" id="sh-store">
+          <div class="s-head"><span class="s-logo" id="sh-logo"></span><span class="s-nav"><span>Shop</span><span>Story</span><span>Cart (0)</span></span></div>
+          <div class="s-hero"><h4 id="sh-tag"></h4><span>Shop the collection</span></div>
+          <div class="s-grid" id="sh-grid"></div>
         </div>
-        <div class="stage-body">
-          <h3>Publish in one click</h3>
-          <p>Go live on your own address with free SSL. Connect a domain you already own whenever you are ready.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-pay"><span>UPI</span><span>Cards</span><span>Net banking</span><span>Wallets</span><span>Stripe</span><span>PayPal</span></div>
-        </div>
-        <div class="stage-body">
-          <h3>Customers pay their way</h3>
-          <p>UPI, cards, net banking and wallets through Razorpay, Cashfree and CCAvenue, plus Stripe and PayPal worldwide. No fee from us.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-order">
-            <div class="row"><span>Order #1042</span><span>Paid</span></div>
-            <div class="track"><span class="on">Packed</span><span class="on">Shipped</span><span>Delivered</span></div>
-          </div>
-        </div>
-        <div class="stage-body">
-          <h3>From order to doorstep</h3>
-          <p>Every order lands in one dashboard with PDF invoices and packing slips. Ship across India with Shiprocket at your own rates.</p>
-        </div>
-      </li>
-      <li class="stage">
-        <div class="stage-art" aria-hidden="true">
-          <div class="art-grow">
-            <div class="serp"><b>Silver jhumka earrings</b><em>yourname.<%= preview_domain %></em><br>Handmade in Jaipur…</div>
-            <div class="bars"><i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:90%"></i></div>
-          </div>
-        </div>
-        <div class="stage-body">
-          <h3>Grow your sales</h3>
-          <p>SEO for every product and page, Google Analytics, Klaviyo emails and a built-in blog bring new customers and bring them back.</p>
-        </div>
-      </li>
-    </ol>
-
-    <div class="journey-end">
-      <p>From one sentence to your first delivery.</p>
-      <a class="button" href="#build" data-start-free>Build my store</a>
+      </div>
+      <div class="show-copy" aria-live="polite">
+        <h3 id="sh-name"></h3>
+        <p id="sh-desc"></p>
+        <ul id="sh-fits"></ul>
+        <div class="swatches" id="sh-sw" aria-hidden="true"></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section" id="included" aria-labelledby="included-title">
+<!-- ============ FEATURES ============ -->
+<section class="section" id="features" aria-labelledby="features-title">
   <div class="wrap">
-    <h2 id="included-title">Everything a store needs, from the first minute</h2>
-    <dl class="included">
-      <div><dt>A design made for your business</dt><dd>Colours, fonts and layout chosen for what you sell and who you sell to, not picked from a template list.</dd></div>
-      <div><dt>Starter products</dt><dd>Names, descriptions, prices and photos to show how your store will look. They are marked as samples, so you can replace them anytime.</dd></div>
-      <div><dt>Checkout and payments</dt><dd>Card and wallet payments through Stripe, PayPal, Razorpay, Cashfree or CCAvenue, depending on your country.</dd></div>
-      <div><dt>Your own web address</dt><dd>Every store gets its own address straight away. Connect a domain you already own whenever you are ready.</dd></div>
-      <div><dt>Orders, stock and customers</dt><dd>One dashboard for orders, inventory, customers, invoices and packing slips.</dd></div>
-      <div><dt>Changes by chat</dt><dd>Ask the AI to adjust the design, rewrite a description or add a sale banner. No code involved.</dd></div>
-      <div><dt>Shipping</dt><dd>Shipping rates and zones built in, with Shiprocket for sellers in India.</dd></div>
-      <div><dt>Marketing</dt><dd>Connect Google Analytics to see your traffic and Klaviyo to send email campaigns.</dd></div>
-    </dl>
+    <p class="kicker reveal">Everything included</p>
+    <h2 class="reveal" id="features-title">A complete business, not just a website.</h2>
+    <p class="intro reveal">Payments, shipping, SEO, domains and an admin to run it all. Included from the first minute.</p>
+    <div class="bento">
+      <div class="cell c-wide c-dark reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg></div>
+        <h3>Change anything by chatting</h3>
+        <p>No editors to learn. Tell Tellora what you want and the store updates.</p>
+        <div class="chat" aria-hidden="true">
+          <div class="me">Make the homepage feel more luxurious</div>
+          <div class="ai">Done. Switched to Editorial Luxury and rewrote your headline.</div>
+        </div>
+      </div>
+      <div class="cell c-wide reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg></div>
+        <h3>Every payment gateway, 0% fees</h3>
+        <p>Indian and international gateways are included on every plan. Tellora never takes a cut of your sales.</p>
+        <div class="pills"><span>Razorpay</span><span>Cashfree</span><span>CCAvenue</span><span>UPI</span><span>Cards</span><span>Net banking</span><span>Stripe</span><span>PayPal</span></div>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></div>
+        <h3>Your own domain</h3>
+        <p>Add two DNS records. Tellora checks them and secures your domain with free SSL.</p>
+        <div class="domain" aria-hidden="true"><code>mybrand.com</code><span class="arrow">→</span><span class="ok">● Connected</span></div>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg></div>
+        <h3>SEO built in</h3>
+        <p>Search-ready titles and descriptions, clean web addresses and fast pages for every store.</p>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></div>
+        <h3>Shipping to the door</h3>
+        <p>Shiprocket for India, shipping zones and rates, invoices and packing slips.</p>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div>
+        <h3>A real admin</h3>
+        <p>Orders, products, stock, customers, promotions and staff in one dashboard.</p>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M11 5c0 4-3 8-7 9"/><path d="M13 21l4-9 4 9M14.5 18h5"/></svg></div>
+        <h3>Any language, any currency</h3>
+        <p>Describe your business in the language you think in, and sell in your customers' currency.</p>
+      </div>
+      <div class="cell c-third reveal">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+        <h3>Private by design</h3>
+        <p>Every store has its own separate database. Your data is never mixed with anyone else's.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<% plans = TelloraPlans.plans %>
-<% currency_keys = TelloraPlans.currencies.keys %>
-<section class="section section-mist" id="pricing" aria-labelledby="pricing-title">
+<!-- ============ PRICING ============ -->
+<section class="section section-sand" id="pricing" aria-labelledby="pricing-title">
   <div class="wrap">
-    <h2 id="pricing-title"><%= TelloraPlans.trial_months %> months free. Every feature.</h2>
-    <p class="section-intro">Build your store and sell for <%= TelloraPlans.trial_months %> months without paying anything, with every feature switched on. After that, choose the plan that fits and pay every <%= TelloraPlans.billing_months %> months.</p>
-    <p class="offer"><span><%= TelloraPlans.trial_months %> months free</span><span>No card needed</span><span>0% fees on your sales</span></p>
+    <p class="kicker reveal">Pricing</p>
+    <h2 class="reveal" id="pricing-title"><%= TelloraPlans.trial_months %> months free. Every feature.</h2>
+    <p class="intro reveal">Build your store and sell for <%= TelloraPlans.trial_months %> months without paying anything, with every feature switched on. After that, choose the plan that fits and pay every <%= TelloraPlans.billing_months %> months.</p>
+
+    <div class="trial reveal">
+      <div><strong>Every store starts with <%= TelloraPlans.trial_months %> months free</strong><p>All features, all payment gateways, SEO and SSL. No card needed. 0% fees on your sales.</p></div>
+      <a class="button" href="#build" data-start-free>Build my store →</a>
+    </div>
 
     <div class="pricing-bar">
       <p class="pricing-note">Prices are for <%= TelloraPlans.billing_months %> months, billed once every <%= TelloraPlans.billing_months %> months after your free period.</p>
@@ -477,9 +442,9 @@
             <% end %>
           </ul>
           <% if plan['contact'] %>
-            <a class="button" href="mailto:<%= TelloraPlans.contact_email %>?subject=<%= ERB::Util.url_encode("#{platform_name} Enterprise") %>">Contact us</a>
+            <a class="button button-quiet" href="mailto:<%= TelloraPlans.contact_email %>?subject=<%= ERB::Util.url_encode("#{platform_name} Enterprise") %>">Contact us</a>
           <% else %>
-            <a class="button" href="#build" data-start-free>Start free</a>
+            <a class="button<%= ' button-quiet' unless plan['popular'] %>" href="#build" data-start-free>Start free</a>
           <% end %>
         </article>
       <% end %>
@@ -490,7 +455,7 @@
         <caption id="compare-caption">Compare plans</caption>
         <thead>
           <tr>
-            <th scope="col"><span class="sr-only" style="position:absolute;left:-999px">Feature</span></th>
+            <th scope="col"><span style="position:absolute;left:-9999px">Feature</span></th>
             <% plans.each do |plan| %><th scope="col"><%= plan['name'] %></th><% end %>
           </tr>
         </thead>
@@ -529,29 +494,11 @@
   </div>
 </section>
 
-<section class="section" aria-labelledby="anywhere-title">
-  <div class="wrap anywhere">
-    <div>
-      <h2 id="anywhere-title">Built for selling wherever you are</h2>
-      <p class="section-intro">Describe your business the way you would to a friend, in the language you think in.</p>
-      <ul class="facts">
-        <li><strong>Your language</strong><span>Write your description in any language; the AI understands it.</span></li>
-        <li><strong>Your customers</strong><span>Each store has its own currency, address and checkout settings.</span></li>
-        <li><strong>Your data</strong><span>Every store is kept in its own separate space, apart from every other store.</span></li>
-      </ul>
-    </div>
-    <p class="languages" aria-label="Examples of languages you can write in">
-      <span lang="en">Handmade</span><span lang="es">Hecho a mano</span><span lang="fr">Fait main</span>
-      <span lang="hi">हस्तनिर्मित</span><span lang="ja">手作り</span><span lang="ar" dir="rtl">مصنوع يدويًا</span>
-      <span lang="pt">Feito à mão</span><span lang="de">Handgemacht</span><span lang="sw">Imetengenezwa kwa mkono</span>
-      <span lang="id">Buatan tangan</span><span lang="tr">El yapımı</span><span lang="ko">수제</span>
-    </p>
-  </div>
-</section>
-
-<section class="section section-mist" id="questions" aria-labelledby="questions-title">
+<!-- ============ FAQ ============ -->
+<section class="section" id="questions" aria-labelledby="questions-title">
   <div class="wrap">
-    <h2 id="questions-title">Questions</h2>
+    <p class="kicker reveal">Questions</p>
+    <h2 class="reveal" id="questions-title">Good questions, short answers.</h2>
     <div class="faq">
       <details>
         <summary>Is it really free for <%= TelloraPlans.trial_months %> months?</summary>
@@ -574,166 +521,193 @@
         <p>Any language you can write in. Describe your store in the language that comes naturally; the AI understands it.</p>
       </details>
       <details>
-        <summary>Can I change the design after the store is built?</summary>
-        <p>Yes. Open the AI designer, say what you want changed, preview the result and apply it when you are happy. You can also go back to the standard design at any time.</p>
+        <summary>Can I use my own domain?</summary>
+        <p>Yes. Your store starts on its own address. When you are ready, enter your domain, add the two DNS records Tellora shows you, and it connects with a free SSL certificate.</p>
       </details>
       <details>
         <summary>What happens to the sample products?</summary>
         <p>They are there to show how your store will look. Each one is marked as a sample, so you can delete them all once you add your own products.</p>
       </details>
       <details>
-        <summary>Can I use my own domain?</summary>
-        <p>Yes. Your store starts on its own address, and you can connect a domain you already own whenever you are ready.</p>
-      </details>
-      <details>
         <summary>Who owns my store's data?</summary>
-        <p>You do. Each store's products, orders and customers are kept in their own separate space, apart from every other store on the platform.</p>
+        <p>You do. Each store's products, orders and customers are kept in their own separate database, apart from every other store on the platform.</p>
       </details>
     </div>
   </div>
 </section>
 
-<section class="section closing" aria-labelledby="closing-title">
+<!-- ============ CLOSING ============ -->
+<section class="section section-dark closing" aria-labelledby="closing-title">
+  <div class="glow" aria-hidden="true"></div>
   <div class="wrap">
-    <h2 id="closing-title">Your store is one sentence away</h2>
-    <p class="section-intro">Describe what you sell. You can change everything afterwards.</p>
-    <a class="button" href="#build" id="closing-cta">Describe my business</a>
+    <p class="kicker">Start now</p>
+    <h2 id="closing-title">Your store is one sentence away.</h2>
+    <p class="intro">Type what you sell. In about a minute, it's live.</p>
+    <a class="button" href="#build" data-start-free>Build my store, free →</a>
   </div>
 </section>
 
 <script>
   (function () {
+    document.documentElement.classList.add('js');
     var DOMAIN = <%= raw preview_domain.to_json %>;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Example stores from around the world. Prompts are written in local languages on purpose.
-    var EXAMPLES = [
-      { chip: 'Ceramics, Kyoto', prompt: '京都の手作り陶器スタジオ。茶碗、花瓶、酒器を販売しています。', name: 'Kiln & Clay', slug: 'kiln-and-clay',
-        tagline: 'Slow-made ceramics for everyday tea', locale: 'ja-JP', currency: 'JPY',
-        colors: { bg: '#f4f1ec', ink: '#2a2826', accent: '#3d4f6e', band: '#e3ddd3' }, font: "Georgia, 'Times New Roman', serif",
-        products: [['Tea bowl, ash glaze', 6800, 'circle'], ['Bud vase', 9200, 'pill'], ['Sake cup pair', 5400, 'arch'], ['Incense stand', 2600, 'diamond']] },
-      { chip: 'Spices, Kerala', prompt: 'Organic spice farm in Kerala selling cardamom, black pepper and turmeric directly to home cooks', name: 'Malabar Harvest', slug: 'malabar-harvest',
-        tagline: 'Spices picked on our farm, packed the same week', locale: 'en-IN', currency: 'INR',
-        colors: { bg: '#fbf7ec', ink: '#24301e', accent: '#2f6b3a', band: '#f0ddb0' }, font: "'Trebuchet MS', 'Segoe UI', sans-serif",
-        products: [['Green cardamom', 449, 'leaf'], ['Tellicherry pepper', 329, 'circle'], ['Wild turmeric', 249, 'arch'], ['Spice gift box', 1299, 'diamond']] },
-      { chip: 'Streetwear, Lagos', prompt: 'Bold streetwear brand from Lagos: graphic tees, hoodies and caps for young people', name: 'Eko Thread', slug: 'eko-thread',
-        tagline: 'Made in Lagos. Worn everywhere.', locale: 'en-NG', currency: 'NGN',
-        colors: { bg: '#121212', ink: '#f5f5f0', accent: '#ff5a1f', band: '#262626' }, font: "Impact, 'Arial Narrow', sans-serif",
-        products: [['Graphic tee', 18500, 'diamond'], ['Heavy hoodie', 42000, 'arch'], ['Five-panel cap', 12000, 'circle'], ['Tote bag', 9500, 'pill']] },
-      { chip: 'Cheese, Lyon', prompt: 'Fromagerie artisanale à Lyon : fromages affinés, plateaux et coffrets cadeaux', name: 'Fromagerie Lumière', slug: 'fromagerie-lumiere',
-        tagline: 'Fromages affinés à Lyon depuis trois générations', locale: 'fr-FR', currency: 'EUR',
-        colors: { bg: '#fffdf6', ink: '#3b2f1e', accent: '#8a1c2b', band: '#f3e7c4' }, font: "'Palatino Linotype', Palatino, Georgia, serif",
-        products: [['Comté 24 mois', 12.9, 'diamond'], ['Saint-Marcellin', 6.5, 'circle'], ['Plateau découverte', 34, 'arch'], ['Coffret cadeau', 49, 'pill']] },
-      { chip: 'Coffee, Bogotá', prompt: 'Tostadora de café de especialidad en Bogotá, cafés de origen único y suscripciones mensuales', name: 'Cerro Tostado', slug: 'cerro-tostado',
-        tagline: 'Café de origen, tostado esta semana', locale: 'es-CO', currency: 'COP',
-        colors: { bg: '#f7f0e8', ink: '#2e1d14', accent: '#b4532a', band: '#e9d3bf' }, font: "'Gill Sans', 'Segoe UI', sans-serif",
-        products: [['Huila 340 g', 42000, 'leaf'], ['Nariño 340 g', 46000, 'circle'], ['Suscripción mensual', 120000, 'arch'], ['Prensa francesa', 98000, 'pill']] },
-      { chip: 'Surf, Sydney', prompt: 'Surf shop on Sydney\'s northern beaches selling boards, wetsuits and lessons', name: 'Saltline Surf', slug: 'saltline-surf',
-        tagline: 'Boards and wetsuits for the northern beaches', locale: 'en-AU', currency: 'AUD',
-        colors: { bg: '#eef7f8', ink: '#0f2e3a', accent: '#0a7ea4', band: '#cfe9ee' }, font: "Verdana, 'Segoe UI', sans-serif",
-        products: [['Soft-top 7 ft', 449, 'pill'], ['3/2 wetsuit', 329, 'arch'], ['Wax pack', 12, 'circle'], ['Group lesson', 75, 'leaf']] }
+    var FAMILIES = {
+      warm: { name: 'Warm Artisan', desc: 'Earthy colours, a classic serif and generous photography. Made for brands with a craft story.', fits: ['Coffee, tea and food', 'Handmade and home goods', 'Leather and natural products'],
+        vars: { '--s-bg': '#F4EDE3', '--s-ink': '#2A1A12', '--s-accent': '#9C3B1F', '--s-font': 'Georgia, serif', '--s-hero': 'linear-gradient(120deg,#5A3220,#B87445 60%,#E6B886)', '--s-p1': 'linear-gradient(150deg,#C98B5B,#6B3A22)', '--s-p2': 'linear-gradient(150deg,#E2C3A0,#A06A43)', '--s-p3': 'linear-gradient(150deg,#7E5639,#3A2216)' },
+        sw: ['#F4EDE3', '#9C3B1F', '#B87445', '#2A1A12'] },
+      luxury: { name: 'Editorial Luxury', desc: 'Magazine-style layouts, refined serif headlines and a quiet, expensive palette. Made for premium brands.', fits: ['Jewellery and watches', 'Fashion and beauty', 'Luxury and gifting'],
+        vars: { '--s-bg': '#FBFAF8', '--s-ink': '#161514', '--s-accent': '#7A6232', '--s-font': "'Palatino Linotype', Palatino, Georgia, serif", '--s-hero': 'linear-gradient(120deg,#1B1A18,#4A4335 55%,#A8925E)', '--s-p1': 'linear-gradient(150deg,#D9D2C4,#8F8470)', '--s-p2': 'linear-gradient(150deg,#2B2A27,#5E5748)', '--s-p3': 'linear-gradient(150deg,#C9B48A,#7A6232)' },
+        sw: ['#FBFAF8', '#161514', '#7A6232', '#C9B48A'] },
+      minimal: { name: 'Modern Minimal', desc: 'Clean grids, bold sans-serif type and lots of white space. Made for products that speak for themselves.', fits: ['Sneakers and streetwear', 'Electronics and gadgets', 'Sports and fitness'],
+        vars: { '--s-bg': '#FFFFFF', '--s-ink': '#111111', '--s-accent': '#2E5BFF', '--s-font': "'Bricolage Grotesque', sans-serif", '--s-hero': 'linear-gradient(120deg,#E9EDF5,#C7D2EA 50%,#2E5BFF)', '--s-p1': 'linear-gradient(150deg,#F0F1F4,#C9CDD6)', '--s-p2': 'linear-gradient(150deg,#2E5BFF,#1A2F8A)', '--s-p3': 'linear-gradient(150deg,#1A1A1A,#4A4A4A)' },
+        sw: ['#FFFFFF', '#111111', '#2E5BFF', '#C9CDD6'] }
+    };
+
+    var DEMOS = [
+      { chip: 'Coffee from Coorg', prompt: 'Single-origin coffee beans and brewing gear from Coorg', slug: 'aurabrew', logo: 'Aurabrew', tag: 'Small-batch coffee, roasted in the hills of Coorg', family: 'warm',
+        products: [['Coorg Estate Beans', '₹649'], ['Pour-over Kettle', '₹2,499'], ['Dark Roast 500g', '₹899']] },
+      { chip: 'Silver jewellery, Jaipur', prompt: 'Handmade silver jewellery from Jaipur for modern women', slug: 'kesari', logo: 'Kesari', tag: 'Silver, shaped by hand in Jaipur', family: 'luxury',
+        products: [['Moonlit Hoops', '₹3,200'], ['Noor Pendant', '₹4,850'], ['Gilded Cuff', '₹6,100']] },
+      { chip: 'Running shoes', prompt: 'Performance running shoes for city runners', slug: 'stridelab', logo: 'STRIDE LAB', tag: 'Built for the city. Tuned for speed.', family: 'minimal',
+        products: [['Velo Runner', '$129'], ['Night Pace', '$149'], ['Core Trainer', '$99']] }
     ];
 
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var preview = document.getElementById('preview');
-    var status = document.getElementById('build-status');
-    var steps = status.querySelectorAll('li');
-    var chipsEl = document.getElementById('chips');
-    var promptEl = document.getElementById('prompt');
-    var timers = [];
-
-    function money(value, ex) {
-      try { return new Intl.NumberFormat(ex.locale, { style: 'currency', currency: ex.currency, maximumFractionDigits: value % 1 ? 2 : 0 }).format(value); }
-      catch (e) { return ex.currency + ' ' + value; }
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
-    }
-
-    function paint(ex) {
-      preview.style.setProperty('--p-bg', ex.colors.bg);
-      preview.style.setProperty('--p-ink', ex.colors.ink);
-      preview.style.setProperty('--p-accent', ex.colors.accent);
-      preview.style.setProperty('--p-band', ex.colors.band);
-      preview.style.setProperty('--p-font', ex.font);
-      document.getElementById('p-url').textContent = 'https://' + ex.slug + '.' + DOMAIN;
-      document.getElementById('p-name').textContent = ex.name;
-      var tagline = document.getElementById('p-tagline');
-      tagline.textContent = ex.tagline;
-      tagline.lang = ex.locale.split('-')[0];
-      document.getElementById('p-grid').innerHTML = ex.products.map(function (p) {
-        return '<div class="p-item"><div class="p-art"><i class="shape-' + p[2] + '"></i></div>' +
-               '<div>' + escapeHtml(p[0]) + '</div><div class="p-price">' + escapeHtml(money(p[1], ex)) + '</div></div>';
+    function applyFamily(el, key) { var v = FAMILIES[key].vars; for (var k in v) el.style.setProperty(k, v[k]); }
+    function cardsHtml(list, built) {
+      return list.map(function (p, i) {
+        return '<div class="s-card' + (built ? '' : '') + '"' + (built ? '' : ' data-step="' + (3 + i) + '"') + '><div class="s-img"></div><span class="s-name">' + p[0] + '</span><span class="s-price">' + p[1] + '</span></div>';
       }).join('');
-      preview.setAttribute('aria-label', 'Example store preview: ' + ex.name + ', ' + ex.tagline);
     }
 
-    function build(ex) {
-      timers.forEach(clearTimeout); timers = [];
-      if (reduceMotion) { paint(ex); return; }
+    /* ---------- hero store machine ---------- */
+    var store = document.getElementById('m-store'), grid = document.getElementById('m-grid');
+    var typeEl = document.getElementById('type-text'), host = document.getElementById('m-host'), url = document.getElementById('m-url');
+    var live = document.getElementById('m-live'), timeEl = document.getElementById('m-time'), scan = document.getElementById('m-scan');
+    var logItems = [].slice.call(document.querySelectorAll('#m-log li'));
+    var timers = [], tick = null, current = 0;
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+    function stop() { timers.forEach(clearTimeout); timers = []; clearInterval(tick); }
 
-      steps.forEach(function (s) { s.classList.remove('done'); });
-      status.classList.add('is-visible');
-      preview.classList.add('is-building');
-
-      timers.push(setTimeout(function () { steps[0].classList.add('done'); }, 250));
-      timers.push(setTimeout(function () { steps[1].classList.add('done'); paint(ex); }, 550));
-      timers.push(setTimeout(function () { steps[2].classList.add('done'); preview.classList.remove('is-building'); }, 850));
-      timers.push(setTimeout(function () { steps[3].classList.add('done'); }, 1150));
-      timers.push(setTimeout(function () { status.classList.remove('is-visible'); }, 2300));
+    function finished(demo) {
+      [].forEach.call(store.querySelectorAll('[data-step]'), function (n) { n.classList.add('in'); });
+      logItems.forEach(function (li) { li.className = 'done'; });
+      url.classList.add('secure'); host.textContent = demo.slug + '.' + DOMAIN;
+      live.classList.add('on'); timeEl.textContent = '58.0s'; typeEl.textContent = demo.prompt;
     }
 
-    EXAMPLES.forEach(function (ex, i) {
-      var li = document.createElement('li');
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'chip';
-      btn.textContent = ex.chip;
-      btn.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
-      btn.addEventListener('click', function () {
-        chipsEl.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
-        btn.setAttribute('aria-pressed', 'true');
-        promptEl.value = ex.prompt;
-        build(ex);
+    function run(i) {
+      stop();
+      current = i;
+      var demo = DEMOS[i];
+      applyFamily(store, demo.family);
+      document.getElementById('m-logo').textContent = demo.logo;
+      document.getElementById('m-tag').textContent = demo.tag;
+      grid.innerHTML = cardsHtml(demo.products, false);
+      [].forEach.call(document.querySelectorAll('#chips .chip'), function (c, j) { c.setAttribute('aria-pressed', j === i ? 'true' : 'false'); });
+      if (reduceMotion) { finished(demo); return; }
+
+      [].forEach.call(store.querySelectorAll('[data-step]'), function (n) { n.classList.remove('in'); });
+      live.classList.remove('on'); url.classList.remove('secure'); host.textContent = 'building…';
+      logItems.forEach(function (li) { li.className = ''; });
+      timeEl.textContent = '0.0s'; typeEl.textContent = '';
+
+      var chars = demo.prompt.split('');
+      chars.forEach(function (c, n) { later(function () { typeEl.textContent += c; }, 400 + n * 32); });
+      var start = 400 + chars.length * 32 + 350;
+
+      later(function () {
+        var s = Date.now();
+        tick = setInterval(function () { timeEl.textContent = Math.min((Date.now() - s) / 1000 * 11.5, 58).toFixed(1) + 's'; }, 60);
+        scan.classList.remove('run'); void scan.offsetWidth; scan.classList.add('run');
+      }, start);
+
+      var steps = [
+        function () { store.querySelector('[data-step="1"]').classList.add('in'); },
+        function () { store.querySelector('[data-step="2"]').classList.add('in'); },
+        function () { store.querySelector('[data-step="3"]').classList.add('in'); store.querySelector('[data-step="4"]').classList.add('in'); },
+        function () { store.querySelector('[data-step="5"]').classList.add('in'); },
+        function () { url.classList.add('secure'); host.textContent = demo.slug + '.' + DOMAIN; }
+      ];
+      steps.forEach(function (fn, n) {
+        later(function () { if (n > 0) logItems[n - 1].className = 'done'; logItems[n].className = 'active'; }, start + n * 900);
+        later(fn, start + n * 900 + 500);
       });
-      li.appendChild(btn);
-      chipsEl.appendChild(li);
-    });
+      later(function () { logItems[4].className = 'done'; clearInterval(tick); timeEl.textContent = '58.0s'; live.classList.add('on'); }, start + 5 * 900);
+      later(function () { run((current + 1) % DEMOS.length); }, start + 5 * 900 + 3200);
+    }
 
-    // Pricing: show prices in the visitor's currency (rupees in India), switchable
+    /* ---------- example chips: fill the prompt and build that store ---------- */
+    var chipsEl = document.getElementById('chips'), promptEl = document.getElementById('prompt');
+    DEMOS.forEach(function (demo, i) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = demo.chip;
+      b.addEventListener('click', function () { promptEl.value = demo.prompt; run(i); });
+      li.appendChild(b); chipsEl.appendChild(li);
+    });
+    run(0);
+
+    /* ---------- design family tabs ---------- */
+    var tabs = document.getElementById('tabs'), shStore = document.getElementById('sh-store');
+    function show(i) {
+      var d = DEMOS[i], f = FAMILIES[d.family];
+      applyFamily(shStore, d.family);
+      document.getElementById('sh-host').textContent = d.slug + '.' + DOMAIN;
+      document.getElementById('sh-logo').textContent = d.logo;
+      document.getElementById('sh-tag').textContent = d.tag;
+      document.getElementById('sh-grid').innerHTML = cardsHtml(d.products, true);
+      document.getElementById('sh-name').textContent = f.name;
+      document.getElementById('sh-desc').textContent = f.desc;
+      document.getElementById('sh-fits').innerHTML = f.fits.map(function (x) { return '<li>' + x + '</li>'; }).join('');
+      document.getElementById('sh-sw').innerHTML = f.sw.map(function (c) { return '<span style="background:' + c + '"></span>'; }).join('');
+      [].forEach.call(tabs.children, function (t, j) { t.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+    }
+    DEMOS.forEach(function (d, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tab'; b.setAttribute('role', 'tab'); b.textContent = FAMILIES[d.family].name;
+      b.addEventListener('click', function () { show(i); });
+      tabs.appendChild(b);
+    });
+    show(0);
+
+    /* ---------- pricing: visitor's currency (rupees in India), switchable ---------- */
     (function () {
       var buttons = document.querySelectorAll('.currency [data-currency]');
       if (!buttons.length) return;
-      function show(code) {
+      function pick(code) {
         document.querySelectorAll('[data-price]').forEach(function (el) { el.hidden = el.getAttribute('data-price') !== code; });
         buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-currency') === code ? 'true' : 'false'); });
         try { localStorage.setItem('tellora-currency', code); } catch (e) {}
       }
-      var saved = null;
+      var saved = null, zone = '';
       try { saved = localStorage.getItem('tellora-currency'); } catch (e) {}
-      var zone = '';
       try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
-      var india = zone === 'Asia/Kolkata' || zone === 'Asia/Calcutta';
-      var first = buttons[0].getAttribute('data-currency');
-      var pick = saved || (india ? 'INR' : 'USD');
-      if (!document.querySelector('.currency [data-currency="' + pick + '"]')) pick = first;
-      show(pick);
-      buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-currency')); }); });
+      var want = saved || ((zone === 'Asia/Kolkata' || zone === 'Asia/Calcutta') ? 'INR' : 'USD');
+      if (!document.querySelector('.currency [data-currency="' + want + '"]')) want = buttons[0].getAttribute('data-currency');
+      pick(want);
+      buttons.forEach(function (b) { b.addEventListener('click', function () { pick(b.getAttribute('data-currency')); }); });
     })();
 
+    /* ---------- "Start free" buttons focus the prompt ---------- */
     document.querySelectorAll('[data-start-free]').forEach(function (a) {
       a.addEventListener('click', function () {
         setTimeout(function () { promptEl.focus({ preventScroll: true }); }, reduceMotion ? 0 : 450);
       });
     });
 
-    document.getElementById('closing-cta').addEventListener('click', function () {
-      setTimeout(function () { promptEl.focus({ preventScroll: true }); }, reduceMotion ? 0 : 450);
-    });
-
-    paint(EXAMPLES[0]);
-    // The one page-load moment: build the first example once.
-    if (!reduceMotion) { setTimeout(function () { build(EXAMPLES[0]); }, 400); }
+    /* ---------- reveal on scroll ---------- */
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add(e.target.id === 'pipe' ? 'go' : 'seen'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.reveal, #pipe').forEach(function (el) { io.observe(el); });
+    } else {
+      document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('seen'); });
+      document.getElementById('pipe').classList.add('go');
+    }
   })();
 </script>
-
