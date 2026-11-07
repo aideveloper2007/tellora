@@ -423,10 +423,20 @@ class Section:
         }
         if not (design["header_html"] or design["main_html"] or design["footer_html"]):
             raise ValueError(f"Section {self.index}: the answer had no HTML")
-        # Prefix image ids so sections never clash
+        # Prefix image ids so sections never clash (once: corrections may already use prefixed ids)
         for key in ("header_html", "main_html", "footer_html", "css"):
-            design[key] = re.sub(r"tellora-image:([a-zA-Z0-9_-]+)", lambda m: f"tellora-image:{self.prefix}{m.group(1)}", design[key])
+            design[key] = re.sub(r"tellora-image:([a-zA-Z0-9_-]+)", lambda m: f"tellora-image:{self.local_id(m.group(1), True)}", design[key])
+        for entry in design["images"]:
+            if isinstance(entry, dict) and "id" in entry:
+                entry["id"] = self.local_id(str(entry["id"]), False)
         return design
+
+    def local_id(self, ident: str, prefixed: bool) -> str:
+        """Image id without (prefixed=False) or with (prefixed=True) this section's prefix, never doubled."""
+        ident = re.sub(r"[^a-zA-Z0-9_-]", "", ident)[:60]
+        while ident.startswith(self.prefix):
+            ident = ident[len(self.prefix):]
+        return f"{self.prefix}{ident}" if prefixed else ident
 
     def cut_images(self, design: Dict[str, Any]) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Tuple[int, int, int, int]]]:
         images = _cut(self.image, self.scale, design["images"], self.prefix, self.edges)
