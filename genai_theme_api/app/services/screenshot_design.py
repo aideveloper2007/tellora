@@ -1,16 +1,19 @@
 """Screenshot to store design: rebuilds a store's home page from screenshots the owner uploads.
 
-Flow (POST /api/v1/screenshot-design):
-  1. The desktop screenshot (and an optional mobile one) is cut into slices for Claude (vision).
-  2. Claude writes the page as HTML + CSS: header, main content and footer, with the exact
-     texts, colours, sizes and spacing it sees. Photos and the logo are cut out of the
-     screenshot itself (Claude gives their position), so they are the owner's real images.
-  3. The page is rendered in a real browser (Chromium via Playwright) at the screenshot's
-     width, photographed, and compared with the original. Claude gets the regions that
-     differ most and corrects the code. This repeats until the match is high enough.
-  4. The best version is returned with its match score.
+How it gets close to an exact copy (POST /api/v1/screenshot-design):
+  1. SECTIONS: the full-page desktop screenshot is cut into its real sections (header + hero,
+     collection cards, banners, product grid, footer ...) at the background gaps between them,
+     measured from the pixels, not guessed.
+  2. ONE SECTION AT A TIME: Claude (vision) gets each section at high resolution and writes
+     HTML + CSS for that section only, with its exact height. Photos and the logo are cut out
+     of the screenshot itself; their boxes are snapped to the real edges in the pixels.
+  3. CHECK AND FIX, PER SECTION: each section is rendered in a real browser (Chromium) at the
+     screenshot's width and compared with its part of the screenshot. Claude gets the original,
+     its render and a difference map, and corrects the code. The best version of each section
+     is kept.
+  4. The sections are joined; the whole page is rendered and compared once more for the score.
 
-The product grid is a template: Tellora fills it with the store's real products.
+The product grid is a template that Tellora fills with the store's real products.
 No JavaScript is kept and all CSS is scoped under .tm-root, so the design cannot
 break the rest of the store.
 """
@@ -23,70 +26,67 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from PIL import Image, ImageChops, ImageOps, ImageStat
+from PIL import Image, ImageChops, ImageFilter, ImageOps, ImageStat
 
 from app.services.claude_llm import get_claude_llm
 
 logger = logging.getLogger(__name__)
 
-SLICE_CSS_HEIGHT = 1400      # CSS pixels of page per slice sent to Claude
-CLAUDE_SLICE_WIDTH = 1000    # slices are resized to this width for Claude
-MAX_SLICES = 14
-MAX_PASSES = 4               # first build + up to 3 corrections
-TARGET_SCORE = 0.97
-BAND_CSS_HEIGHT = 300        # compare the page in horizontal bands of this height
-MAX_TOKENS = 32000
+SECTION_GAP_CSS = 40         # a background gap at least this tall separates two sections
+SECTION_MIN_CSS = 380        # smaller sections are joined to the next one
+SECTION_MAX_CSS = 1600       # taller sections are split at their calmest row
+CLAUDE_WIDTH = 1400          # sections are sent to Claude at this width
+FIX_PASSES = 2               # corrections per section after the first version
+SECTION_TARGET = 0.975       # stop correcting a section at this match
+PARALLEL = 3                 # sections worked on at the same time
+MAX_TOKENS = 20000
 
 # Same base as the storefront (MirrorDesign::RESET in Rails): browser defaults inside .tm-root
 RESET = (".tm-root{all:revert;display:block;font:initial;color:initial;line-height:normal;letter-spacing:normal;"
          "word-spacing:normal;text-align:start;text-transform:none}"
          ".tm-root *:where(:not(svg, svg *)){all:revert}")
 
-PARTS = ("header_html", "main_html", "footer_html", "css", "page_bg", "images", "fonts", "products", "description")
-
-RULES = """
-Output EXACTLY these tagged parts, nothing before or after them:
-<header_html>...</header_html>      the site's announcement bar + header/navigation
-<main_html>...</main_html>          everything between the header and the footer
-<footer_html>...</footer_html>      the footer
-<css>...</css>                      all CSS
-<page_bg>#rrggbb</page_bg>          the page background colour
-<images>[...]</images>              JSON list of photos/logos to cut from the screenshot
-<fonts>[...]</fonts>                JSON list of Google Font family names used, e.g. ["Cormorant Garamond", "Montserrat"]
-<products>[...]</products>          JSON list of the products visible in the product grid
-<description>...</description>      one sentence: what the shop sells, in the site's language
-
+SECTION_RULES = """
 Rules for an exact copy:
 - Copy every text EXACTLY as written (same language, accents, capitals, punctuation).
-- Match colours, font sizes, font weights, letter spacing, line heights, widths, heights, paddings,
-  margins, borders, border radius, shadows and alignment as precisely as you can measure them.
-  Desktop width of the page is {viewport}px. Measure sizes in CSS pixels of that width.
+- The page is {viewport}px wide. This section is exactly {height}px tall. Measure every size in CSS pixels
+  of that width: in the image, 1 CSS pixel = {ratio:.3f} image pixels.
+- Match colours (pick them from the image), font sizes, weights, letter spacing, line heights, positions,
+  widths, heights, paddings, margins, borders, radius and shadows as precisely as you can measure them.
 - Choose the closest Google Fonts for the fonts you see (serif vs sans, weight, width).
-- The page is assembled as three blocks: <div class="tm-root tm-header">header_html</div>,
-  <div class="tm-root tm-main">main_html</div>, <div class="tm-root tm-footer">footer_html</div>.
-  Inside them every element starts from the browser's default styles (Times New Roman 16px, default margins),
-  so set fonts, margins, paddings, list styles and image sizes explicitly.
-- Every CSS rule MUST start with .tm-root (e.g. ".tm-root .hero h1 {{...}}"). No rules for html, body or *.
-  Do not use @import. You may use @media and @keyframes.
-- No JavaScript, no <script>, no inline event handlers, no <iframe>, no <form> elements (use <div> and <a>).
-- Icons (search, account, cart, truck, phone, ...): draw them as inline <svg> with simple paths.
-- Photos, product photos, logos and any image area: <img src="tellora-image:ID" alt="..."> or a CSS
-  background "url(tellora-image:ID)". Every ID must appear in <images>.
-  <images> entries: {{"id": "hero", "slice": 0, "box": [x, y, width, height]}} where slice is the index of
-  the screenshot slice (0 = first image given) and box is in that slice image's pixels. Boxes must
-  contain ONLY the image area, tight, with no text drawn on top of it if the text is real HTML text.
-  Text that is painted inside a photo stays in the photo.
-- Links: logo -> "/", cart icon -> "/cart", account icon -> "/account", search icon -> "/products",
-  every shop / collection / category / "discover" / "explore" link -> "/products", anything else -> "#".
-- The product grid: write ONE container <div data-tellora-products="N"> (N = number of products shown),
-  styled exactly like the screenshot's grid, containing ONLY one <template data-tellora-card>...</template>
-  with the card markup. In the card use these placeholders: {{{{name}}}}, {{{{price}}}}, {{{{compare_price}}}},
-  {{{{sale_label}}}}, {{{{image}}}} (an image URL: <img src="{{{{image}}}}">) and {{{{url}}}} (product link,
-  also use it for an "Add to cart" button). compare_price and sale_label are empty when a product is
-  not on sale: put each in its own element and add CSS so that element is hidden when :empty.
-  <products> entries: {{"name": "...", "price": "...", "compare_price": "" or "...", "sale_label": "" or "...",
-  "image_id": "product1"}} (with image_id listed in <images>).
-- If a mobile screenshot is given, add an @media (max-width: 768px) block that matches it.
+- Inside the page every element starts from the browser defaults (Times New Roman 16px, default margins):
+  set fonts, margins, paddings, list styles and image sizes explicitly.
+- The section's root element is <section class="tm-sec tm-sec-{index}"> with height:{height}px; position:relative;
+  overflow:hidden; width:100%; box-sizing:border-box. Every CSS rule MUST start with ".tm-root .tm-sec-{index}".
+  No rules for html, body or *. No @import. You may use @media.
+- No JavaScript, no <script>, no inline event handlers, no <iframe>, no <form> (use <div> and <a>).
+- Icons (search, account, cart, truck, phone, arrows ...): inline <svg> with simple paths, right size and colour.
+- Every photo, product photo, logo or picture area: <img src="tellora-image:ID" alt="..."> (or CSS
+  background url(tellora-image:ID)), sized and placed exactly where it is. Text written ON TOP of a photo
+  in the screenshot is real HTML text placed over the image.
+- Links: logo -> "/", cart -> "/cart", account -> "/account", search -> "/products", shop / collection /
+  category / discover / explore links -> "/products", anything else -> "#".
+""".strip()
+
+GRID_RULES = """
+- THIS SECTION HAS THE PRODUCT GRID. Write ONE container <div data-tellora-products="N"> (N = number of products
+  shown) styled exactly like the grid, containing ONLY one <template data-tellora-card>...</template> with the card
+  markup. In the card use the placeholders {{{{name}}}}, {{{{price}}}}, {{{{compare_price}}}}, {{{{sale_label}}}},
+  {{{{image}}}} (an image URL: <img src="{{{{image}}}}">) and {{{{url}}}} (product link, also for an "Add to cart"
+  button). compare_price and sale_label are empty when a product is not on sale: put each in its own element and
+  hide it with CSS when :empty. Do NOT list product photos in <images>; list the products in <products>.
+""".strip()
+
+OUTPUT_FORMAT = """
+Output EXACTLY these tagged parts, nothing before or after them:
+{html_parts}
+<css>...</css>                  all CSS for this section
+<images>[...]</images>          JSON list: {{"id": "...", "box": [x, y, width, height]}} for every tellora-image ID,
+                                box in pixels of the IMAGE you were given (tight around the picture only)
+<fonts>[...]</fonts>            JSON list of Google Font family names used in this section
+<products>[...]</products>      JSON list (only for the product grid): {{"name": "...", "price": "...",
+                                "compare_price": "", "sale_label": "", "box": [x, y, width, height]}}
+<description>...</description>  one sentence: what the shop sells, in the site's language (first section only)
 """.strip()
 
 
@@ -108,48 +108,121 @@ def _viewport(image: Image.Image) -> Tuple[int, float]:
     return width, 1.0
 
 
-def _jpeg_b64(image: Image.Image, quality: int = 82) -> str:
+def _jpeg_b64(image: Image.Image, quality: int = 85) -> str:
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG", quality=quality)
     return base64.b64encode(buffer.getvalue()).decode()
-
-
-def _slices(image: Image.Image, dpr: float, target_width: int) -> List[Dict[str, Any]]:
-    """Cut a full-page screenshot into slices. Each slice keeps its scale back to the original."""
-    step = int(SLICE_CSS_HEIGHT * dpr)
-    slices = []
-    for index, top in enumerate(range(0, image.height, step)):
-        if index >= MAX_SLICES:
-            break
-        part = image.crop((0, top, image.width, min(image.height, top + step)))
-        scale = target_width / part.width
-        resized = part.resize((target_width, max(1, round(part.height * scale))), Image.LANCZOS)
-        slices.append({"top": top, "scale": scale, "image": resized})
-    return slices
 
 
 def _image_block(image: Image.Image) -> Dict[str, Any]:
     return {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": _jpeg_b64(image)}}
 
 
-def _cut_images(original: Image.Image, slices: List[Dict[str, Any]], entries: List[Dict[str, Any]]) -> Dict[str, Dict[str, str]]:
-    """Cut every requested image out of the full-resolution screenshot."""
+def _fit(image: Image.Image, width: int) -> Image.Image:
+    if image.width == width:
+        return image
+    return image.resize((width, max(1, round(image.height * width / image.width))), Image.LANCZOS)
+
+
+def segment(image: Image.Image, dpr: float) -> List[Tuple[int, int]]:
+    """Cut a full-page screenshot into sections at horizontal background gaps. Returns [(top, bottom)] in image px."""
+    width = 480
+    scale = image.width / width
+    small = image.convert("L").resize((width, max(1, round(image.height / scale))))
+    rows = small.height
+    std = [ImageStat.Stat(small.crop((0, y, width, y + 1))).stddev[0] for y in range(rows)]
+    uniform = [s < 3.0 for s in std]
+    rows_per_css = dpr / scale
+    min_gap = max(1, round(SECTION_GAP_CSS * rows_per_css))
+
+    def css(h: int) -> float:
+        return h / rows_per_css
+
+    cuts = [0]
+    y = 0
+    while y < rows:
+        if uniform[y]:
+            start = y
+            while y < rows and uniform[y]:
+                y += 1
+            if y - start >= min_gap and start > 0 and y < rows:
+                cuts.append((start + y) // 2)
+        else:
+            y += 1
+    cuts.append(rows)
+    sections = [(cuts[i], cuts[i + 1]) for i in range(len(cuts) - 1) if cuts[i + 1] > cuts[i]]
+
+    merged: List[Tuple[int, int]] = []
+    for top, bottom in sections:
+        if merged and css(merged[-1][1] - merged[-1][0]) < SECTION_MIN_CSS:
+            merged[-1] = (merged[-1][0], bottom)
+        else:
+            merged.append((top, bottom))
+    if len(merged) > 1 and css(merged[-1][1] - merged[-1][0]) < SECTION_MIN_CSS:
+        last = merged.pop()
+        merged[-1] = (merged[-1][0], last[1])
+
+    out: List[Tuple[int, int]] = []
+    for top, bottom in merged:
+        stack = [(top, bottom)]
+        while stack:
+            t, b = stack.pop(0)
+            if css(b - t) <= SECTION_MAX_CSS:
+                out.append((t, b))
+                continue
+            lo, hi = t + (b - t) // 3, t + 2 * (b - t) // 3
+            cut = min(range(lo, hi), key=lambda r: std[r])
+            stack[0:0] = [(t, cut), (cut, b)]
+    return [(round(t * scale), min(image.height, round(b * scale))) for t, b in out]
+
+
+def snap(section: Image.Image, box: Tuple[int, int, int, int], edges: Optional[Image.Image] = None) -> Tuple[int, int, int, int]:
+    """Move each side of a rough image box to the strongest straight edge near it."""
+    x0, y0, x1, y1 = box
+    w, h = section.size
+    edges = edges or section.convert("L").filter(ImageFilter.FIND_EDGES)
+    mx, my = max(24, round((x1 - x0) * 0.15)), max(24, round((y1 - y0) * 0.15))
+
+    def row_score(y: int) -> float:
+        return ImageStat.Stat(edges.crop((x0, y, x1, y + 1))).mean[0] if 0 <= y < h and x1 > x0 else 0.0
+
+    def col_score(x: int) -> float:
+        return ImageStat.Stat(edges.crop((x, y0, x + 1, y1))).mean[0] if 0 <= x < w and y1 > y0 else 0.0
+
+    def best(current: int, lo: int, hi: int, score, limit: int) -> int:
+        candidates = range(max(0, lo), min(limit, hi))
+        if not candidates:
+            return current
+        found = max(candidates, key=score)
+        return found if score(found) > max(score(current) * 1.5, 12) else current
+
+    ny0 = 0 if y0 < my else best(y0, y0 - my, y0 + my, row_score, h)
+    ny1 = h if y1 > h - my else best(y1 - 1, y1 - 1 - my, y1 - 1 + my, row_score, h) + 1
+    nx0 = 0 if x0 < mx else best(x0, x0 - mx, x0 + mx, col_score, w)
+    nx1 = w if x1 > w - mx else best(x1 - 1, x1 - 1 - mx, x1 - 1 + mx, col_score, w) + 1
+    if nx1 - nx0 < 8 or ny1 - ny0 < 8:
+        return box
+    return (nx0, ny0, nx1, ny1)
+
+
+def _cut(section: Image.Image, scale: float, entries: List[Dict[str, Any]], prefix: str,
+         edges: Image.Image) -> Dict[str, Dict[str, str]]:
+    """Cut the requested images out of a full-resolution section (boxes given in Claude-image pixels)."""
     out: Dict[str, Dict[str, str]] = {}
     for entry in entries or []:
         try:
             ident = re.sub(r"[^a-zA-Z0-9_-]", "", str(entry["id"]))[:40]
-            part = slices[int(entry.get("slice", 0))]
             x, y, w, h = [float(v) for v in entry["box"]]
-        except (KeyError, ValueError, TypeError, IndexError):
+        except (KeyError, ValueError, TypeError):
             continue
         if not ident or w < 4 or h < 4:
             continue
-        scale = part["scale"]
-        box = (round(x / scale), round(part["top"] + y / scale), round((x + w) / scale), round(part["top"] + (y + h) / scale))
-        box = (max(0, box[0]), max(0, box[1]), min(original.width, box[2]), min(original.height, box[3]))
+        box = (round(x / scale), round(y / scale), round((x + w) / scale), round((y + h) / scale))
+        box = (max(0, box[0]), max(0, box[1]), min(section.width, box[2]), min(section.height, box[3]))
         if box[2] - box[0] < 4 or box[3] - box[1] < 4:
             continue
-        crop = original.crop(box)
+        box = snap(section, box, edges)
+        crop = section.crop(box)
         buffer = io.BytesIO()
         if "logo" in ident.lower():
             crop.save(buffer, format="PNG", optimize=True)
@@ -157,7 +230,7 @@ def _cut_images(original: Image.Image, slices: List[Dict[str, Any]], entries: Li
         else:
             crop.save(buffer, format="JPEG", quality=90)
             kind = "image/jpeg"
-        out[ident] = {"content_type": kind, "data": base64.b64encode(buffer.getvalue()).decode()}
+        out[f"{prefix}{ident}"] = {"content_type": kind, "data": base64.b64encode(buffer.getvalue()).decode()}
     return out
 
 
@@ -172,7 +245,7 @@ def _field(item: Any, name: str) -> Any:
     return getattr(item, name, None)
 
 
-def _ask(content: List[Dict[str, Any]]) -> str:
+def _ask(content: List[Dict[str, Any]], max_tokens: int = MAX_TOKENS) -> str:
     """One Claude call, streamed (long answers), primary model then fallbacks.
 
     Reads the raw event stream and keeps only the text, so it works whatever
@@ -182,7 +255,7 @@ def _ask(content: List[Dict[str, Any]]) -> str:
     last_error = None
     for model in [llm.model] + [m for m in llm.fallback_models if m != llm.model]:
         try:
-            stream = llm.client.messages.create(model=model, max_tokens=MAX_TOKENS, stream=True,
+            stream = llm.client.messages.create(model=model, max_tokens=max_tokens, stream=True,
                                                 messages=[{"role": "user", "content": content}])
             parts: List[str] = []
             stop_reason = None
@@ -224,23 +297,6 @@ def _json_list(text: str) -> List[Any]:
     return value if isinstance(value, list) else []
 
 
-def _parse(text: str) -> Dict[str, Any]:
-    design = {
-        "header_html": _clean_html(_tag(text, "header_html")),
-        "main_html": _clean_html(_tag(text, "main_html")),
-        "footer_html": _clean_html(_tag(text, "footer_html")),
-        "css": _clean_css(_tag(text, "css")),
-        "page_bg": _tag(text, "page_bg") if re.fullmatch(r"#[0-9a-fA-F]{6}", _tag(text, "page_bg") or "") else "#ffffff",
-        "images": _json_list(_tag(text, "images")),
-        "fonts": [f for f in _json_list(_tag(text, "fonts")) if isinstance(f, str) and re.fullmatch(r"[A-Za-z0-9 ]{2,40}", f)][:4],
-        "products": [p for p in _json_list(_tag(text, "products")) if isinstance(p, dict)][:24],
-        "description": _tag(text, "description")[:300],
-    }
-    if not design["main_html"]:
-        raise ValueError("The design answer had no page content")
-    return design
-
-
 def _clean_html(html: str) -> str:
     html = re.sub(r"<(script|iframe|object|embed|style|noscript)\b[^>]*>.*?</\1\s*>", "", html, flags=re.S | re.I)
     html = re.sub(r"</?(script|iframe|object|embed|style|base|meta|link|noscript)\b[^>]*>", "", html, flags=re.I)
@@ -256,38 +312,6 @@ def _clean_css(css: str) -> str:
     css = css.replace("</style", "")
     return css.strip()
 
-
-def _first_prompt(viewport: int, store_name: str, slice_count: int, mobile_count: int) -> str:
-    return (
-        f"You are a senior front-end developer. The images are a full-page screenshot of the home page of the online "
-        f"store \"{store_name}\", cut into {slice_count} slices from top to bottom"
-        + (f", followed by {mobile_count} slices of the same page on a phone" if mobile_count else "")
-        + ". Rebuild this page as HTML and CSS so that it looks EXACTLY like the screenshot: a pixel-accurate copy.\n\n"
-        + RULES.format(viewport=viewport)
-    )
-
-
-def _fix_prompt(viewport: int, design: Dict[str, Any], bands: List[Dict[str, Any]], score: float) -> str:
-    regions = "\n".join(f"- Region {i + 1}: page y {b['y0']}px to {b['y1']}px (difference {b['diff']:.1f}%)"
-                        for i, b in enumerate(bands))
-    current = "\n".join(f"<{name}>{design[name] if isinstance(design[name], str) else json.dumps(design[name], ensure_ascii=False)}</{name}>"
-                        for name in PARTS)
-    return (
-        f"Your HTML/CSS copy of the store home page was rendered and compared with the original screenshot. "
-        f"Match score: {score * 100:.1f}%. The images come in pairs for each region below: first the ORIGINAL, then YOUR "
-        f"RENDER of the same region.\n{regions}\n\n"
-        "Fix every difference you see (sizes, spacing, positions, colours, fonts, borders, missing or extra elements) "
-        "and also check the rest of the page. Keep the image IDs and boxes that are right; you may change boxes that "
-        "are wrong (they refer to the original full-page slices you saw first).\n\n"
-        "Return the COMPLETE corrected page in the same tagged format.\n\n"
-        + RULES.format(viewport=viewport)
-        + "\n\nCurrent version:\n" + current
-    )
-
-
-# ---------------------------------------------------------------------------
-# Rendering and comparing
-# ---------------------------------------------------------------------------
 
 def fill_products(html: str, products: List[Dict[str, str]]) -> str:
     """Fill the product grid template with products: dicts with name, price, compare_price, sale_label, image, url."""
@@ -311,144 +335,346 @@ def fill_products(html: str, products: List[Dict[str, str]]) -> str:
                   grid, html, count=1, flags=re.S)
 
 
-def _document(design: Dict[str, Any], images: Dict[str, Dict[str, str]]) -> str:
+# ---------------------------------------------------------------------------
+# One section
+# ---------------------------------------------------------------------------
+
+class Section:
+    def __init__(self, index: int, count: int, image: Image.Image, top: int, viewport: int, dpr: float):
+        self.index = index
+        self.count = count
+        self.image = image                       # full resolution
+        self.top = top
+        self.viewport = viewport
+        self.dpr = dpr
+        self.height_css = round(image.height / dpr)
+        self.scale = CLAUDE_WIDTH / image.width   # Claude-image px per full-resolution px
+        self.claude_image = _fit(image, CLAUDE_WIDTH)
+        self.edges = image.convert("L").filter(ImageFilter.FIND_EDGES)
+        self.first = index == 0
+        self.last = index == count - 1
+        self.is_grid = False
+        self.best: Optional[Dict[str, Any]] = None
+
+    @property
+    def prefix(self) -> str:
+        return f"s{self.index}-"
+
+    def html_parts(self) -> str:
+        if not (self.first or self.last):
+            return "<main_html>...</main_html>       this section"
+        parts, roots = [], []
+        if self.first:
+            parts.append("<header_html>...</header_html>   ONLY the announcement bar + header/navigation at the top")
+            roots.append('<div class="tm-sec tm-sec-{i} tm-sec-head"> for the header')
+        parts.append("<main_html>...</main_html>       the rest of this section")
+        roots.append('<section class="tm-sec tm-sec-{i}"> for the rest')
+        if self.last:
+            parts.append("<footer_html>...</footer_html>   ONLY the site footer at the bottom")
+            roots.append('<div class="tm-sec tm-sec-{i} tm-sec-foot"> for the footer')
+        note = ("\nEach part has its own root element: " + ", ".join(roots)
+                + ". Their heights must add up to exactly {h}px (the section root rule above applies to each of them, "
+                  "with its own height).")
+        return "\n".join(parts) + note.format(i=self.index, h=self.height_css)
+
+    def rules(self) -> str:
+        rules = SECTION_RULES.format(viewport=self.viewport, height=self.height_css,
+                                     ratio=self.claude_image.width / self.viewport, index=self.index)
+        if self.is_grid:
+            rules += "\n" + GRID_RULES
+        return rules + "\n\n" + OUTPUT_FORMAT.format(html_parts=self.html_parts())
+
+    def first_prompt(self, store_name: str) -> str:
+        where = "the top" if self.first else ("the bottom" if self.last else f"part {self.index + 1} of {self.count}")
+        return (
+            f"You are a senior front-end developer making a pixel-accurate copy of the home page of the online store "
+            f"\"{store_name}\". The image is {where} of the page: one section, {self.viewport}px wide and "
+            f"{self.height_css}px tall. Rebuild ONLY this section as HTML and CSS so it looks EXACTLY like the image.\n\n"
+            + self.rules()
+        )
+
+    def fix_prompt(self, design: Dict[str, Any], score: float, boxes: Dict[str, Tuple[int, int, int, int]]) -> str:
+        placed = "\n".join(
+            f"- {ident}: left {round(b[0] / self.dpr)}px, top {round(b[1] / self.dpr)}px, "
+            f"width {round((b[2] - b[0]) / self.dpr)}px, height {round((b[3] - b[1]) / self.dpr)}px"
+            for ident, b in boxes.items())
+        current = "\n".join(f"<{name}>{design.get(name, '')}</{name}>"
+                            for name in ("header_html", "main_html", "footer_html", "css") if design.get(name))
+        return (
+            f"The images are: 1) the ORIGINAL section, 2) YOUR RENDER of your code, 3) a difference map (bright = "
+            f"different). Match: {score * 100:.1f}%. Make your render identical to the original: fix every difference in "
+            f"size, position, spacing, colour, font, weight, line breaks, borders and missing or extra elements.\n\n"
+            + (f"The photos are measured exactly here (CSS px inside this section); place them exactly like this:\n{placed}\n\n"
+               if placed else "")
+            + "Return the COMPLETE corrected section in the same tagged format.\n\n" + self.rules()
+            + "\n\nYour current code:\n" + current
+        )
+
+    def parse(self, text: str) -> Dict[str, Any]:
+        design = {
+            "header_html": _clean_html(_tag(text, "header_html")) if self.first else "",
+            "main_html": _clean_html(_tag(text, "main_html")),
+            "footer_html": _clean_html(_tag(text, "footer_html")) if self.last else "",
+            "css": _clean_css(_tag(text, "css")),
+            "images": _json_list(_tag(text, "images")),
+            "fonts": [f for f in _json_list(_tag(text, "fonts")) if isinstance(f, str) and re.fullmatch(r"[A-Za-z0-9 ]{2,40}", f)][:3],
+            "products": [p for p in _json_list(_tag(text, "products")) if isinstance(p, dict)][:24],
+            "description": _tag(text, "description")[:300],
+        }
+        if not (design["header_html"] or design["main_html"] or design["footer_html"]):
+            raise ValueError(f"Section {self.index}: the answer had no HTML")
+        # Prefix image ids so sections never clash
+        for key in ("header_html", "main_html", "footer_html", "css"):
+            design[key] = re.sub(r"tellora-image:([a-zA-Z0-9_-]+)", lambda m: f"tellora-image:{self.prefix}{m.group(1)}", design[key])
+        return design
+
+    def cut_images(self, design: Dict[str, Any]) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Tuple[int, int, int, int]]]:
+        images = _cut(self.image, self.scale, design["images"], self.prefix, self.edges)
+        boxes = {}
+        for entry in design["images"]:
+            try:
+                ident = self.prefix + re.sub(r"[^a-zA-Z0-9_-]", "", str(entry["id"]))[:40]
+                x, y, w, h = [float(v) for v in entry["box"]]
+                box = (round(x / self.scale), round(y / self.scale), round((x + w) / self.scale), round((y + h) / self.scale))
+                boxes[ident] = snap(self.image, box, self.edges)
+            except (KeyError, ValueError, TypeError):
+                continue
+        # Product photos for checking the grid (the real store fills in its own products)
+        for i, product in enumerate(design["products"]):
+            try:
+                x, y, w, h = [float(v) for v in product["box"]]
+            except (KeyError, ValueError, TypeError):
+                continue
+            ident = f"{self.prefix}product{i}"
+            images.update(_cut(self.image, self.scale, [{"id": f"product{i}", "box": [x, y, w, h]}], self.prefix, self.edges))
+            product["image_id"] = ident
+        return images, boxes
+
+
+# ---------------------------------------------------------------------------
+# Rendering and comparing
+# ---------------------------------------------------------------------------
+
+def _document(parts: List[Dict[str, Any]], images: Dict[str, Dict[str, str]], fonts: List[str], page_bg: str,
+              extra_css: str = "") -> str:
     def src(ident: str) -> str:
         image = images.get(ident)
         return f"data:{image['content_type']};base64,{image['data']}" if image else ""
 
-    sample = [{
-        "name": p.get("name"), "price": p.get("price"), "compare_price": p.get("compare_price"),
-        "sale_label": p.get("sale_label"), "image": src(str(p.get("image_id", ""))), "url": "#",
-    } for p in design["products"]]
-
     def swap(text: str) -> str:
         return re.sub(r"tellora-image:([a-zA-Z0-9_-]+)", lambda m: src(m.group(1)), text)
 
-    body = (f"<div class='tm-root tm-header'>{swap(design['header_html'])}</div>"
-            f"<div class='tm-root tm-main'>{fill_products(swap(design['main_html']), sample)}</div>"
-            f"<div class='tm-root tm-footer'>{swap(design['footer_html'])}</div>")
-    fonts = "&".join("family=" + f.replace(" ", "+") + ":ital,wght@0,300;0,400;0,500;0,600;0,700;1,400" for f in design["fonts"])
-    font_link = f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{fonts}&display=swap">' if fonts else ""
+    header = "".join(p.get("header_html", "") for p in parts)
+    footer = "".join(p.get("footer_html", "") for p in parts)
+    main = ""
+    for part in parts:
+        sample = [{"name": p.get("name"), "price": p.get("price"), "compare_price": p.get("compare_price"),
+                   "sale_label": p.get("sale_label"), "image": src(str(p.get("image_id", ""))), "url": "#"}
+                  for p in part.get("products", [])]
+        main += fill_products(part.get("main_html", ""), sample)
+    css = "".join(p.get("css", "") for p in parts) + extra_css
+
+    families = "&".join("family=" + f.replace(" ", "+") + ":ital,wght@0,300;0,400;0,500;0,600;0,700;1,400" for f in fonts)
+    font_link = f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{families}&display=swap">' if families else ""
+    blocks = ""
+    if header:
+        blocks += f"<div class='tm-root tm-header'>{swap(header)}</div>"
+    blocks += f"<div class='tm-root tm-main'>{swap(main)}</div>"
+    if footer:
+        blocks += f"<div class='tm-root tm-footer'>{swap(footer)}</div>"
     return (
         "<!doctype html><html><head><meta charset='utf-8'>" + font_link
-        + f"<style>html,body{{margin:0;padding:0;background:{design['page_bg']}}}{RESET}{swap(design['css'])}</style>"
-        + f"</head><body>{body}</body></html>"
+        + f"<style>html,body{{margin:0;padding:0;background:{page_bg}}}{RESET}{swap(css)}</style>"
+        + f"</head><body>{blocks}</body></html>"
     )
 
 
-async def _render(html: str, viewport: int, dpr: float) -> Image.Image:
-    from playwright.async_api import async_playwright
+class Renderer:
+    """One Chromium for the whole job; each render gets its own page."""
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(args=["--no-sandbox"])
+    def __init__(self, viewport: int, dpr: float):
+        self.viewport = viewport
+        self.dpr = dpr
+        self._playwright = None
+        self._browser = None
+
+    async def __aenter__(self):
+        from playwright.async_api import async_playwright
+        self._playwright = await async_playwright().start()
+        self._browser = await self._playwright.chromium.launch(args=["--no-sandbox"])
+        return self
+
+    async def __aexit__(self, *exc):
+        if self._browser:
+            await self._browser.close()
+        if self._playwright:
+            await self._playwright.stop()
+
+    async def render(self, html: str, width: Optional[int] = None) -> Image.Image:
+        page = await self._browser.new_page(viewport={"width": width or self.viewport, "height": 100},
+                                            device_scale_factor=self.dpr)
         try:
-            page = await browser.new_page(viewport={"width": viewport, "height": 900}, device_scale_factor=dpr)
             await page.set_content(html, wait_until="networkidle", timeout=60000)
             await page.evaluate("document.fonts.ready")
-            await page.wait_for_timeout(400)
+            await page.wait_for_timeout(300)
             shot = await page.screenshot(full_page=True, type="png")
         finally:
-            await browser.close()
-    return _open(shot)
+            await page.close()
+        return _open(shot)
 
 
-def _compare(original: Image.Image, render: Image.Image, dpr: float) -> Tuple[float, List[Dict[str, Any]]]:
-    """Similarity 0..1 and the bands of the page that differ most."""
+def _score(original: Image.Image, render: Image.Image) -> float:
+    """Similarity 0..1 of two images of the same width (height differences count against)."""
     width = 480
     a = original.convert("L").resize((width, max(1, round(original.height * width / original.width))))
     b = render.convert("L").resize((width, max(1, round(render.height * width / render.width))))
     height = min(a.height, b.height)
-    if height < 10:
-        return 0.0, []
-    a_top, b_top = a.crop((0, 0, width, height)), b.crop((0, 0, width, height))
-    diff = ImageChops.difference(a_top, b_top)
+    if height < 4:
+        return 0.0
+    diff = ImageChops.difference(a.crop((0, 0, width, height)), b.crop((0, 0, width, height)))
     pixel_match = 1 - ImageStat.Stat(diff).mean[0] / 255
-    height_match = min(a.height, b.height) / max(a.height, b.height)
-    score = pixel_match * (0.7 + 0.3 * height_match)
-
-    css_per_px = (original.width / dpr) / width
-    band = max(8, round(BAND_CSS_HEIGHT / css_per_px))
-    bands = []
-    for top in range(0, height, band):
-        region = diff.crop((0, top, width, min(height, top + band)))
-        bands.append({
-            "y0": round(top * css_per_px), "y1": round(min(height, top + band) * css_per_px),
-            "diff": ImageStat.Stat(region).mean[0] / 255 * 100,
-        })
-    if b.height > a.height * 1.05 or a.height > b.height * 1.05:
-        bands.append({"y0": round(height * css_per_px), "y1": round(max(a.height, b.height) * css_per_px), "diff": 100.0})
-    bands.sort(key=lambda x: -x["diff"])
-    return score, bands[:3]
+    height_match = height / max(a.height, b.height)
+    return pixel_match * (0.6 + 0.4 * height_match)
 
 
-def _band_images(original: Image.Image, render: Image.Image, bands: List[Dict[str, Any]], dpr: float) -> List[Dict[str, Any]]:
-    blocks = []
-    for item in bands:
-        for image in (original, render):
-            top, bottom = round(item["y0"] * dpr), round(item["y1"] * dpr)
-            top = min(top, max(0, image.height - 10))
-            bottom = min(max(bottom, top + 10), image.height)
-            part = image.crop((0, top, image.width, bottom))
-            scale = CLAUDE_SLICE_WIDTH / part.width
-            blocks.append(_image_block(part.resize((CLAUDE_SLICE_WIDTH, max(1, round(part.height * scale))), Image.LANCZOS)))
-    return blocks
+def _diff_map(original: Image.Image, render: Image.Image) -> Image.Image:
+    render = render.crop((0, 0, original.width, original.height)) if render.height >= original.height else render
+    canvas = Image.new("RGB", original.size, (0, 0, 0))
+    canvas.paste(render, (0, 0))
+    diff = ImageChops.difference(original, canvas).convert("L").point(lambda v: min(255, v * 4))
+    return diff.convert("RGB")
 
 
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
+def _find_grid(sections: List[Section]) -> None:
+    """Ask once which section holds the product grid (small thumbnails, cheap)."""
+    content: List[Dict[str, Any]] = []
+    for s in sections:
+        content.append({"type": "text", "text": f"Section {s.index}:"})
+        content.append(_image_block(_fit(s.image, 500)))
+    content.append({"type": "text", "text": (
+        "These are the sections of an online store home page, top to bottom. Which section shows a grid of PRODUCTS "
+        "with prices (not collections or categories)? Answer only with JSON: {\"products\": [section numbers]}.")})
+    try:
+        answer = _ask(content, max_tokens=200)
+        match = re.search(r"\{.*\}", answer, re.S)
+        indexes = json.loads(match.group(0)).get("products", []) if match else []
+        for s in sections:
+            s.is_grid = s.index in indexes
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"[screenshot-design] product grid detection failed: {e}")
+
+
+def _page_background(image: Image.Image) -> str:
+    small = image.resize((64, max(1, round(image.height * 64 / image.width))))
+    colors = small.getcolors(64 * small.height) or []
+    r, g, b = max(colors, key=lambda c: c[0])[1] if colors else (255, 255, 255)
+    return "#{:02x}{:02x}{:02x}".format(r, g, b)
+
+
+async def _build_section(section: Section, store_name: str, renderer: Renderer, page_bg: str,
+                         gate: asyncio.Semaphore) -> Dict[str, Any]:
+    content: List[Dict[str, Any]] = [_image_block(section.claude_image),
+                                     {"type": "text", "text": section.first_prompt(store_name)}]
+    for attempt in range(FIX_PASSES + 1):
+        try:
+            async with gate:
+                design = section.parse(await asyncio.to_thread(_ask, content))
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"[screenshot-design] section {section.index} answer {attempt + 1} failed: {e}")
+            if section.best:
+                break
+            if attempt == FIX_PASSES:
+                raise
+            continue
+        images, boxes = section.cut_images(design)
+        render = await renderer.render(_document([design], images, design["fonts"], page_bg))
+        score = _score(section.image, render)
+        logger.info(f"[screenshot-design] section {section.index + 1}/{section.count}: pass {attempt + 1} match {score * 100:.1f}%")
+        if section.best is None or score > section.best["score"]:
+            section.best = {"design": design, "images": images, "score": score}
+        if score >= SECTION_TARGET or attempt == FIX_PASSES:
+            break
+        shown = render.crop((0, 0, render.width, min(render.height, section.image.height)))
+        content = [
+            _image_block(section.claude_image),
+            _image_block(_fit(shown, CLAUDE_WIDTH)),
+            _image_block(_fit(_diff_map(section.image, render), CLAUDE_WIDTH)),
+            {"type": "text", "text": section.fix_prompt(design, score, boxes)},
+        ]
+    return section.best
+
+
+async def _mobile_css(parts: List[Dict[str, Any]], mobile: Image.Image) -> str:
+    """One extra pass: @media CSS so the same HTML matches the phone screenshot."""
+    _, dpr = _viewport(mobile)
+    dpr = max(dpr, mobile.width / 430) if mobile.width > 430 else 1.0
+    step = int(1400 * dpr)
+    content: List[Dict[str, Any]] = []
+    for top in range(0, min(mobile.height, step * 8), step):
+        content.append(_image_block(_fit(mobile.crop((0, top, mobile.width, min(mobile.height, top + step))), 500)))
+    html = "\n".join(p.get("header_html", "") + p.get("main_html", "") + p.get("footer_html", "") for p in parts)
+    content.append({"type": "text", "text": (
+        "The images are a phone screenshot of a store home page, top to bottom. Below is the HTML of the desktop version. "
+        "Write ONLY the CSS inside one @media (max-width: 768px) { ... } block so this same HTML looks exactly like the "
+        "phone screenshot. Every rule must start with .tm-root. Output only <css>...</css>.\n\n" + html[:60000])})
+    try:
+        return _clean_css(_tag(await asyncio.to_thread(_ask, content), "css"))
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"[screenshot-design] mobile CSS failed: {e}")
+        return ""
+
+
 async def build_design(desktop: bytes, mobile: Optional[bytes], store_name: str) -> Dict[str, Any]:
     original = _open(desktop)
     viewport, dpr = _viewport(original)
-    slices = _slices(original, dpr, CLAUDE_SLICE_WIDTH)
+    cuts = segment(original, dpr)
+    sections = [Section(i, len(cuts), original.crop((0, top, original.width, bottom)), top, viewport, dpr)
+                for i, (top, bottom) in enumerate(cuts)]
+    page_bg = _page_background(original)
+    logger.info(f"[screenshot-design] {store_name}: viewport {viewport}px @{dpr:.2f}x, {len(sections)} sections")
 
-    mobile_slices: List[Dict[str, Any]] = []
-    if mobile:
-        phone = _open(mobile)
-        _, phone_dpr = _viewport(phone)
-        phone_dpr = max(phone_dpr, phone.width / 430) if phone.width > 430 else 1.0
-        mobile_slices = _slices(phone, phone_dpr, 500)[:6]
+    await asyncio.to_thread(_find_grid, sections)
 
-    first = [_image_block(s["image"]) for s in slices] + [_image_block(s["image"]) for s in mobile_slices]
-    first.append({"type": "text", "text": _first_prompt(viewport, store_name, len(slices), len(mobile_slices))})
+    gate = asyncio.Semaphore(PARALLEL)
+    async with Renderer(viewport, dpr) as renderer:
+        results = await asyncio.gather(*(_build_section(s, store_name, renderer, page_bg, gate) for s in sections),
+                                       return_exceptions=True)
+        parts, images, fonts = [], {}, []
+        for section, result in zip(sections, results):
+            if isinstance(result, Exception) or not result:
+                logger.warning(f"[screenshot-design] section {section.index} dropped: {result}")
+                continue
+            parts.append(result["design"])
+            images.update(result["images"])
+            fonts += [f for f in result["design"]["fonts"] if f not in fonts]
+        if not parts:
+            raise RuntimeError("No section of the page could be rebuilt")
+        fonts = fonts[:4]
 
-    logger.info(f"[screenshot-design] {store_name}: viewport {viewport}px @{dpr:.2f}x, {len(slices)} slices")
-    design = _parse(await asyncio.to_thread(_ask, first))
-    images = _cut_images(original, slices, design["images"])
+        mobile_css = await _mobile_css(parts, _open(mobile)) if mobile else ""
 
-    best = None
-    for attempt in range(1, MAX_PASSES + 1):
-        render = await _render(_document(design, images), viewport, dpr)
-        score, bands = _compare(original, render, dpr)
-        logger.info(f"[screenshot-design] {store_name}: pass {attempt} match {score * 100:.1f}%")
-        if best is None or score > best["score"]:
-            best = {"design": design, "images": images, "score": score, "passes": attempt}
-        if score >= TARGET_SCORE or attempt == MAX_PASSES:
-            break
+        page = await renderer.render(_document(parts, images, fonts, page_bg, mobile_css))
+        score = _score(original, page)
+    logger.info(f"[screenshot-design] {store_name}: whole page match {score * 100:.1f}%")
 
-        content = [_image_block(s["image"]) for s in slices]
-        content += _band_images(original, render, bands, dpr)
-        content.append({"type": "text", "text": _fix_prompt(viewport, design, bands, score)})
-        try:
-            design = _parse(await asyncio.to_thread(_ask, content))
-            images = _cut_images(original, slices, design["images"]) or images
-        except Exception as e:  # noqa: BLE001
-            logger.warning(f"[screenshot-design] correction {attempt} failed: {e}")
-            break
-
-    result = best["design"]
+    products = [p for part in parts for p in part.get("products", [])]
+    description = next((p["description"] for p in parts if p.get("description")), "")
     return {
-        "header_html": result["header_html"],
-        "main_html": result["main_html"],
-        "footer_html": result["footer_html"],
-        "css": result["css"],
-        "page_bg": result["page_bg"],
-        "fonts": result["fonts"],
-        "products": result["products"],
-        "description": result["description"],
-        "images": best["images"],
-        "score": round(best["score"] * 100, 1),
-        "passes": best["passes"],
+        "header_html": "".join(p.get("header_html", "") for p in parts),
+        "main_html": "".join(p.get("main_html", "") for p in parts),
+        "footer_html": "".join(p.get("footer_html", "") for p in parts),
+        "css": "".join(p.get("css", "") for p in parts) + mobile_css,
+        "page_bg": page_bg,
+        "fonts": fonts,
+        "products": products,
+        "description": description,
+        "images": images,
+        "score": round(score * 100, 1),
+        "passes": len(parts),
+        "sections": [{"index": s.index, "score": round((s.best or {}).get("score", 0) * 100, 1)} for s in sections],
         "viewport": viewport,
     }
