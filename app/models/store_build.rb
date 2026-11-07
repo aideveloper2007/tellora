@@ -12,6 +12,7 @@ class StoreBuild < ApplicationRecord
   STEP_KEYS = STEPS.map(&:first).freeze
   # Extra step for "Move my store" builds, right after the store is created
   IMPORT_STEP = ['import', 'Reading your current store'].freeze
+  SCREENSHOT_STEP = ['import', 'Rebuilding your design from your screenshots (about 10 minutes)'].freeze
 
   STATUSES = %w[queued running done failed].freeze
   CURRENCIES = %w[USD EUR GBP INR AUD CAD SGD AED JPY BRL MXN ZAR NGN KES IDR].freeze
@@ -75,7 +76,12 @@ class StoreBuild < ApplicationRecord
 
   # True when the owner is moving an existing store to Tellora
   def import?
-    source_url.present?
+    screenshot_import? || source_url.present?
+  end
+
+  # Moving by uploaded screenshots: the design is rebuilt from them (MirrorDesign)
+  def screenshot_import?
+    import_dir.present?
   end
 
   def source_host
@@ -87,7 +93,9 @@ class StoreBuild < ApplicationRecord
   # ---- status helpers -------------------------------------------------------
 
   def steps
-    import? ? [STEPS.first, IMPORT_STEP, *STEPS.drop(1)] : STEPS
+    return STEPS unless import?
+
+    [STEPS.first, screenshot_import? ? SCREENSHOT_STEP : IMPORT_STEP, *STEPS.drop(1)]
   end
 
   def step_keys

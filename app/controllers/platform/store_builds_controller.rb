@@ -16,9 +16,9 @@ module Platform
       @build = StoreBuild.new(build_params.merge(prompt: session[:store_prompt], ip: request.remote_ip))
       @build.store_url = store_url_for(@build.subdomain.to_s.downcase.strip)
 
-      # "Move my store": read the brand of the store they are moving from
+      # "Move my store": rebuild the design from the screenshots they uploaded
       if (import = Platform::ImportsController.pending(session))
-        @build.source_url = import['url']
+        @build.import_dir = import['dir']
       end
 
       if @build.save

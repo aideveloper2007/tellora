@@ -3,7 +3,8 @@
 # Builds a complete store for a StoreBuild, step by step:
 #
 #   store    -> store record (public schema), its own tenant schema, Spree seed data, admin user
-#   import   -> only for "Move my store": read the owner's existing store (SiteImport)
+#   import   -> only for "Move my store": rebuild the design from the owner's screenshots
+#               (ScreenshotImport), or read their brand from their store address (SiteImport)
 #   theme    -> AI theme generated from the owner's description (GenAI Theme API)
 #   apply    -> theme saved in the store, images attached, set as the active theme
 #   products -> AI starter products (SampleProductsGenerator)
@@ -93,8 +94,9 @@ class StoreProvisioner
   # ---- step 1b: read the existing store ("Move my store") -----------------------
 
   def import_site
-    data = SiteImport.read(@build)
+    data = @build.screenshot_import? ? ScreenshotImport.read(@build) : SiteImport.read(@build)
     description = data['description'].to_s.squish.truncate(480).presence || @build.prompt
+    data = data.merge('mode' => 'mirror') if @build.screenshot_import?
     @build.update!(brand: data, prompt: description)
     @build.complete_step!('import')
   end
@@ -139,11 +141,17 @@ class StoreProvisioner
       store = Spree::Store.find(@build.store_id)
       # Only skip when a finished design is already live (a failed earlier try can leave an unused theme behind)
       unless store.themes.where(type: 'Spree::Themes::GenAi', default: true).exists?
-        imported = @build.import? ? @build.brand : nil
+        imported = @build.import? && !@build.screenshot_import? ? @build.brand : nil
         ThemeApplier.new(store: store, store_name: @build.store_name, prompt: @build.prompt, imported: imported)
                     .apply!(status['theme_data'])
       end
-      SiteImport.attach_logo(store, @build.brand.dig('brand', 'logo_url')) if @build.import? && @build.brand.is_a?(Hash)
+
+      if @build.screenshot_import?
+        design = ScreenshotImport.design(@build) or raise 'The rebuilt design was not found. Please try again'
+        MirrorDesign.install!(store, store.themes.find_by(default: true), design)
+      elsif @build.import? && @build.brand.is_a?(Hash)
+        SiteImport.attach_logo(store, @build.brand.dig('brand', 'logo_url'))
+      end
     end
 
     @build.complete_step!('apply')
