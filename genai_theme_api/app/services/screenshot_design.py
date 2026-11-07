@@ -59,6 +59,7 @@ Rules for an exact copy:
 - The section's root element is <section class="tm-sec tm-sec-{index}"> with height:{height}px; position:relative;
   overflow:hidden; width:100%; box-sizing:border-box. Every CSS rule MUST start with ".tm-root .tm-sec-{index}".
   No rules for html, body or *. No @import. You may use @media.
+- Put ALL styling in <css>: no style="" attributes in the HTML.
 - No JavaScript, no <script>, no inline event handlers, no <iframe>, no <form> (use <div> and <a>).
 - Icons (search, account, cart, truck, phone, arrows ...): inline <svg> with simple paths, right size and colour.
 - Every photo, product photo, logo or picture area: <img src="tellora-image:ID" alt="..."> (or CSS

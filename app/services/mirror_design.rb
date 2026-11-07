@@ -23,6 +23,10 @@ class MirrorDesign
 
   # Spree's base styles (Tailwind) must not change the owner's design: inside .tm-root
   # everything starts from the browser defaults, exactly like when the design was checked.
+  # The design is measured on a screenshot of one width (e.g. 1920px). On desktops it is scaled
+  # with the window (px -> vw), so it keeps exactly the same proportions on every screen size.
+  MOBILE_MAX = 768
+
   RESET = '.tm-root{all:revert;display:block;font:initial;color:initial;line-height:normal;letter-spacing:normal;' \
           'word-spacing:normal;text-align:start;text-transform:none}' \
           '.tm-root *:where(:not(svg, svg *)){all:revert}'
@@ -36,7 +40,7 @@ class MirrorDesign
       header = clean_html(swap.call(design['header_html']))
       footer = clean_html(swap.call(design['footer_html']))
       main = clean_html(swap.call(design['main_html']))
-      css = clean_css(swap.call(design['css']))
+      css = scale_css(clean_css(swap.call(design['css'])), design['viewport'].to_i)
       background = design['page_bg'].to_s.match?(/\A#\h{6}\z/) ? design['page_bg'] : '#ffffff'
 
       sale_label = Array(design['products']).filter_map { |p| p['sale_label'].presence if p.is_a?(Hash) }.first.to_s
@@ -116,7 +120,7 @@ class MirrorDesign
         %(<link rel="preconnect" href="https://fonts.googleapis.com">),
         %(<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>),
         font_link,
-        "<style>body{background:#{background}!important}#{HIDE_SPREE}#{RESET}#{css}</style>"
+        "<style>body{background:#{background}!important;overflow-x:hidden}#{HIDE_SPREE}#{RESET}#{css}</style>"
       ].compact.join("\n")
     end
 
@@ -140,6 +144,50 @@ class MirrorDesign
       html = html.gsub(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, '')
       html = html.gsub(/javascript:/i, '')
       html.gsub(%r{<(/?)form\b}i, '<\1div').strip
+    end
+
+    # Desktop rules: every size in vw of the screenshot width (exact at that width, proportional on
+    # others). Phones (<= 768px) keep the original pixel rules and their own @media rules.
+    def scale_css(css, viewport)
+      return css if viewport < 320
+
+      desktop, mobile = split_mobile(css)
+      scaled = desktop.gsub(/(-?\d*\.?\d+)px\b/) do
+        value = Regexp.last_match(1).to_f
+        value.abs <= 2 ? Regexp.last_match(0) : "#{(value / viewport * 100).round(4)}vw"
+      end
+      "@media (min-width:#{MOBILE_MAX + 1}px){#{scaled}}@media (max-width:#{MOBILE_MAX}px){#{desktop}}#{mobile}"
+    end
+
+    # Splits CSS into [rules for all screens, @media (max-width ...) blocks written for phones]
+    def split_mobile(css)
+      desktop = +''
+      mobile = +''
+      index = 0
+      while index < css.length
+        start = css.index(/@media[^{]*max-width/i, index)
+        unless start
+          desktop << css[index..]
+          break
+        end
+        desktop << css[index...start]
+        open = css.index('{', start)
+        break desktop << css[start..] unless open
+
+        depth = 0
+        finish = open
+        css[open..].each_char.with_index(open) do |char, at|
+          depth += 1 if char == '{'
+          depth -= 1 if char == '}'
+          if depth.zero?
+            finish = at
+            break
+          end
+        end
+        mobile << css[start..finish]
+        index = finish + 1
+      end
+      [desktop, mobile]
     end
 
     def clean_css(css)
