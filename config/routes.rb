@@ -1,4 +1,4 @@
- # config/routes.rb
+# config/routes.rb
 require 'sidekiq/web'
 Rails.application.routes.draw do
   # Platform landing page: only on the main domain (and localhost), never on store subdomains.
@@ -26,6 +26,19 @@ Rails.application.routes.draw do
   get  '/tellora/builder/refine/:theme_id', to: 'platform/builder#refine_status', as: :platform_builder_refine_status
   post '/tellora/builder/publish',          to: 'platform/builder#publish',       as: :platform_builder_publish
   post '/tellora/builder/style',            to: 'platform/builder#style',         as: :platform_builder_style
+  post '/tellora/builder/design',           to: 'platform/builder#design',        as: :platform_builder_design
+  # files of the owner's own design (their CSS, images, fonts)
+  get  '/tellora/design-files/:version/*path', to: 'platform/design_files#show', as: :platform_design_file,
+                                               format: false, constraints: { version: /\d{14}-\h{8}/ }
+
+  # Shipping screen (store owner): connect Shiprocket, pickup address, checkout rates
+  get    '/tellora/shipping',               to: 'platform/shipping#show',         as: :platform_shipping
+  post   '/tellora/shipping',               to: 'platform/shipping#create'
+  patch  '/tellora/shipping',               to: 'platform/shipping#update'
+  delete '/tellora/shipping',               to: 'platform/shipping#destroy'
+  post   '/tellora/shipping/orders/:number/ship', to: 'platform/shipping#ship',   as: :platform_shipping_ship
+  # Shiprocket tracking webhook (the URL must not contain "shiprocket", "sr" or "kr")
+  post   '/tellora/courier-updates',        to: 'platform/courier_updates#create', as: :platform_courier_updates
 
   # Custom domain screen (store owner), on the store's own address
   get    '/tellora/domain',                 to: 'platform/domains#show',          as: :platform_domain
@@ -61,9 +74,6 @@ Rails.application.routes.draw do
  # get '/pages/*slug', to: redirect { |params, request|
  #   "/posts/#{params[:slug]}"
  # }, constraints: ->(request) { request.host.include?('magnafieldndt.com') }
-  # Custom routes for your app
-  resources :tenant_registrations, only: [:new, :create]
-  
   # Theme Designer / Chatbot routes
   resources :theme_designer, only: [:index] do
     collection do

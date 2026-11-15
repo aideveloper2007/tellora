@@ -6,7 +6,8 @@ Apartment.configure do |config|
   #   Spree::Store - store records (TenantResolver looks stores up there)
   #   StoreBuild   - "Build my store" requests from the platform landing page
   #   StoreDomain  - custom domains connected by store owners
-  config.excluded_models = %w[Spree::Store StoreBuild StoreDomain]
+  #   ShiprocketAccount / ShiprocketShipment - Shiprocket shipping (the courier webhook finds the store by token)
+  config.excluded_models = %w[Spree::Store StoreBuild StoreDomain ShiprocketAccount ShiprocketShipment]
 
   # All store schemas, used by Apartment for tenant migrations
   config.tenant_names = lambda do

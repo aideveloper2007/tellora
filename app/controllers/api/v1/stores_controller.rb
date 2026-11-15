@@ -201,23 +201,19 @@ class Api::V1::StoresController < ApplicationController
     unique_code
   end
   
+  # Store address on the platform domain (first of ENV TENANT_DOMAINS),
+  # e.g. https://<subdomain>.<platform domain>. Locally: http://<subdomain>.lvh.me:3002
+  # (STORE_URL_PROTOCOL and STORE_URL_PORT, the same settings the store URLs use).
   def generate_store_url(subdomain)
-    subdomain = subdomain.downcase
-    
-    if Rails.env.production?
-      "https://#{subdomain}.zencommerce.xyz"
-    else
-      "http://#{subdomain}.lvh.me:3000"
-    end
+    domain = ENV.fetch('TENANT_DOMAINS', 'lvh.me').split(',').map(&:strip).reject(&:empty?).first || 'lvh.me'
+    protocol = ENV['STORE_URL_PROTOCOL'].to_s.strip.downcase.presence || (Rails.env.production? ? 'https' : 'http')
+    port = ENV['STORE_URL_PORT'].to_s.strip.presence
+    port = nil if port.nil? || (protocol == 'https' && port == '443') || (protocol == 'http' && port == '80')
+
+    "#{protocol}://#{subdomain.downcase}.#{domain.downcase}#{":#{port}" if port}"
   end
-  
+
   def generate_login_url(subdomain)
-    subdomain = subdomain.downcase
-    
-    if Rails.env.production?
-      "https://#{subdomain}.zencommerce.xyz/user/sign_in"
-    else
-      "http://#{subdomain}.lvh.me:3000/user/sign_in"
-    end
+    "#{generate_store_url(subdomain)}/user/sign_in"
   end
 end

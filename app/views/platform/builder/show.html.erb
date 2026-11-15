@@ -79,6 +79,12 @@
     .style-sample .dots i { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
     .style-name { font-size: 0.78rem; font-weight: 600; line-height: 1.2; padding: 0 0.15rem 0.1rem; }
     .style-hint { margin: 0.55rem 0 0; font-size: 0.82rem; color: var(--muted); }
+    .own-design { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.75rem; padding: 0.6rem 0.75rem; border: 1px dashed var(--line); border-radius: 10px; }
+    .own-design[data-active="true"] { border-style: solid; border-color: var(--ink); }
+    .own-design-text { margin: 0; font-size: 0.82rem; line-height: 1.35; color: var(--muted); }
+    .own-design-text strong { display: block; color: var(--ink); font-weight: 600; }
+    .own-design-button { flex: none; padding: 0.45rem 0.8rem; border: 1px solid var(--ink); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+    .own-design-button:disabled { cursor: wait; opacity: 0.6; }
 
     /* Preview */
     .preview { display: flex; justify-content: center; padding: 1rem; min-height: 0; }
@@ -127,7 +133,16 @@
             </button>
           <% end %>
         </div>
-        <p class="style-hint" id="style-hint"><%= StyleFamily::FAMILIES.dig(@current_family, :summary) %></p>
+        <p class="style-hint" id="style-hint"><%= @current_family == 'custom' ? 'Your own design is in use. Pick a style above to go back to a Tellora design.' : StyleFamily::FAMILIES.dig(@current_family, :summary) %></p>
+
+        <div class="own-design" id="own-design" data-active="<%= @current_family == 'custom' %>">
+          <p class="own-design-text">
+            <strong>Have your own design?</strong>
+            Upload your designer's HTML: a .zip of the site folder, or one .html file (up to 60 MB).
+          </p>
+          <button type="button" class="own-design-button" id="own-design-button"><%= @current_family == 'custom' ? 'Upload new version' : 'Upload HTML' %></button>
+          <input type="file" id="own-design-file" accept=".zip,.html,.htm,application/zip,text/html" hidden>
+        </div>
       </div>
 
       <div class="messages" id="messages" aria-live="polite">
@@ -262,6 +277,8 @@
               if (!res.ok) throw new Error(res.data.error || 'The style could not be changed.');
               styleCards.forEach(function (c) { c.setAttribute('aria-checked', c === card ? 'true' : 'false'); });
               styleHint.textContent = card.dataset.summary;
+              document.getElementById('own-design').dataset.active = 'false';
+              document.getElementById('own-design-button').textContent = 'Upload HTML';
               frame.addEventListener('load', function onLoad() {
                 frame.removeEventListener('load', onLoad);
                 frameWrap.classList.remove('is-updating');
@@ -278,6 +295,61 @@
               setBusy(false);
             });
         });
+      });
+
+      // Own design: the owner's HTML (.zip or .html) becomes the home page, exactly as made
+      var ownBox = document.getElementById('own-design');
+      var ownButton = document.getElementById('own-design-button');
+      var ownFile = document.getElementById('own-design-file');
+      ownButton.addEventListener('click', function () { if (!busy) ownFile.click(); });
+      ownFile.addEventListener('change', function () {
+        var file = ownFile.files[0];
+        ownFile.value = '';
+        if (!file || busy) return;
+        if (!/\.(zip|html?)$/i.test(file.name)) { add('Choose a .zip file of your site, or a single .html file.', 'msg-error'); return; }
+        if (file.size > 60 * 1024 * 1024) { add('The file is larger than 60 MB.', 'msg-error'); return; }
+
+        setBusy(true);
+        ownButton.disabled = true;
+        styleCards.forEach(function (c) { c.disabled = true; });
+        frameWrap.classList.add('is-updating');
+        add('Adding your design (' + file.name + '). This takes up to a minute.', 'msg-ai');
+
+        var form = new FormData();
+        form.append('file', file);
+        fetch('/tellora/builder/design', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json', 'X-CSRF-Token': csrf },
+          body: form
+        })
+          .then(function (r) {
+            return r.json().catch(function () { return { error: 'Your design could not be added (error ' + r.status + ').' }; })
+                    .then(function (data) { return { ok: r.ok, data: data }; });
+          })
+          .then(function (res) {
+            if (!res.ok) throw new Error(res.data.error || 'Your design could not be added.');
+            styleCards.forEach(function (c) { c.setAttribute('aria-checked', 'false'); });
+            styleHint.textContent = 'Your own design is in use. Pick a style above to go back to a Tellora design.';
+            ownBox.dataset.active = 'true';
+            ownButton.textContent = 'Upload new version';
+            frame.addEventListener('load', function onLoad() {
+              frame.removeEventListener('load', onLoad);
+              frameWrap.classList.remove('is-updating');
+              add(res.data.message, 'msg-ai');
+              ownButton.disabled = false;
+              styleCards.forEach(function (c) { c.disabled = false; });
+              setBusy(false);
+            });
+            frame.src = '/?v=' + Date.now();
+          })
+          .catch(function (err) {
+            frameWrap.classList.remove('is-updating');
+            add(err.message || 'Your design could not be added. Please try again.', 'msg-error');
+            ownButton.disabled = false;
+            styleCards.forEach(function (c) { c.disabled = false; });
+            setBusy(false);
+          });
       });
 
       document.querySelectorAll('[data-device]').forEach(function (b) {

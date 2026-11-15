@@ -48,6 +48,7 @@ class MirrorDesign
                               'score' => design['score'].to_f, 'viewport' => design['viewport'].to_i)
 
       StyleFamily.remove!(store)
+      CustomDesign.remove!(theme)
       store.update_columns(
         storefront_custom_code_head: merge(store.storefront_custom_code_head,
                                            head_code(design['fonts'], css, background), first: true),
@@ -57,6 +58,23 @@ class MirrorDesign
                                                %(<div class="tm-root tm-footer">#{footer}</div>), first: false),
         updated_at: Time.current
       )
+      store.touch
+    end
+
+    # Take the rebuilt design out again (header, footer, CSS, home page, images),
+    # keeping the owner's own custom code
+    def remove!(store, theme)
+      store.update_columns(
+        storefront_custom_code_head: strip_block(store.storefront_custom_code_head),
+        storefront_custom_code_body_start: strip_block(store.storefront_custom_code_body_start),
+        storefront_custom_code_body_end: strip_block(store.storefront_custom_code_body_end),
+        updated_at: Time.current
+      )
+      if theme
+        prefs = (theme.preferences || {}).to_h
+        theme.update_column(:preferences, prefs.reject { |k, _| k.to_s == 'mirror' }) if prefs.keys.map(&:to_s).include?('mirror')
+        theme.theme_images.where('section LIKE ?', 'mirror\\_%').destroy_all if theme.respond_to?(:theme_images)
+      end
       store.touch
     end
 
@@ -122,6 +140,10 @@ class MirrorDesign
         font_link,
         "<style>body{background:#{background}!important;overflow-x:hidden}#{HIDE_SPREE}#{RESET}#{css}</style>"
       ].compact.join("\n")
+    end
+
+    def strip_block(code)
+      code.to_s.gsub(BLOCK_PATTERN, "\n").strip.presence
     end
 
     # Put a mirror block into one of the store's custom code fields, keeping the owner's own code

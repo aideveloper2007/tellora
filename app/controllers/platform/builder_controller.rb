@@ -27,11 +27,35 @@ module Platform
       theme = store.themes.find_by(default: true)
       return render(json: { error: 'Your store has no design yet.' }, status: :conflict) unless theme.is_a?(Spree::Themes::GenAi)
 
+      CustomDesign.remove!(theme)
+      MirrorDesign.remove!(store, theme)
       PagePlan.switch_family!(theme: theme, store: store, family: family)
       render json: { family: family, name: StyleFamily::FAMILIES.dig(family, :name) }
     rescue StandardError => e
       Rails.logger.error("[Builder] style switch failed: #{e.class} - #{e.message}")
       render json: { error: 'The style could not be changed. Please try again.' }, status: :internal_server_error
+    end
+
+    # POST /tellora/builder/design  (multipart: file = .zip of the site, or one .html file)
+    # The owner's own design becomes the home page, exactly as their designer made it.
+    def design
+      store = Spree::Store.find(@build.store_id)
+      theme = store.themes.find_by(default: true)
+      return render(json: { error: 'Your store has no design yet.' }, status: :conflict) unless theme.is_a?(Spree::Themes::GenAi)
+
+      details = CustomDesign.install!(store, theme, params[:file])
+      message =
+        if details[:products].to_i.positive?
+          "Your design is live. Its product grid now shows your products (#{details[:products]} places)."
+        else
+          'Your design is live. We could not find a product grid in it, so it shows exactly as uploaded.'
+        end
+      render json: { message: message, products: details[:products].to_i }
+    rescue CustomDesign::Invalid => e
+      render json: { error: e.message }, status: :unprocessable_entity
+    rescue StandardError => e
+      Rails.logger.error("[Builder] design upload failed: #{e.class} - #{e.message}")
+      render json: { error: 'Your design could not be added. Please try again.' }, status: :internal_server_error
     end
 
     # POST /tellora/builder/refine  { feedback: "..." }
@@ -81,6 +105,8 @@ module Platform
 
     def current_family
       theme = Spree::Store.find_by(id: @build.store_id)&.themes&.find_by(default: true)
+      return 'custom' if CustomDesign.for(theme)
+
       (theme && PagePlan.family_of(theme)) || StyleFamily::DEFAULT
     end
 

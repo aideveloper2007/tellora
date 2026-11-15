@@ -1,0 +1,5 @@
+<%# Tellora: "Shipping (Shiprocket)" in the admin left menu. Only for Tellora-built stores. %>
+<% if can?(:manage, current_store) && StoreBuild.for_tenant(Apartment::Tenant.current) %>
+  <%= nav_item('Shiprocket', '/tellora/shipping', icon: 'truck-delivery', active: false) %>
+<% end %>
+

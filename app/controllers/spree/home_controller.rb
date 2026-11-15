@@ -2,7 +2,9 @@
 
 # Override Spree's HomeController to add GenAI theme support.
 #
-# Four cases:
+# Cases:
+#   00. The owner's own uploaded design (CustomDesign): their HTML page exactly as made,
+#       with its product grid filled with this store's products.
 #   0. Design rebuilt from the owner's screenshots ("Move my store", MirrorDesign):
 #      their own home page, with the product grid filled with this store's products.
 #   1. GenAI theme with a style family (all Tellora stores): designer-made sections
@@ -20,7 +22,9 @@ module Spree
     MIRROR_PRODUCT_LIMIT = 24
 
     def index
-      if using_genai_theme? && (mirror = MirrorDesign.for(current_genai_theme))
+      if using_genai_theme? && (custom = CustomDesign.for(current_genai_theme))
+        render html: CustomDesign.render(custom, mirror_products(MIRROR_PRODUCT_LIMIT)).html_safe, layout: false
+      elsif using_genai_theme? && (mirror = MirrorDesign.for(current_genai_theme))
         @mirror_html = MirrorDesign.render_main(mirror, mirror_products(MIRROR_PRODUCT_LIMIT))
         render 'spree/home/index_mirror'
       elsif using_genai_theme? && (family = PagePlan.family_of(current_genai_theme))

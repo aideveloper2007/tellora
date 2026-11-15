@@ -3,6 +3,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel, Field
 from typing import Optional
+import asyncio
 import logging
 import io
 from docx import Document
@@ -20,6 +21,7 @@ from app.services.mock_llm import get_mock_llm
 from app.services.claude_llm import get_llm_service, get_claude_llm
 from app.services import site_importer
 from app.services import screenshot_design
+from app.services import design_package
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -442,3 +444,20 @@ async def screenshot_design_endpoint(
     except Exception as e:
         logger.error(f"Screenshot design failed for {store_name}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail={"error": {"code": "SCREENSHOT_DESIGN_ERROR", "message": "We could not rebuild the design from the screenshot"}})
+
+
+@router.post(
+    "/design-package",
+    summary="Unpack the owner's own design (ZIP or HTML) and find its shop parts",
+    description="Checks and unpacks the upload, and returns its files plus CSS selectors for the product grid, "
+                "cart, account, search and logo links. The design itself is not changed."
+)
+async def design_package_endpoint(file: UploadFile = File(..., description="ZIP of the site, or one .html file")):
+    data = await file.read()
+    try:
+        return await asyncio.to_thread(design_package.build_package, file.filename or "", data)
+    except design_package.PackageError as e:
+        raise HTTPException(status_code=422, detail={"error": {"code": "DESIGN_PACKAGE_INVALID", "message": str(e)}})
+    except Exception as e:
+        logger.error(f"Design package failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail={"error": {"code": "DESIGN_PACKAGE_ERROR", "message": "We could not read your design files"}})

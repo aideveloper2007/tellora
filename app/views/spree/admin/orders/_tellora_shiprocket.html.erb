@@ -1,0 +1,47 @@
+<%# Tellora: Shiprocket card on the admin order page (sidebar). Ship / label / tracking. %>
+<%
+  tl_order = local_assigns[:order] || @order
+  tl_account = tl_order && ShiprocketAccount.for_tenant(Apartment::Tenant.current)
+%>
+<% if tl_order && tl_account && can?(:manage, current_store) %>
+  <% tl_record = ShiprocketShipment.for_order(tl_order) %>
+  <div class="card mb-4">
+    <div class="card-body p-3">
+      <h6 class="mb-2 d-flex align-items-center gap-2"><%= icon('truck-delivery') %> Shiprocket</h6>
+
+      <% if !tl_account.ready? %>
+        <p class="mb-3 text-muted">Choose your pickup address first.</p>
+        <a href="/tellora/shipping" class="btn btn-light w-100">Shipping settings</a>
+      <% elsif !tl_order.completed? %>
+        <p class="mb-0 text-muted">The order can be shipped once it is completed.</p>
+      <% else %>
+        <% if tl_record %>
+          <p class="mb-1"><span class="badge <%= tl_record.delivered? ? 'badge-success' : 'badge-info' %>"><%= tl_record.label %></span>
+            <% if tl_record.cod %><span class="badge badge-warning">COD</span><% end %></p>
+          <% if tl_record.awb_code.present? %>
+            <p class="mb-1">AWB <strong class="text-break"><%= tl_record.awb_code %></strong></p>
+            <p class="mb-3 text-muted"><%= tl_record.courier_name %></p>
+          <% end %>
+          <% if tl_record.error.present? %>
+            <p class="mb-3 text-danger small"><%= tl_record.error %></p>
+          <% end %>
+        <% end %>
+
+        <% if tl_record&.label_url.present? %>
+          <a href="<%= tl_record.label_url %>" target="_blank" rel="noopener" class="btn btn-primary w-100 mb-2">Print label</a>
+          <a href="<%= tl_record.tracking_url %>" target="_blank" rel="noopener" class="btn btn-light w-100">Track shipment</a>
+        <% elsif tl_order.canceled? %>
+          <p class="mb-0 text-muted">This order is canceled.</p>
+        <% else %>
+          <%= button_to (tl_record&.awb_code.present? ? 'Finish shipping' : 'Ship with Shiprocket'),
+                        "/tellora/shipping/orders/#{tl_order.number}/ship",
+                        method: :post, class: 'btn btn-primary w-100',
+                        form: { data: { turbo: false } },
+                        data: { disable_with: 'Booking courier…' } %>
+          <p class="mt-2 mb-0 text-muted small">Assigns the courier, books the pickup and makes the label.</p>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+

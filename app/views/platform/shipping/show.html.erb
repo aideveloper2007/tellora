@@ -1,0 +1,254 @@
+<% platform = (defined?(platform_name) && platform_name) || ENV.fetch('PLATFORM_NAME', 'Tellora') %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Shipping | <%= @build.store_name %></title>
+  <%= csrf_meta_tags %>
+  <link rel="icon" type="image/svg+xml" href="/brand/tellora-icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #18163a; --ink-soft: #2c2a57; --paper: #ffffff; --mist: #f1f2f7; --line: #dadce8;
+      --muted: #5b5e78; --marigold: #f2b100; --ok: #1f7a4d; --ok-bg: #e3f4ea; --bad: #b42318; --bad-bg: #fdecea;
+      --work: #8a5a00; --work-bg: #fff4d6;
+      --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+      --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--mist); line-height: 1.55; }
+    h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02em; line-height: 1.15; }
+    p { margin: 0; }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--marigold); outline-offset: 2px; border-radius: 4px; }
+
+    .topbar { display: flex; align-items: center; gap: 0.9rem; padding: 0.6rem 1rem; background: var(--paper); border-bottom: 1px solid var(--line); }
+    .topbar img { width: 1.9rem; height: 1.9rem; border-radius: 6px; }
+    .topbar .store { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+    .topbar .crumb { color: var(--muted); }
+    .topbar .spacer { flex: 1; }
+    .back { color: var(--muted); font-weight: 500; text-decoration: none; }
+    .back:hover { color: var(--ink); text-decoration: underline; }
+
+    main { max-width: 58rem; margin: 0 auto; padding: 2.25rem 1.25rem 4rem; }
+    .page-head h1 { font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.3rem); font-weight: 800; }
+    .page-head p { margin-top: 0.5rem; color: var(--muted); max-width: 44rem; }
+
+    .flash { margin-top: 1.25rem; padding: 0.8rem 1rem; border-radius: 10px; font-weight: 500; }
+    .flash-notice { background: var(--ok-bg); color: var(--ok); }
+    .flash-alert { background: var(--bad-bg); color: var(--bad); }
+
+    .card { margin-top: 1.25rem; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 1.5rem; }
+    .card h2 { font-size: 1.2rem; font-weight: 700; }
+    .card-sub { color: var(--muted); margin-top: 0.3rem !important; font-size: 0.95rem; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+
+    .howto { margin: 1rem 0 0; padding-left: 1.3rem; color: var(--ink); }
+    .howto li { margin-top: 0.35rem; }
+    .howto strong { font-weight: 600; }
+    .note { margin-top: 1rem; background: var(--work-bg); color: var(--work); border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.93rem; }
+    .problem { margin-top: 1rem; background: var(--bad-bg); color: var(--bad); border-radius: 12px; padding: 0.8rem 1rem; font-size: 0.93rem; }
+
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; margin-top: 1.25rem; }
+    @media (max-width: 620px) { .fields { grid-template-columns: 1fr; } }
+    .field label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+    .field small { display: block; color: var(--muted); margin-top: 0.3rem; font-size: 0.85rem; }
+    .input, select.input { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 0.75rem 0.85rem; font: 500 1rem var(--font-body); color: var(--ink); background: var(--paper); }
+    .input:focus { outline: none; border-color: var(--ink); }
+    .check-row { display: flex; gap: 0.6rem; align-items: flex-start; margin-top: 1rem; font-weight: 500; }
+    .check-row input { margin-top: 0.3rem; accent-color: var(--ink); }
+    .check-row small { display: block; color: var(--muted); font-weight: 400; }
+
+    .pickups { display: grid; gap: 0.6rem; margin-top: 1rem; }
+    .pickups label { display: flex; gap: 0.6rem; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 0.75rem 0.85rem; cursor: pointer; font-weight: 600; }
+    .pickups label:has(input:checked) { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+    .pickups input { margin-top: 0.3rem; accent-color: var(--ink); }
+    .pickups small { display: block; color: var(--muted); font-weight: 400; }
+
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font: 600 0.95rem/1 var(--font-body); padding: 0.8rem 1.25rem; border-radius: 999px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .button:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+    .button-quiet { background: transparent; color: var(--ink); }
+    .button-quiet:hover { background: var(--mist); color: var(--ink); }
+    .button-danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+    .button-danger:hover { background: var(--bad-bg); border-color: var(--bad); }
+    .actions { margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+
+    .badge { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 999px; }
+    .badge::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
+    .badge-ok { background: var(--ok-bg); color: var(--ok); }
+    .badge-work { background: var(--work-bg); color: var(--work); }
+
+    .copy { display: inline-flex; align-items: center; gap: 0.4rem; max-width: 100%; font: 500 0.92rem var(--mono); background: var(--mist); border: 1px solid var(--line); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; color: var(--ink); text-align: left; word-break: break-all; }
+    .copy:hover { border-color: var(--ink); }
+    .copy.copied { border-color: var(--ok); color: var(--ok); }
+    .kv { display: grid; grid-template-columns: 9rem 1fr; gap: 0.6rem 1rem; margin-top: 1rem; align-items: center; }
+    @media (max-width: 620px) { .kv { grid-template-columns: 1fr; } }
+    .kv dt { font-weight: 600; }
+    .kv dd { margin: 0; }
+
+    .table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.93rem; }
+    .table th { text-align: left; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; padding: 0 0.6rem 0.5rem; border-bottom: 1px solid var(--line); }
+    .table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .table tr:last-child td { border-bottom: 0; }
+    .mono { font-family: var(--mono); }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img src="/brand/tellora-icon.svg" alt="<%= platform %>">
+    <span class="store"><%= @build.store_name %></span>
+    <span class="crumb">/ Shipping</span>
+    <span class="spacer"></span>
+    <a class="back" href="/admin">Back to admin</a>
+  </header>
+
+  <main>
+    <div class="page-head">
+      <h1>Ship with Shiprocket</h1>
+      <p>Connect your own Shiprocket account. Customers see real courier rates at checkout, and you ship each order with one click: courier, pickup and label.</p>
+    </div>
+
+    <% if flash[:notice] %><p class="flash flash-notice" role="status"><%= flash[:notice] %></p><% end %>
+    <% if flash[:alert] %><p class="flash flash-alert" role="alert"><%= flash[:alert] %></p><% end %>
+
+    <% if @account.nil? %>
+      <section class="card">
+        <h2>1. Create an API user in Shiprocket</h2>
+        <ol class="howto">
+          <li>Sign in to <a href="https://app.shiprocket.in" target="_blank" rel="noopener">app.shiprocket.in</a>.</li>
+          <li>Go to <strong>Settings &gt; API &gt; Configure</strong> and click <strong>Create an API User</strong>.</li>
+          <li>Use an email that is <strong>not</strong> your Shiprocket login (for example shipping@yourbrand.com), and set a password.</li>
+          <li>Make sure your pickup address is saved in Shiprocket (<strong>Settings &gt; Pickup Addresses</strong>).</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h2>2. Connect it here</h2>
+        <p class="card-sub">The password is stored encrypted and never shown again.</p>
+        <%= form_with url: platform_shipping_path, method: :post, local: true, data: { turbo: false } do %>
+          <div class="fields">
+            <div class="field">
+              <label for="sr-email">API user email</label>
+              <input class="input" id="sr-email" name="email" type="email" required autocomplete="off" placeholder="shipping@yourbrand.com">
+            </div>
+            <div class="field">
+              <label for="sr-password">API user password</label>
+              <input class="input" id="sr-password" name="password" type="password" required autocomplete="new-password">
+            </div>
+          </div>
+          <div class="actions"><button class="button" type="submit">Connect Shiprocket</button></div>
+        <% end %>
+      </section>
+    <% else %>
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>Shiprocket account</h2>
+            <p class="card-sub"><span class="mono"><%= @account.email %></span></p>
+          </div>
+          <% if @account.ready? %>
+            <span class="badge badge-ok">Live at checkout</span>
+          <% else %>
+            <span class="badge badge-work">Choose a pickup address</span>
+          <% end %>
+        </div>
+        <% if @pickup_error %><p class="problem"><%= @pickup_error %></p><% end %>
+        <% if @no_weight.positive? %>
+          <p class="note"><strong><%= pluralize(@no_weight, 'product') %></strong> <%= @no_weight == 1 ? 'has' : 'have' %> no weight. They count as 0.5 kg, so the courier may charge extra later. Add weights in Products.</p>
+        <% end %>
+      </section>
+
+      <section class="card">
+        <h2>Settings</h2>
+        <%= form_with url: platform_shipping_path, method: :patch, local: true, data: { turbo: false } do %>
+          <p class="card-sub">Pickup address (from your Shiprocket account)</p>
+          <% if @pickups.any? %>
+            <div class="pickups" role="radiogroup">
+              <% @pickups.each do |pickup| %>
+                <label>
+                  <input type="radio" name="pickup_location" value="<%= pickup[:name] %>" <%= 'checked' if pickup[:name] == @account.pickup_location %> required>
+                  <span><%= pickup[:name] %> <span class="mono muted">· <%= pickup[:postcode] %></span>
+                    <small><%= pickup[:address] %></small></span>
+                </label>
+              <% end %>
+            </div>
+          <% elsif !@pickup_error %>
+            <p class="problem">No pickup address was found. Add one in Shiprocket (Settings &gt; Pickup Addresses), then reload this page.</p>
+          <% end %>
+
+          <div class="fields">
+            <div class="field">
+              <label for="sr-fallback">Fallback rate (₹)</label>
+              <input class="input" id="sr-fallback" name="fallback_rate" type="number" min="0" step="1" value="<%= @account.fallback_rate.to_i %>">
+              <small>Charged at checkout only if Shiprocket does not answer.</small>
+            </div>
+          </div>
+          <input type="hidden" name="auto_push" value="0">
+          <label class="check-row">
+            <input type="checkbox" name="auto_push" value="1" <%= 'checked' if @account.auto_push %>>
+            <span>Send new orders to Shiprocket automatically
+              <small>Paid and cash-on-delivery orders appear in your Shiprocket panel. You still choose when to ship.</small></span>
+          </label>
+          <div class="actions"><button class="button" type="submit">Save settings</button></div>
+        <% end %>
+      </section>
+
+      <section class="card">
+        <h2>Tracking updates</h2>
+        <p class="card-sub">So orders are marked shipped and customers get the "shipped" email: in Shiprocket go to <strong>Settings &gt; API &gt; Webhooks</strong>, and paste these two values.</p>
+        <dl class="kv">
+          <dt>URL</dt>
+          <dd><button type="button" class="copy" data-copy="<%= @webhook_url %>"><%= @webhook_url %></button></dd>
+          <dt>Token</dt>
+          <dd><button type="button" class="copy" data-copy="<%= @account.webhook_token %>"><%= @account.webhook_token %></button></dd>
+        </dl>
+      </section>
+
+      <% if @shipments.any? %>
+        <section class="card">
+          <h2>Recent shipments</h2>
+          <table class="table">
+            <thead><tr><th>Order</th><th>Status</th><th>Courier</th><th>AWB</th></tr></thead>
+            <tbody>
+              <% @shipments.each do |s| %>
+                <tr>
+                  <td><a href="/admin/orders/<%= s.order_number %>/edit" class="mono"><%= s.order_number %></a><% if s.cod %> <span class="muted">COD</span><% end %></td>
+                  <td><%= s.label %><% if s.error.present? %><br><small style="color: var(--bad)"><%= s.error.truncate(120) %></small><% end %></td>
+                  <td><%= s.courier_name.presence || '—' %></td>
+                  <td><% if s.awb_code.present? %><a class="mono" href="<%= s.tracking_url %>" target="_blank" rel="noopener"><%= s.awb_code %></a><% else %>—<% end %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </section>
+      <% end %>
+
+      <section class="card">
+        <h2>Disconnect</h2>
+        <p class="card-sub">Checkout stops showing Shiprocket rates. Orders already in Shiprocket are not changed.</p>
+        <%= form_with url: platform_shipping_path, method: :delete, local: true, data: { turbo: false } do %>
+          <div class="actions"><button class="button button-danger" type="submit">Disconnect Shiprocket</button></div>
+        <% end %>
+      </section>
+    <% end %>
+  </main>
+
+  <script>
+    document.querySelectorAll('[data-copy]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        navigator.clipboard.writeText(b.dataset.copy).then(function () {
+          b.classList.add('copied');
+          setTimeout(function () { b.classList.remove('copied'); }, 1500);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+
