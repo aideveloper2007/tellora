@@ -1,3 +1,5 @@
+<%# Our copy of spree_storefront's footer (themes/default/spree/page_sections/_footer.html.erb),
+    without the "Powered by Spree Commerce" line. Keep the rest in step with the gem when Spree is updated. %>
 <% cache_unless page_builder_enabled?, [*spree_base_cache_scope.call(section), current_store] do %>
   <footer
     id='footer'
