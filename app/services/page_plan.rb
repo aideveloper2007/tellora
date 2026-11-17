@@ -11,7 +11,10 @@
 #   'style_family' => 'warm_artisan'
 #   'page_plan'    => { 'hero' => {...}, 'promises' => [...], ... }
 #   'brand'        => { 'accent' => '#8e2a22', 'display' => {...}, 'body' => {...} }
-#                     (only for stores moved from another platform: their own colour and fonts)
+#                     (stores moved from another platform: their own colour and fonts;
+#                      refined designs: the colour asked for in the builder, e.g. "make it blue")
+#   'ai_colors'    => { 'primary' => '#1a1f3a', 'accent' => '#d4af37', ... }
+#                     (the AI's colours for the design, to see when a refinement changes them)
 # Photos are ThemeImage records with sections plan_hero, plan_story, plan_banner.
 class PagePlan
   REQUEST_TIMEOUT = 150 # seconds
@@ -31,13 +34,20 @@ class PagePlan
     #
     # imported: what Tellora read from the owner's existing store ("Move my store"):
     #   { 'plan' => {...}, 'images' => {...}, 'brand' => {...} }
-    def apply!(theme:, store:, description:, previous_theme: nil, imported: nil)
-      if reuse_from(previous_theme, theme)
+    #
+    # colors: the AI's colours for this design ({ 'primary' => '#hex', 'accent' => '#hex', ... })
+    def apply!(theme:, store:, description:, previous_theme: nil, imported: nil, colors: nil)
+      colors = clean_colors(colors)
+      if reuse_from(previous_theme, theme, colors)
         StyleFamily.install!(store, family_of(theme), brand: brand_of(theme))
         return read(theme)
       end
 
-      return apply_imported!(theme, store, imported) if imported.is_a?(Hash) && imported['plan'].is_a?(Hash)
+      if imported.is_a?(Hash) && imported['plan'].is_a?(Hash)
+        plan = apply_imported!(theme, store, imported)
+        remember_colors(theme, colors)
+        return plan
+      end
 
       raw = begin
         request(store_name: store.name, description: description, currency: store.default_currency)
@@ -49,6 +59,7 @@ class PagePlan
       plan = normalize(raw, store_name: store.name)
       family = StyleFamily.resolve(raw['family'])
       save(theme, family, plan)
+      remember_colors(theme, colors)
       attach_images(theme, raw['images'])
       StyleFamily.install!(store, family)
       plan
@@ -231,14 +242,22 @@ class PagePlan
 
     # When the builder applies a refined design, keep the plan and photos of the
     # design it replaces (words and photos only change when asked).
-    def reuse_from(previous_theme, theme)
+    # When the refined design has different colours (e.g. "make it blue"), its main
+    # colour becomes the store's accent colour; fonts and everything else stay.
+    def reuse_from(previous_theme, theme, colors = {})
       return false unless previous_theme && previous_theme.id != theme.id
 
       family = family_of(previous_theme)
       stored = preference(previous_theme, 'page_plan')
       return false unless family && stored.is_a?(Hash)
 
-      save(theme, family, stored, brand_of(previous_theme))
+      brand = brand_of(previous_theme)
+      if (accent = changed_accent(previous_theme, colors))
+        brand = brand.merge('accent' => accent)
+        Rails.logger.info("[PagePlan] refined design changed the colour: accent is now #{accent}")
+      end
+      save(theme, family, stored, brand)
+      remember_colors(theme, colors)
       IMAGE_SLOTS.each do |slot|
         old = image(previous_theme, slot)
         next unless old&.image&.attached?
@@ -265,6 +284,50 @@ class PagePlan
       values = { 'style_family' => family.to_s.dup, 'page_plan' => plain(plan) }
       values['brand'] = plain(brand) if brand.present?
       theme.update_column(:preferences, prefs.merge(values))
+    end
+
+    # ---- colours ------------------------------------------------------------------
+
+    COLOR_KEYS = %w[primary secondary accent background text].freeze
+
+    # Only valid hex colours, as lowercase #rrggbb
+    def clean_colors(colors)
+      return {} unless colors.is_a?(Hash)
+
+      colors.to_h.each_with_object({}) do |(key, value), out|
+        next unless COLOR_KEYS.include?(key.to_s)
+
+        hex = value.to_s.strip.downcase
+        hex = "##{hex[1] * 2}#{hex[2] * 2}#{hex[3] * 2}" if hex.match?(/\A#\h{3}\z/)
+        out[key.to_s] = hex if hex.match?(/\A#\h{6}\z/)
+      end
+    end
+
+    def remember_colors(theme, colors)
+      return if colors.blank?
+
+      prefs = (theme.preferences || {}).to_h.reject { |k, _| k.to_s == 'ai_colors' }
+      theme.update_column(:preferences, prefs.merge('ai_colors' => plain(colors)))
+    rescue StandardError => e
+      Rails.logger.warn("[PagePlan] colours not saved: #{e.class} - #{e.message}")
+    end
+
+    # The new accent colour when a refinement changed the design's colours, else nil.
+    # Uses the main (primary) colour, or the accent colour when the primary is almost
+    # white or black (it would not show on buttons).
+    def changed_accent(previous_theme, colors)
+      return nil if colors.blank?
+
+      before = clean_colors(preference(previous_theme, 'ai_colors'))
+      return nil if before.present? && before.slice('primary', 'accent') == colors.slice('primary', 'accent')
+
+      [colors['primary'], colors['accent']].compact.find { |hex| visible?(hex) }
+    end
+
+    def visible?(hex)
+      r, g, b = hex.delete('#').scan(/../).map { |part| part.to_i(16) }
+      lightness = (0.2126 * r) + (0.7152 * g) + (0.0722 * b)
+      lightness.between?(25, 225)
     end
 
     def plain(value)

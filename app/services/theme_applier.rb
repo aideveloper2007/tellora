@@ -30,7 +30,10 @@ class ThemeApplier
     end
 
     # Words, photos and style family for the home page (never raises)
-    PagePlan.apply!(theme: theme, store: @store, description: @prompt, previous_theme: previous, imported: @imported)
+    # colors: the AI's colours for this design; when a refined design changes them
+    # (e.g. "make it blue"), its main colour becomes the store's accent colour
+    PagePlan.apply!(theme: theme, store: @store, description: @prompt, previous_theme: previous, imported: @imported,
+                    colors: data['colors'])
 
     theme.update!(ready: true)
     @store.themes.where(default: true).where.not(id: theme.id).update_all(default: false)
