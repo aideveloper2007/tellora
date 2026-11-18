@@ -14,6 +14,7 @@ class StoreProvisioner
   THEME_TIMEOUT = 5 * 60 # seconds
   THEME_POLL_EVERY = 3   # seconds
   STORE_TYPE_MAX = 190   # the sample-products API accepts at most 200 characters
+  DEMO_ADMIN_EMAIL = 'spree@example.com' # created by Spree's seed data with the public password "spree123"
 
   def initialize(build)
     @build = build
@@ -52,6 +53,7 @@ class StoreProvisioner
     Apartment::Tenant.switch(code) do
       Spree::Core::Engine.load_seed unless Spree::Role.exists?(name: 'admin')
       user_id = find_or_create_admin.id
+      remove_demo_admin
     end
 
     TenantResolver.clear(URI.parse(@build.store_url).host) if @build.store_url.present?
@@ -89,6 +91,18 @@ class StoreProvisioner
     admin_role = Spree::Role.find_or_create_by!(name: 'admin')
     user.spree_roles << admin_role unless user.spree_roles.include?(admin_role)
     user
+  end
+
+  # Spree's seed data adds a demo admin (spree@example.com / spree123) that anyone could
+  # log in with. The owner has their own admin login, so the demo one is removed.
+  def remove_demo_admin
+    return if @build.email.to_s.casecmp(DEMO_ADMIN_EMAIL).zero?
+
+    [Spree.user_class, Spree.admin_user_class].uniq.each do |klass|
+      klass.where(email: DEMO_ADMIN_EMAIL).find_each(&:destroy!)
+    end
+  rescue StandardError => e
+    log "Demo admin not removed: #{e.class} - #{e.message}"
   end
 
   # ---- step 1b: read the existing store ("Move my store") -----------------------
