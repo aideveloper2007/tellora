@@ -6,6 +6,9 @@ module Platform
   # on the right reloads when a change is applied, and Publish makes the store public.
   class BuilderController < ActionController::Base
     layout false
+
+    # A builder change not finished after this long is treated as lost
+    LOST_AFTER = 10.minutes
     protect_from_forgery with: :exception
 
     before_action :load_build
@@ -62,9 +65,25 @@ module Platform
     def refine
       feedback = params[:feedback].to_s.strip
       return render(json: { error: 'Describe the change you want.' }, status: :unprocessable_entity) if feedback.length < 3
+      clear_lost_change
       return render(json: { error: 'A change is already in progress. Please wait for it to finish.' }, status: :conflict) if @build.pending_theme_api_id.present?
 
-      theme_id = start_refinement(feedback[0, 500])
+      feedback = feedback[0, 500]
+      # Page changes (sections, product counts, words) are done here in seconds;
+      # colours, fonts and mood go to the design AI as before.
+      edit = page_edit(feedback)
+      if edit && edit[:kind] != 'design'
+        design_request = edit[:design_request]
+        unless design_request
+          return render json: { applied: edit[:changed], message: edit[:reply] }
+        end
+
+        theme_id = start_refinement(design_request)
+        @build.update!(pending_theme_api_id: theme_id)
+        return render json: { theme_id: theme_id, applied: edit[:changed], message: edit[:reply] }
+      end
+
+      theme_id = start_refinement(feedback)
       @build.update!(pending_theme_api_id: theme_id)
       render json: { theme_id: theme_id }
     rescue StandardError => e
@@ -87,7 +106,13 @@ module Platform
         StoreBuild.where(id: @build.id, pending_theme_api_id: theme_id).update_all(pending_theme_api_id: nil)
         render json: { state: 'failed', error: 'This change could not be designed. Try describing it differently.' }
       else
-        render json: { state: 'working' }
+        if change_lost?
+          # Still not finished after LOST_AFTER: lost (for example the design service restarted)
+          StoreBuild.where(id: @build.id, pending_theme_api_id: theme_id).update_all(pending_theme_api_id: nil)
+          render json: { state: 'failed', error: 'This change was interrupted. Please ask again.' }
+        else
+          render json: { state: 'working' }
+        end
       end
     rescue StandardError => e
       Rails.logger.error("[Builder] refine status failed: #{e.class} - #{e.message}")
@@ -102,6 +127,21 @@ module Platform
     end
 
     private
+
+    # A change still "in progress" after LOST_AFTER was lost (for example when the design
+    # service restarted). It is cleared so the owner can ask again.
+    def clear_lost_change
+      return unless @build.pending_theme_api_id.present? && change_lost?
+
+      Rails.logger.info("[Builder] clearing lost change #{@build.pending_theme_api_id} for #{@build.tenant_code}")
+      StoreBuild.where(id: @build.id, pending_theme_api_id: @build.pending_theme_api_id).update_all(pending_theme_api_id: nil)
+      @build.pending_theme_api_id = nil
+    end
+
+    # pending_theme_api_id is set together with updated_at when a change starts
+    def change_lost?
+      @build.updated_at.nil? || @build.updated_at < LOST_AFTER.ago
+    end
 
     def current_family
       theme = Spree::Store.find_by(id: @build.store_id)&.themes&.find_by(default: true)
@@ -143,6 +183,17 @@ module Platform
         use_real_llm: true
       )
       result['theme_id'].presence or raise 'The design service did not return a theme id'
+    end
+
+    # Asks the page editor about the request (stores with a style family only).
+    # nil: no answer, or not a page change -> the design AI handles it.
+    def page_edit(feedback)
+      store = Spree::Store.find(@build.store_id)
+      theme = store.themes.find_by(default: true)
+      return nil unless theme.is_a?(Spree::Themes::GenAi) && PagePlan.family_of(theme)
+      return nil if CustomDesign.for(theme) || MirrorDesign.for(theme)
+
+      PageEditor.new(store: store, theme: theme, build: @build).call(feedback)
     end
 
     # Apply a finished design exactly once, even if the page polls twice at the same moment

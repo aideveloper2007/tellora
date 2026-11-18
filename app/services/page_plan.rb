@@ -15,6 +15,7 @@
 #                      refined designs: the colour asked for in the builder, e.g. "make it blue")
 #   'ai_colors'    => { 'primary' => '#1a1f3a', 'accent' => '#d4af37', ... }
 #                     (the AI's colours for the design, to see when a refinement changes them)
+#   'page_layout'  => [{ 'type' => 'hero' }, ...]  the order and settings of the sections (PageLayout)
 # Photos are ThemeImage records with sections plan_hero, plan_story, plan_banner.
 class PagePlan
   REQUEST_TIMEOUT = 150 # seconds
@@ -89,6 +90,11 @@ class PagePlan
       brand = brand_of(theme)
       save(theme, family.to_s, plan.is_a?(Hash) ? plan : normalize({}, store_name: store.name), brand)
       StyleFamily.install!(store, family.to_s, brand: brand)
+    end
+
+    # New words for the current plan (builder chat), keeping family, brand and photos
+    def replace_plan!(theme, plan)
+      save(theme, family_of(theme) || StyleFamily::DEFAULT, plan, brand_of(theme))
     end
 
     # Photo for a section: ThemeImage or nil
@@ -258,6 +264,7 @@ class PagePlan
       end
       save(theme, family, stored, brand)
       remember_colors(theme, colors)
+      PageLayout.copy!(previous_theme, theme) # the owner's own section list (see PageLayout)
       IMAGE_SLOTS.each do |slot|
         old = image(previous_theme, slot)
         next unless old&.image&.attached?

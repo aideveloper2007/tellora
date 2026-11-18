@@ -22,6 +22,7 @@ from app.services.claude_llm import get_llm_service, get_claude_llm
 from app.services import site_importer
 from app.services import screenshot_design
 from app.services import design_package
+from app.services import page_editor
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -461,3 +462,31 @@ async def design_package_endpoint(file: UploadFile = File(..., description="ZIP 
     except Exception as e:
         logger.error(f"Design package failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail={"error": {"code": "DESIGN_PACKAGE_ERROR", "message": "We could not read your design files"}})
+
+
+class PageEditRequest(BaseModel):
+    """A store owner's request from the builder chat, with the current home page."""
+    request: str = Field(..., min_length=1, max_length=1000)
+    store_name: str = Field("", max_length=200)
+    description: str = Field("", max_length=1000)
+    sections: list[dict] = Field(default_factory=list)
+    texts: dict = Field(default_factory=dict)
+    categories: list[dict] = Field(default_factory=list)
+    product_count: int = 0
+
+
+@router.post(
+    "/page-edit",
+    summary="Change the home page sections",
+    description="Turn a store owner's request into a new list of home page sections, or say it is a design request"
+)
+async def page_edit(request: PageEditRequest):
+    try:
+        return await asyncio.to_thread(
+            page_editor.edit_page,
+            request.request, request.store_name, request.description, request.sections,
+            request.texts, request.categories, request.product_count,
+        )
+    except Exception as e:
+        logger.error(f"Page edit failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail={"error": {"code": "PAGE_EDIT_ERROR", "message": "The page could not be changed"}})

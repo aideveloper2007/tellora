@@ -1,0 +1,20 @@
+<%# The owner's own customer reviews (never written by the AI). locals: dom_id, section %>
+<% items = Array(section['items']) %>
+<% if items.any? %>
+<section class="tl-section tl-reviews" aria-labelledby="<%= dom_id %>-title">
+  <div class="tl-wrap">
+    <div class="tl-head">
+      <div><h2 id="<%= dom_id %>-title"><%= section['title'].presence || 'What our customers say' %></h2></div>
+    </div>
+    <ul class="tl-review-grid">
+      <% items.each do |item| %>
+        <li class="tl-review">
+          <blockquote><p><%= item['quote'] %></p></blockquote>
+          <% if item['name'].present? %><p class="tl-review-name"><%= item['name'] %></p><% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</section>
+<% end %>
+

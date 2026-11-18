@@ -1,0 +1,26 @@
+<%# The store's categories as picture tiles. locals: dom_id, section, categories [{ taxon:, image: }] %>
+<% if categories.any? %>
+<section class="tl-section tl-categories" aria-labelledby="<%= dom_id %>-title">
+  <div class="tl-wrap">
+    <div class="tl-head">
+      <div>
+        <h2 id="<%= dom_id %>-title"><%= section['title'].presence || Spree.t(:categories, default: 'Shop by category') %></h2>
+        <% if section['subtitle'].present? %><p><%= section['subtitle'] %></p><% end %>
+      </div>
+    </div>
+    <ul class="tl-cat-grid">
+      <% categories.each do |category| %>
+        <% taxon = category[:taxon] %>
+        <% link = (spree.nested_taxons_path(taxon.permalink) rescue "/t/#{taxon.permalink}") %>
+        <li>
+          <a class="tl-cat" href="<%= link %>" data-turbo-frame="_top">
+            <%= render 'storefront_sections/photo', image: category[:image], width: 600, height: 600, alt: '', label: '', klass: 'tl-cat-photo' %>
+            <span class="tl-cat-name"><%= taxon.name %></span>
+          </a>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</section>
+<% end %>
+

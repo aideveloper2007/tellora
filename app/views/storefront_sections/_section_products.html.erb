@@ -1,0 +1,40 @@
+<%# A product grid with the family's product card (newest products, or one category).
+    locals: dom_id, products, title, subtitle, link_label, link, card_cta %>
+<% if products.any? %>
+<section class="tl-section tl-products" aria-labelledby="<%= dom_id %>-title">
+  <div class="tl-wrap">
+    <div class="tl-head">
+      <div>
+        <h2 id="<%= dom_id %>-title"><%= title %></h2>
+        <% if subtitle.present? %><p><%= subtitle %></p><% end %>
+      </div>
+      <% if link_label.present? %><a class="tl-link" href="<%= link %>"><%= link_label %></a><% end %>
+    </div>
+    <div class="tl-grid">
+      <% products.each do |product| %>
+        <% first_image = product.default_image %>
+        <% second_image = product.respond_to?(:secondary_image) ? product.secondary_image : nil %>
+        <% second_image = nil if second_image && first_image && second_image.id == first_image.id %>
+        <% category = tl_product_category(product) %>
+        <% note = tl_product_note(product) %>
+        <a class="tl-card" href="<%= spree.product_path(product) %>" data-turbo-frame="_top">
+          <div class="tl-card-media">
+            <%= render 'storefront_sections/photo', image: first_image, width: 480, height: 600, alt: product.name, label: product.name, klass: 'tl-card-photo' %>
+            <% if second_image %>
+              <%= render 'storefront_sections/photo', image: second_image, width: 480, height: 600, alt: '', klass: 'tl-card-photo tl-card-photo-alt' %>
+            <% end %>
+            <% if card_cta.present? %><span class="tl-card-quick"><span class="tl-btn"><%= card_cta %></span></span><% end %>
+          </div>
+          <div class="tl-card-body">
+            <h3 class="tl-card-title"><%= product.name %></h3>
+            <% if category.present? %><p class="tl-card-meta"><%= category %></p><% end %>
+            <% if note.present? %><p class="tl-card-note"><%= note %></p><% end %>
+            <p class="tl-card-price"><%= tl_price(product) %></p>
+          </div>
+        </a>
+      <% end %>
+    </div>
+  </div>
+</section>
+<% end %>
+

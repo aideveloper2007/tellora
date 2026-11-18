@@ -1,0 +1,13 @@
+<%# A block of text written for the page. locals: dom_id, section %>
+<% paragraphs = section['text'].to_s.split(/\n\s*\n/).map(&:strip).reject(&:blank?) %>
+<% if paragraphs.any? || section['title'].present? %>
+<section class="tl-section tl-text" <% if section['title'].present? %>aria-labelledby="<%= dom_id %>-title"<% end %>>
+  <div class="tl-wrap tl-narrow">
+    <% if section['title'].present? %><h2 id="<%= dom_id %>-title"><%= section['title'] %></h2><% end %>
+    <% paragraphs.each do |paragraph| %>
+      <p><%= simple_format(paragraph, {}, wrapper_tag: 'span') %></p>
+    <% end %>
+  </div>
+</section>
+<% end %>
+

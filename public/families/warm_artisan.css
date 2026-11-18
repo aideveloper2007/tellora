@@ -425,3 +425,43 @@ body :focus-visible { outline: 3px solid var(--wa-cherry) !important; outline-of
 @media (hover: none) {
   .tl-card-quick { display: none; }
 }
+
+/* ==========================================================================
+   Sections the owner adds from the builder chat (PageLayout):
+   categories, FAQ, text, reviews. Product grids and collections use .tl-products.
+   ========================================================================== */
+.tl-narrow { max-width: 52rem; }
+.tl-products + .tl-products { padding-top: 0; }
+
+/* Categories: picture tiles with the name below */
+.tl-cat-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: clamp(0.75rem, 2vw, 1.5rem); }
+.tl-cat { display: block; color: var(--wa-ink); text-decoration: none; }
+.tl-cat-photo { aspect-ratio: 4 / 5; border-radius: 4px; }
+.tl-cat-photo img { transition: transform 0.8s ease; }
+.tl-cat:hover .tl-cat-photo img { transform: scale(1.04); }
+.tl-cat-name { display: block; margin-top: 0.8rem; font-family: var(--wa-display); font-size: 1.25rem; font-weight: 600; }
+.tl-cat:hover .tl-cat-name { color: var(--wa-cherry); }
+
+/* FAQ */
+.tl-faq-list { border-top: 1px solid var(--wa-line); }
+.tl-faq-item { border-bottom: 1px solid var(--wa-line); }
+.tl-faq-item summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 0; font-family: var(--wa-display); font-size: 1.2rem; line-height: 1.3; color: var(--wa-ink); }
+.tl-faq-item summary::-webkit-details-marker { display: none; }
+.tl-faq-item summary::after { content: '+'; flex: none; font-family: var(--wa-body); font-size: 1.4rem; line-height: 1; color: var(--wa-cherry); transition: transform 0.2s; }
+.tl-faq-item[open] summary::after { transform: rotate(45deg); }
+.tl-faq-item summary:hover { color: var(--wa-cherry); }
+.tl-faq-item p { padding: 0 0 1.4rem; color: var(--wa-ink-soft); max-width: 44rem; }
+
+/* Text */
+.tl-text h2 { font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem); margin-bottom: 1.25rem; }
+.tl-text p { color: var(--wa-ink-soft); margin-top: 1rem !important; max-width: 46rem; }
+
+/* Reviews */
+.tl-reviews { background: var(--wa-surface); }
+.tl-review-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
+.tl-review { padding: clamp(1.5rem, 3vw, 2.25rem); background: var(--wa-paper); border: 1px solid var(--wa-line); border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem; }
+.tl-review blockquote { margin: 0; }
+.tl-review blockquote p { font-family: var(--wa-display); font-size: 1.15rem; line-height: 1.45; color: var(--wa-ink); font-style: italic; }
+.tl-review blockquote p::before { content: '\201C'; }
+.tl-review blockquote p::after { content: '\201D'; }
+.tl-review-name { font-size: 0.9rem; color: var(--wa-ink-soft); font-weight: 600; }

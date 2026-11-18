@@ -8,7 +8,8 @@
 #   0. Design rebuilt from the owner's screenshots ("Move my store", MirrorDesign):
 #      their own home page, with the product grid filled with this store's products.
 #   1. GenAI theme with a style family (all Tellora stores): designer-made sections
-#      from the page plan, inside Spree's own layout (header, newsletter, footer).
+#      in the owner's own order (PageLayout), words from the page plan, inside
+#      Spree's own layout (header, newsletter, footer).
 #   2. Older GenAI theme without a family: the previous GenAI home page, unchanged.
 #   3. Any other theme: Spree's default home page.
 module Spree
@@ -31,7 +32,8 @@ module Spree
         @style_family = family
         @page_plan = PagePlan.read(current_genai_theme)
         @plan_images = PagePlan::IMAGE_SLOTS.index_with { |slot| PagePlan.image(current_genai_theme, slot) }
-        @products = home_products(FAMILY_PRODUCT_LIMIT)
+        @sections = PageLayout.read(current_genai_theme)
+        @section_data = section_data(@sections)
         render 'spree/home/index_family'
       elsif using_genai_theme?
         @products = home_products(genai_product_limit)
@@ -76,16 +78,45 @@ module Spree
     end
 
     # Newest active products of this store that have a price in the current currency
-    def home_products(limit)
-      current_store.products
-                   .active(current_currency)
-                   .preload(:taxons, master: [:prices, :images], variants_including_master: [:prices])
-                   .reorder(created_at: :desc)
-                   .limit(limit)
-                   .to_a
+    # (only those in one category, when taxon is given)
+    def home_products(limit, taxon: nil)
+      scope = current_store.products
+                           .active(current_currency)
+                           .preload(:taxons, master: [:prices, :images], variants_including_master: [:prices])
+      scope = scope.in_taxon(taxon) if taxon
+      scope.reorder(created_at: :desc).limit(limit).to_a
     rescue StandardError => e
       Rails.logger.error("[Home] products query failed: #{e.class} - #{e.message}")
       []
+    end
+
+    # What each section of the page needs, by position:
+    #   products   -> { products: [...] }
+    #   collection -> { taxon:, products: [...] }
+    #   categories -> { categories: [{ taxon:, image: }] }
+    def section_data(sections)
+      categories = nil
+      sections.each_with_index.each_with_object({}) do |(section, index), data|
+        case section['type']
+        when 'products'
+          data[index] = { products: home_products(section['count'] || FAMILY_PRODUCT_LIMIT) }
+        when 'collection'
+          taxon = PageLayout.find_category(current_store, section['category'])
+          data[index] = { taxon: taxon, products: taxon ? home_products(section['count'] || FAMILY_PRODUCT_LIMIT, taxon: taxon) : [] }
+        when 'categories'
+          categories ||= PageLayout.categories(current_store)
+          data[index] = { categories: categories.first(section['count'] || 6).map { |t| { taxon: t, image: category_image(t) } } }
+        end
+      end
+    end
+
+    # The category's own picture, or the photo of its newest product
+    def category_image(taxon)
+      return taxon.image if taxon.respond_to?(:image) && taxon.image.respond_to?(:attached?) && taxon.image.attached?
+
+      home_products(1, taxon: taxon).first&.default_image
+    rescue StandardError
+      nil
     end
 
     def genai_product_limit

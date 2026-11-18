@@ -146,20 +146,20 @@
       </div>
 
       <div class="messages" id="messages" aria-live="polite">
-        <div class="msg msg-ai">Your store is ready. Tell me what to change: colours, fonts, layout, mood. I'll update the design and you'll see it on the right.</div>
+        <div class="msg msg-ai">Your store is ready. Tell me what to change: add or remove sections, show more products, change the words, colours or mood. You'll see it on the right.</div>
       </div>
 
       <div class="suggestions" id="suggestions">
+        <button type="button">Add a section with our categories</button>
+        <button type="button">Show 12 products on the home page</button>
+        <button type="button">Add an FAQ section</button>
         <button type="button">Darker, more premium colours</button>
-        <button type="button">Brighter and more playful</button>
-        <button type="button">Bigger product photos</button>
-        <button type="button">More minimal, lots of white space</button>
       </div>
 
       <form class="composer" id="composer">
         <label for="feedback">What should change?</label>
         <div class="composer-box">
-          <textarea id="feedback" name="feedback" rows="2" maxlength="500" placeholder="Make the header green and the buttons rounder"></textarea>
+          <textarea id="feedback" name="feedback" rows="2" maxlength="500" placeholder="Add our categories after the products, and make the buttons green"></textarea>
           <button type="submit" class="button" id="send">Apply</button>
         </div>
       </form>
@@ -232,7 +232,7 @@
         setBusy(true);
         add(text, 'msg-you');
         input.value = '';
-        var working = add('Redesigning your store. This takes about 30 to 60 seconds.', 'msg-ai msg-working');
+        var working = add('Working on your change…', 'msg-ai msg-working');
 
         fetch('/tellora/builder/refine', {
           method: 'POST',
@@ -243,7 +243,25 @@
           .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
           .then(function (res) {
             if (!res.ok) return finish(working, false, res.data.error || 'That change could not be started.');
-            poll(res.data.theme_id, working);
+            var data = res.data;
+            // Page change done right away (sections, products, words)
+            if (!data.theme_id) {
+              if (!data.applied) return finish(working, true, data.message || 'Nothing needed to change.');
+              frameWrap.classList.add('is-updating');
+              frame.addEventListener('load', function onLoad() {
+                frame.removeEventListener('load', onLoad);
+                finish(working, true, data.message || 'Done. Your home page is updated.');
+              });
+              frame.src = '/?v=' + Date.now();
+              return;
+            }
+            // Page part done, design part still running
+            if (data.message) {
+              messages.insertBefore(add(data.message, 'msg-ai'), working);
+              if (data.applied) frame.src = '/?v=' + Date.now();
+            }
+            working.textContent = 'Redesigning your store. This takes about 30 to 60 seconds.';
+            poll(data.theme_id, working);
           })
           .catch(function () { finish(working, false, 'Could not reach the server. Check your connection and try again.'); });
       }

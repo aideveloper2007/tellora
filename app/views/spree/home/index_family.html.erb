@@ -1,12 +1,45 @@
-<%# Tellora home page: designer-made sections filled from the page plan.
+<%# Home page of a store with a style family: the owner's own list of sections
+    (PageLayout, changed from the builder chat), words from the page plan.
     Spree's layout adds the announcement bar, header, newsletter and footer around it.
     The look comes from the store's style family stylesheet (public/families). %>
 <% plan = @page_plan %>
 <div class="tl-home tl-family-<%= @style_family.to_s.dasherize %>">
-  <%= render 'storefront_sections/hero', hero: plan['hero'], image: @plan_images['hero'] %>
-  <%= render 'storefront_sections/promise', promises: plan['promises'] %>
-  <%= render 'storefront_sections/products', section: plan['products'], products: @products %>
-  <%= render 'storefront_sections/story', story: plan['story'], image: @plan_images['story'] %>
-  <%= render 'storefront_sections/steps', steps: plan['steps'] %>
-  <%= render 'storefront_sections/banner', banner: plan['banner'], image: @plan_images['banner'] %>
+  <% @sections.each_with_index do |section, index| %>
+    <% data = @section_data[index] || {} %>
+    <% type = section['type'] %>
+    <% if type == 'hero' %>
+      <%= render 'storefront_sections/hero', hero: plan['hero'], image: @plan_images['hero'] %>
+    <% elsif type == 'promises' %>
+      <%= render 'storefront_sections/promise', promises: plan['promises'] %>
+    <% elsif type == 'products' %>
+      <%= render 'storefront_sections/section_products', dom_id: "tl-s#{index}", products: data[:products] || [],
+                 title: section['title'].presence || plan.dig('products', 'title'),
+                 subtitle: section['title'].present? ? section['subtitle'] : (section['subtitle'].presence || plan.dig('products', 'subtitle')),
+                 link_label: plan.dig('products', 'link_label'), link: spree.products_path,
+                 card_cta: plan.dig('products', 'card_cta') %>
+    <% elsif type == 'collection' %>
+      <% taxon = data[:taxon] %>
+      <% if taxon %>
+        <% taxon_link = (spree.nested_taxons_path(taxon.permalink) rescue "/t/#{taxon.permalink}") %>
+        <%= render 'storefront_sections/section_products', dom_id: "tl-s#{index}", products: data[:products] || [],
+                   title: section['title'].presence || taxon.name, subtitle: section['subtitle'],
+                   link_label: plan.dig('products', 'link_label'), link: taxon_link,
+                   card_cta: plan.dig('products', 'card_cta') %>
+      <% end %>
+    <% elsif type == 'categories' %>
+      <%= render 'storefront_sections/categories', dom_id: "tl-s#{index}", section: section, categories: data[:categories] || [] %>
+    <% elsif type == 'story' %>
+      <%= render 'storefront_sections/story', story: plan['story'], image: @plan_images['story'] %>
+    <% elsif type == 'steps' %>
+      <%= render 'storefront_sections/steps', steps: plan['steps'] %>
+    <% elsif type == 'banner' %>
+      <%= render 'storefront_sections/banner', banner: plan['banner'], image: @plan_images['banner'] %>
+    <% elsif type == 'faq' %>
+      <%= render 'storefront_sections/faq', dom_id: "tl-s#{index}", section: section %>
+    <% elsif type == 'text' %>
+      <%= render 'storefront_sections/text', dom_id: "tl-s#{index}", section: section %>
+    <% elsif type == 'reviews' %>
+      <%= render 'storefront_sections/reviews', dom_id: "tl-s#{index}", section: section %>
+    <% end %>
+  <% end %>
 </div>

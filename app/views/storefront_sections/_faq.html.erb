@@ -1,0 +1,20 @@
+<%# Questions and answers (native <details>, works without JavaScript). locals: dom_id, section %>
+<% items = Array(section['items']) %>
+<% if items.any? %>
+<section class="tl-section tl-faq" aria-labelledby="<%= dom_id %>-title">
+  <div class="tl-wrap tl-narrow">
+    <div class="tl-head">
+      <div><h2 id="<%= dom_id %>-title"><%= section['title'].presence || 'Questions and answers' %></h2></div>
+    </div>
+    <div class="tl-faq-list">
+      <% items.each do |item| %>
+        <details class="tl-faq-item">
+          <summary><%= item['question'] %></summary>
+          <p><%= item['answer'] %></p>
+        </details>
+      <% end %>
+    </div>
+  </div>
+</section>
+<% end %>
+
